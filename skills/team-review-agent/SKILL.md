@@ -139,7 +139,7 @@ Step 8: 应该路由到哪里？（自己修 / implAgent / specAgent / H3）
 
 1. 直接修改代码/测试
 2. 运行测试确认修复正确
-3. 运行 `bun run ci:fix` 确认无 lint 问题
+3. 运行项目 CI 检查命令确认无 lint 问题
 
 对于路由到 implAgent/specAgent 的问题：
 
@@ -160,6 +160,34 @@ Step 8: 应该路由到哪里？（自己修 / implAgent / specAgent / H3）
 - **触发条件**：什么情况下触发（让下游 Agent 知道何时应用）
 - **可执行指令**：具体做什么（让下游 Agent 知道怎么做）
 - **示例**：好/坏对比（让下游 Agent 理解边界）
+
+#### 4.0 任务级规则沉淀
+
+产出 `docs/tasks/{slug}/task-rules.md`，记录本任务中发现的、仅在本任务范围内适用的规则或约束。这建立了三层规则体系（项目级 > 模块级 > 任务级）：
+
+```markdown
+# 任务级规则
+> reviewAgent 产出  |  仅适用于 {slug} 任务范围
+
+| 规则 | 适用范围 | 触发条件 | 可执行指令 |
+|------|---------|---------|-----------|
+| ... | 本任务 | ... | ... |
+```
+
+#### 4.0.5 内容覆盖度检查
+
+逐项确认以下 8 个内容类别在项目资产中有明确对应文件或章节。对「需补充」项，在 CLAUDE.md 对应章节新增内容；如果 `docs/review-checklist.md` 或 `docs/delivery-checklist.md` 不存在，创建之。
+
+| 类别 | 典型位置 | 状态 |
+|------|---------|------|
+| 业务术语 | 02-context.md 术语表 / CLAUDE.md | ✅/需补充 |
+| 系统架构 | CLAUDE.md / docs/architecture.md | ✅/需补充 |
+| 代码结构 | CLAUDE.md | ✅/需补充 |
+| 接口约定 | CLAUDE.md / 02-context.md | ✅/需补充 |
+| 编码规范 | CLAUDE.md | ✅/需补充 |
+| 测试要求 | CLAUDE.md / docs/review-checklist.md | ✅/需补充 |
+| Review 标准 | docs/review-checklist.md | ✅/需补充 |
+| 交付要求 | docs/delivery-checklist.md | ✅/需补充 |
 
 #### 4.1 项目级 CLAUDE.md
 
@@ -206,6 +234,42 @@ Step 8: 应该路由到哪里？（自己修 / implAgent / specAgent / H3）
 
 如果本次任务发现了新的交付检查项，追加到 `docs/delivery-checklist.md`。
 
+#### 4.6 工具适配产物确认（≥ 2 类）
+
+确认项目至少有 2 类工具适配产物。如不足，从以下列表中选择并创建缺失类型：
+
+| 类型 | 文件路径 | 状态 |
+|------|---------|------|
+| CLAUDE.md / AGENTS.md | 根目录 | ✅/❌ |
+| Review Checklist | docs/review-checklist.md | ✅/❌ |
+| Delivery Checklist | docs/delivery-checklist.md | ✅/❌ |
+| Prompt 模板 | docs/tasks/{slug}/prompt-template.md | ✅/❌ |
+
+#### 4.7 资产可维护性保障
+
+在 CLAUDE.md 确认存在以下维护机制段落（如不存在则新增）：
+
+```markdown
+## 资产维护机制
+
+### 更新触发条件
+- Review 发现新的通用规则 → 追加到对应章节
+- 缺陷修复发现新的反模式 → 追加到编码规范
+- AI 输出偏差 → 追加到约束规则
+
+### 版本记录
+| 日期 | 更新者 | 更新内容 | 关联任务 |
+|------|--------|---------|---------|
+
+### 规则管理层级
+- 项目级规则集中在根目录 CLAUDE.md
+- 模块级规则在各模块 CLAUDE.md
+- 任务级规则在 docs/tasks/{slug}/task-rules.md
+- 冲突时优先级：项目级 > 模块级 > 任务级
+```
+
+每次更新 CLAUDE.md 后，向"版本记录"表追加一行。
+
 ### Phase 5：个人复盘
 
 在 `13-retrospective.md` 中记录：
@@ -234,6 +298,13 @@ Step 8: 应该路由到哪里？（自己修 / implAgent / specAgent / H3）
 
 ### 团队协作改进建议
 - {具体建议}
+
+## 二.5、本次沉淀的新规则
+
+| 新规则 | 写入位置 | 为什么需要这条规则 |
+|--------|---------|------------------|
+| ... | CLAUDE.md §{section} | 本次发现 {pattern}，需固化为规则避免重复 |
+| ... | docs/review-checklist.md | 本次 Review 发现 {issue type}，需加入检查项 |
 
 ## 三、下次改进承诺
 
@@ -307,6 +378,14 @@ Step 8: 应该路由到哪里？（自己修 / implAgent / specAgent / H3）
 # AI 协作资产更新记录
 > reviewAgent 产出
 
+## 资产层级概览
+
+| 层级 | 文件 | 更新状态 |
+|------|------|---------|
+| 项目级 | CLAUDE.md | ✅/未更新 |
+| 模块级 | {module}/CLAUDE.md | ✅/未更新/不适用 |
+| 任务级 | docs/tasks/{slug}/task-rules.md | ✅ |
+
 ## 更新的资产
 
 | 资产文件 | 更新内容 | 更新理由 |
@@ -330,6 +409,12 @@ Step 8: 应该路由到哪里？（自己修 / implAgent / specAgent / H3）
 
 ### 规则 2：{规则标题}
 ...
+
+## 版本记录
+
+| 日期 | 更新者 | 更新内容 | 关联任务 |
+|------|--------|---------|---------|
+| {YYYY-MM-DD} | reviewAgent | {更新摘要} | {slug} |
 ```
 
 ### 文件 13：`13-retrospective.md`
@@ -369,7 +454,7 @@ Step 8: 应该路由到哪里？（自己修 / implAgent / specAgent / H3）
 ```
 reviewAgent 完成 ✅
 产出目录：docs/tasks/{slug}/
-文件清单：11-review.md / 12-asset-update.md / 13-retrospective.md
+文件清单：11-review.md / 12-asset-update.md / 13-retrospective.md / task-rules.md
 审查结果：{N} 个文件审查，发现 {N} 个问题
 修复记录：自行修复 {N} 个，回退 implAgent {N} 个，回退 specAgent {N} 个，人类决策 {N} 个
 资产更新：{N} 个文件已更新

@@ -65,13 +65,7 @@ Step 5: 我的理解对吗？（→ 展示给用户确认）
 6. 提取该任务涉及的业务术语（domain 概念、聚合名、事件名等）
 7. 判断任务复杂度和风险级别
 
-**反面示例（不要这样做）**：
-```
-❌ 直接开始写 01-plan.md，没有先读源码
-❌ 全量塞入所有上下文文件，没有精选必要上下文
-❌ 凭记忆写术语定义，没有从源码中提取
-❌ 忽略已有测试，导致重复测试或遗漏回归
-```
+> **禁止**：直接写文件不先读源码 | 全量塞入上下文不精选 | 凭记忆写术语定义 | 忽略已有测试
 
 ### Phase 1.5：向用户展示探索结论（人类介入点）
 
@@ -98,12 +92,7 @@ Step 5: 我的理解对吗？（→ 展示给用户确认）
 3. 是否有需要排除的范围？
 ```
 
-**反面示例（不要这样做）**：
-```
-❌ 直接进入 Phase 2 写文件，跳过用户确认
-❌ 展示时只给结论不给推理过程，用户无法判断是否正确
-❌ 风险预判只说"无风险"，这是不诚实的
-```
+> **禁止**：跳过用户确认直接写文件 | 展示结论不给推理过程 | 风险预判写"无风险"
 
 **用户确认后**才能进入 Phase 2。如果用户提出修改意见，先调整理解再继续。
 
@@ -165,14 +154,7 @@ specAgent → implAgent → testAgent → reviewAgent
 每个 Agent 的产出文件是下一个 Agent 的输入。
 
 ## 四、给 AI 的任务提示词
-（为后续 Agent 编写结构化提示词，确保目标、上下文、边界、输出格式、验证标准五要素齐全）
-
-```
-目标：{一句话描述实现目标}
-上下文：读取 docs/tasks/{slug}/ 下的 01-05 文件
-边界：严格遵循 04-boundary.md 的 allow/deny 列表
-输出格式：{描述期望的代码结构和文件组织}
-验证标准：{列出 03-sdd.md §九 验收 Checklist 的关键条目}
+详见同目录下 `prompt-template.md`（独立文件，作为工具适配产物之一）
 ```
 
 **反面示例（不要这样做）**：
@@ -183,6 +165,28 @@ specAgent → implAgent → testAgent → reviewAgent
 ❌ 输出格式：写好的代码（没有结构要求）
 ❌ 验证标准：通过测试（没有具体测试名或覆盖率要求）
 ```
+```
+
+#### 文件 1.5：`prompt-template.md`（工具适配产物）
+
+```markdown
+# AI 任务提示词模板
+> specAgent 产出  |  独立工具适配产物
+
+## 目标
+{一句话描述实现目标}
+
+## 上下文
+读取 docs/tasks/{slug}/ 下的 01-05 文件
+
+## 边界
+严格遵循 04-boundary.md 的 allow/deny 列表
+
+## 输出格式
+{描述期望的代码结构和文件组织}
+
+## 验证标准
+{列出 03-sdd.md §九 验收 Checklist 的关键条目}
 ```
 
 #### 文件 2：`02-context.md`
@@ -323,9 +327,9 @@ specAgent → implAgent → testAgent → reviewAgent
 ## 一、验证计划
 | 步骤 | 验证方式 | 具体命令 | 预期结果 |
 |------|---------|---------|---------|
-| 1 | 编译检查 | `cargo check --workspace` | 0 errors |
-| 2 | 单元测试 | `cargo test -p atlas-gateway -- {module}` | all pass |
-| 3 | CI 全量 | `bun run ci:fix` | 0 errors |
+| 1 | 编译检查 | 项目编译/类型检查命令 | 0 errors |
+| 2 | 单元测试 | 项目测试命令（参考 CLAUDE.md） | all pass |
+| 3 | CI 全量 | 项目 CI 检查命令（参考 CLAUDE.md） | 0 errors |
 | ... | ... | ... | ... |
 
 ## 二、风险识别
@@ -341,8 +345,8 @@ specAgent → implAgent → testAgent → reviewAgent
 - 当 SDD 中的业务规则存在歧义时
 - 当发现 spec 中未覆盖的关联模块需要修改时
 
-## 四、pm-truth-ledger 验证条目
-将本次任务的每个验收标准追加到 `docs/pm-truth-ledger.yaml`（格式参照已有条目）：
+## 四、pm-truth-ledger 验证条目（如文件存在）
+如果项目中存在 `docs/pm-truth-ledger.yaml`，将本次任务的每个验收标准追加（格式参照已有条目）：
 
 ```yaml
 - claim: "{验收标准描述}"
@@ -374,13 +378,14 @@ specAgent → implAgent → testAgent → reviewAgent
 - [ ] Kill Switch 条件 ≥ 2 个
 - [ ] 验证计划有具体命令和预期结果
 - [ ] 停下来问人条件 ≥ 3 个
-- [ ] pm-truth-ledger 条目已追加
+- [ ] pm-truth-ledger 条目已追加（如文件存在）
+- [ ] prompt-template.md 已独立产出（含目标+上下文+边界+输出格式+验证标准五要素）
 
 ## 完成标志
 
 ```
 specAgent 完成 ✅
 产出目录：docs/tasks/{slug}/
-文件清单：01-plan.md / 02-context.md / 03-sdd.md / 04-boundary.md / 05-risk.md
+文件清单：01-plan.md / 02-context.md / 03-sdd.md / 04-boundary.md / 05-risk.md / prompt-template.md
 → 编排器将展示规格给用户确认后进入实现阶段
 ```

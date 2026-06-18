@@ -111,11 +111,12 @@ description: 根据 AI 协作评分标准，快速扫描项目并输出结构化
 
 **Agent 1 — AI 协作资产扫描**
 - 查找所有 CLAUDE.md / AGENTS.md / .cursorrules / .cursor/rules / .copilot-instructions.md / docs/ai/* 文件
+- 查找任务级规则文件：docs/tasks/*/task-rules.md
 - 检查内容是否分层（项目级 vs 模块级 vs 任务级）
 - 检查是否覆盖：业务术语表、系统架构、代码结构、接口约定、编码规范、测试规范、Review Checklist、Delivery Checklist、交付要求
 - 检查规则是否具体可执行（有无禁止项、必选项、示例、编码方式）
-- 检查有无 Prompt 模板、检查清单等工具适配产物（≥ 2 类）
-- 检查有无维护说明、版本记录、集中新增规则机制
+- 检查有无 Prompt 模板（docs/tasks/*/prompt-template.md）、检查清单等工具适配产物（≥ 2 类）
+- 检查有无维护说明、版本记录、集中新增规则机制（CLAUDE.md 中的「资产维护机制」段落）
 
 **Agent 2 — 任务规划扫描**
 - 查找 docs/ 下的任务规划、PRD、设计文档、实现计划
@@ -126,7 +127,7 @@ description: 根据 AI 协作评分标准，快速扫描项目并输出结构化
 - 检查是否有验证计划（每一步有可检查完成标准）
 - 检查是否有风险识别
 - 检查是否有停下来问人的条件
-- 检查是否有给 AI 的最终任务提示词（完整 Prompt 或模板）
+- 检查是否有给 AI 的最终任务提示词（独立的 prompt-template.md 或文档内嵌 Prompt）
 
 **Agent 3 — 质量保障扫描**
 - 检查 tests/ 目录结构和测试文件数量
@@ -137,14 +138,14 @@ description: 根据 AI 协作评分标准，快速扫描项目并输出结构化
 - 检查是否有缺陷修复代码及其测试验证（修复未破坏已有功能）
 - 检查是否有 Review 记录（含脆弱性、数据、安全、性能、兼容性维度）和风险识别文档
 - 检查测试运行结果记录
-- 运行 `cargo test --workspace -- --list 2>/dev/null | head -100` 列出测试用例
+- 运行项目测试命令列出测试用例（如 `bun test --list`、`cargo test -- --list`、`pytest --collect-only` 等，根据项目技术栈选择）
 - 检查 CI 配置（ci:fix、check 等）
 
 **Agent 4 — 使用过程扫描**
-- 查找 AI 对话记录、Prompt 记录、纠偏记录
-- 查找个人复盘文档
+- 查找 AI 对话记录、Prompt 记录（07-prompt-log.md）、纠偏记录
+- 查找个人复盘文档（13-retrospective.md），检查是否有「本次沉淀的新规则」段落
 - 检查 skills 和配置目录
-- 检查是否有结构化的 Prompt（目标+上下文+边界+输出格式）
+- 检查是否有结构化的 Prompt（五要素：目标+上下文+边界+输出格式+验证标准）
 
 **Agent 5 — 团队协作扫描**
 - 检查 git log --format='%an' 统计贡献者

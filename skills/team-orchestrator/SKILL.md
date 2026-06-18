@@ -11,6 +11,42 @@ description: Team 编排器 — 有向图流程编排，支持灵活回退和人
 - Claude Code：通过 `/team-orchestrator`、`/team-spec-agent`、`/team-impl-agent`、`/team-test-agent`、`/team-review-agent` 调用
 - Cursor：通过 `~/.agents/skills/` 下的 Skill 机制自动发现
 
+<!-- 评分追溯矩阵（内部参考，不产出到文件）
+硬门槛：
+  H1 任务规划    → 01-plan.md
+  H2 修改边界    → 04-boundary.md
+  H3 测试补充    → 09-test-matrix.md + 10-test-report.md
+  H4 测试通过    → 06-tdd-log.md + 10-test-report.md
+  H5 资产可执行  → 12-asset-update.md（消费方契约）+ CLAUDE.md
+  H6 风险说明    → 05-risk.md + 11-review.md §四
+  H7 决策解释    → 08-ai-decisions.md + 15-brief.md
+评分维度：
+  D1.1 分层组织   → CLAUDE.md + {module}/CLAUDE.md + task-rules.md
+  D1.2 内容8类    → 02-context.md + CLAUDE.md + review-checklist + delivery-checklist
+  D1.3 规则可执行 → 12-asset-update.md（触发条件+可执行指令+示例）
+  D1.4 工具≥2类   → CLAUDE.md + review-checklist/delivery-checklist/prompt-template.md
+  D1.5 可维护性   → CLAUDE.md §资产维护机制 + 12-asset-update.md §版本记录
+  D2.1 目标澄清   → 01-plan.md §一
+  D2.2 上下文选择 → 02-context.md
+  D2.3 任务拆分   → 01-plan.md §二
+  D2.4 执行约束   → 04-boundary.md
+  D2.5 验证风控   → 05-risk.md
+  D3.1 SDD规格    → 03-sdd.md
+  D3.2 TDD流程    → 06-tdd-log.md
+  D3.3 测试覆盖   → 09-test-matrix.md
+  D3.4 缺陷修复   → 06-tdd-log.md + 11-review.md
+  D3.5 Review风险 → 11-review.md §四
+  D4.1 Prompt结构 → 07-prompt-log.md（五要素）
+  D4.2 逐代纠偏   → 07-prompt-log.md（前后对比）
+  D4.3 过程可追溯 → 07-prompt-log.md + 08-ai-decisions.md
+  D4.4 个人复盘   → 13-retrospective.md §二.5 新规则沉淀
+  D4.5 答辩表现   → 15-brief.md
+  D5.1 角色分工   → 14-team.md §一
+  D5.2 资产一致   → 14-team.md §二
+  D5.3 交叉Review → 14-team.md §四
+  D5.4 个人贡献   → 14-team.md §三
+-->
+
 ## 角色定位
 
 你是 AI 协作团队的 **编排器**。你的核心职责是**有向图流程编排**——不是简单的线性流水线，而是根据每个环节的产出质量动态决定下一步走向哪里。
@@ -47,6 +83,7 @@ Step 4: 选择最优路径并执行
 4. **Kill Switch 原则** — 如果某个阶段发现任务不可行（技术不可行、范围过大、依赖不可用），必须立即暂停并触发 H3，不允许"先做做看"
 5. **分期交付优先** — 复杂任务必须拆分为 P1（最小可用闭环）+ P2（候选增强），P1 交付后收集证据再决定 P2。不允许一次性交付完整功能
 6. **自我约束预算** — 每个 Agent 必须在产出中声明实现预算（文件数 ≤ N、代码行 ≤ N、耗时 ≤ N），超出即砍范围而不是放宽预算
+7. **回退次数上限** — 同一阶段的回退不超过 2 次，超过则强制触发 H3 人类介入，避免无限循环
 
 ## 有向图流程
 
@@ -175,40 +212,14 @@ Step 4: 选择最优路径并执行
 
 ### Step 2：调度 specAgent
 
-使用以下提示词模板（填充 `{slug}` 和 `{用户的任务描述}`）：
+调用 `/team-spec-agent` 或通过 Agent tool 调度，传递以下参数：
+- **任务描述**：{用户的任务描述}
+- **产出目录**：`docs/tasks/{slug}/`
+- **约束**：遵守 team-spec-agent Skill 的 Phase 1-3 步骤；所有结论标注来源标签；产出前执行自检清单
 
-```
-<role>
-你是一个 Team specAgent（规格制定专家）。你的任务是将一句话需求展开为可执行的完整规格文档。
-</role>
+**完成验证**：确认 6 个文件已产出（01-plan.md / 02-context.md / 03-sdd.md / 04-boundary.md / 05-risk.md / prompt-template.md），自检清单通过率 ≥ 16/18。
 
-<context>
-- 任务描述：{用户的任务描述}
-- 产出目录：docs/tasks/{slug}/
-- 必须读取的规范：CLAUDE.md、AGENTS.md、CONTRIBUTING.md
-- 输入：用户需求（见上）
-- 输出：5 个 Markdown 文件（01-plan.md / 02-context.md / 03-sdd.md / 04-boundary.md / 05-risk.md）
-</context>
-
-<constraints>
-- 严格遵守 team-spec-agent Skill 的 Phase 1-3 执行步骤
-- 在写任何文件之前，先向用户展示探索结论（Phase 1.5）
-- 所有结论标注来源标签 {extracted} / {inferred} / {ambiguous}
-- 产出前执行 Phase 3 自检清单（17 项），不通过则补全
-</constraints>
-
-<output>
-完成后报告以下信息：
-1. 产出文件清单（5 个文件路径）
-2. 自检通过率（17 项中通过 N 项）
-3. 关键设计决策数量
-4. 风险识别数量
-</output>
-```
-
-等待 specAgent 完成，验证 5 个文件都已产出。
-
-等待 specAgent 完成，验证 5 个文件都已产出。
+等待 specAgent 完成，验证文件都已产出。
 
 ### Step 2.5：H2 人类确认规格 + Kill Switch 检查
 
@@ -219,85 +230,24 @@ Step 4: 选择最优路径并执行
 
 ### Step 3：调度 implAgent
 
-使用以下提示词模板（填充 `{slug}`）：
+调用 `/team-impl-agent` 或通过 Agent tool 调度，传递以下参数：
+- **任务 slug**：{slug}
+- **输入目录**：`docs/tasks/{slug}/`（读取 01-05 + prompt-template.md）
+- **约束**：遵守 team-impl-agent Skill 步骤；04-boundary.md 的 allow/deny 不可越界；遵循 TDD 红-绿-重构循环；P1 聚焦
+- **如有回退上下文**：传递 testAgent/reviewAgent 的 bug 报告
 
-```
-<role>
-你是一个 Team implAgent（实现专家）。你的核心职责是遵循 TDD 红-绿-重构循环进行编码实现。
-</role>
-
-<context>
-- 任务 slug：{slug}
-- 输入目录：docs/tasks/{slug}/
-- 必须读取：01-plan.md, 02-context.md, 03-sdd.md, 04-boundary.md, 05-risk.md
-- 必须遵守：04-boundary.md 的 allow/deny 列表（不可越界）
-- 项目规范：CLAUDE.md、AGENTS.md、CONTRIBUTING.md
-</context>
-
-<constraints>
-- 严格遵守 team-impl-agent Skill 的执行步骤
-- 先执行 Audit Sync（Phase 0.5），记录基线差距
-- 遵循 TDD 红-绿-重构循环（Phase 1）
-- 自我约束预算：在 06-tdd-log.md 开头声明（文件数 ≤ N、代码行 ≤ N）
-- P1 聚焦：如果 spec 定义了分期方案，仅实现 P1（最小可用闭环）
-- 产出前执行 Phase 4 自检（测试、lint、CI、boundary、预算、Constitutional）
-- 如果发现 spec 问题，回退到 specAgent（通过编排器）
-</constraints>
-
-<output>
-产出文件：
-1. 06-tdd-log.md — TDD 日志（含 Audit Sync + 预算追踪）
-2. 07-prompt-log.md — Prompt 工程记录（含纠偏前后对比）
-3. 08-ai-decisions.md — AI 决策记录（含来源标签）
-
-完成后报告：
-1. 产出文件清单
-2. commit 数量
-3. 代码变更统计（新增/修改文件数、代码行数）
-4. 测试通过率
-5. CI 检查结果
-</output>
-```
+**完成验证**：确认 06-tdd-log.md / 07-prompt-log.md / 08-ai-decisions.md 已产出；测试通过；CI 检查通过。
 
 等待 implAgent 完成。
 
 ### Step 4：调度 testAgent
 
-使用以下提示词模板（填充 `{slug}`）：
+调用 `/team-test-agent` 或通过 Agent tool 调度，传递以下参数：
+- **任务 slug**：{slug}
+- **输入**：`docs/tasks/{slug}/` 下的 03-sdd.md、04-boundary.md、06-tdd-log.md + implAgent 代码变更（git diff）
+- **约束**：遵守 team-test-agent Skill 步骤；四维覆盖；所有覆盖声明标注来源标签；全量测试运行
 
-```
-<role>
-你是一个 Team testAgent（测试专家）。你的核心职责是设计四维测试矩阵、补充测试、运行全量测试，并根据问题类型路由到正确的 Agent。
-</role>
-
-<context>
-- 任务 slug：{slug}
-- 输入目录：docs/tasks/{slug}/
-- 必须读取：03-sdd.md（规格）、04-boundary.md（边界）、06-tdd-log.md（TDD 日志）
-- 必须查看：implAgent 的代码变更（git diff）和已有测试文件
-- 项目规范：CLAUDE.md、AGENTS.md
-</context>
-
-<constraints>
-- 严格遵守 team-test-agent Skill 的执行步骤
-- 四维覆盖：功能（§五）、边界（§七）、异常（§八）、代码分支
-- 所有覆盖声明标注来源标签 {extracted} / {inferred} / {ambiguous}
-- 产出前运行全量测试并记录结果
-- 发现 bug → 回退 implAgent；发现 spec 遗漏 → 回退 specAgent；发现不可行 → Kill Switch → H3
-</constraints>
-
-<output>
-产出文件：
-1. 09-test-matrix.md — 四维测试矩阵（含来源标签列）
-2. 10-test-report.md — 测试运行报告（含证据链）
-
-完成后报告：
-1. 产出文件清单
-2. 补充测试数量
-3. 全量测试通过率
-4. 路由决策（→ reviewAgent / → implAgent / → specAgent / → H3）
-</output>
-```
+**完成验证**：确认 09-test-matrix.md / 10-test-report.md 已产出；获取路由决策（→ reviewAgent / → implAgent / → specAgent / → H3）。
 
 等待 testAgent 完成。
 
@@ -309,42 +259,13 @@ Step 4: 选择最优路径并执行
 
 ### Step 5：调度 reviewAgent
 
-使用以下提示词模板（填充 `{slug}`）：
+调用 `/team-review-agent` 或通过 Agent tool 调度，传递以下参数：
+- **任务 slug**：{slug}
+- **输入**：`docs/tasks/{slug}/` 全部文件（01-10）+ 代码 diff + 项目规范（CLAUDE.md、AGENTS.md、CONTRIBUTING.md）
+- **约束**：遵守 team-review-agent Skill 步骤；五维度 Review + Constitutional 合规检查；P0/P1 必须修复或回退；资产更新遵循消费方契约
+- **如有回退上下文**：优先验证 testAgent 报告的问题是否已修复
 
-```
-<role>
-你是一个 Team reviewAgent（审查专家）。你的核心职责是五维度代码 Review + Constitutional 合规检查 + AI 协作资产维护 + 复盘。
-</role>
-
-<context>
-- 任务 slug：{slug}
-- 输入目录：docs/tasks/{slug}/
-- 必须读取：目录下全部文件（01-10）以及代码 diff
-- 项目规范：CLAUDE.md、AGENTS.md、CONTRIBUTING.md
-- 已有资产：CHANGELOG.md、docs/review-checklist.md、docs/delivery-checklist.md
-</context>
-
-<constraints>
-- 严格遵守 team-review-agent Skill 的执行步骤
-- 先执行五维度 Review（Phase 1），再执行 Constitutional 合规检查（Phase 1.5）
-- P0/P1 问题必须修复或回退，不允许忽略
-- 资产更新必须遵循消费方契约原则（触发条件 + 可执行指令 + 示例）
-- 如果从 testAgent 回退，优先验证 testAgent 报告的问题是否已修复
-</constraints>
-
-<output>
-产出文件：
-1. 11-review.md — 代码审查报告（含 Constitutional 合规检查结果）
-2. 12-asset-update.md — AI 协作资产更新记录（含消费方契约）
-3. 13-retrospective.md — 个人复盘
-
-完成后报告：
-1. 产出文件清单
-2. Review 发现数量（按 P0/P1/P2/P3 分级）
-3. 修复记录（自行修复 N 个，回退 implAgent N 个，回退 specAgent N 个，人类决策 N 个）
-4. 资产更新数量
-</output>
-```
+**完成验证**：确认 11-review.md / 12-asset-update.md / 13-retrospective.md / task-rules.md 已产出；获取修复/回退决策。
 
 等待 reviewAgent 完成。
 
@@ -382,10 +303,10 @@ Step 4: 选择最优路径并执行
 
 | 角色 | 负责人/Agent | 职责范围 | 产出物 |
 |------|------------|---------|--------|
-| 需求澄清 | specAgent | 目标定义、SDD 规格、上下文选择、风险识别 | 01-05 |
+| 需求澄清 | specAgent | 目标定义、SDD 规格、上下文选择、风险识别 | 01-05 + prompt-template |
 | AI 编码 | implAgent | TDD 开发、Prompt 优化、决策记录 | 06-08 + 代码 |
 | 测试验证 | testAgent | 测试矩阵设计、补充测试、覆盖率 | 09-10 + 测试代码 |
-| Review & 沉淀 | reviewAgent | 代码审查、资产维护、复盘 | 11-13 + 资产更新 |
+| Review & 沉淀 | reviewAgent | 代码审查、资产维护、复盘 | 11-13 + task-rules + 资产更新 |
 | 编排协调 | team | 调度、一致性检查、交付包装 | 14-15 |
 
 ## 二、协作资产一致性检查（自动化验证）
@@ -430,6 +351,7 @@ Step 4: 选择最优路径并执行
 | 03-sdd.md | ✅ | 规格清晰度 |
 | 04-boundary.md | ✅ | 修改边界约束 |
 | 05-risk.md | ✅ | 风险与验证计划 |
+| prompt-template.md | ✅ | AI 任务提示词（工具适配产物） |
 | 06-tdd-log.md | ✅ | TDD 流程证据 + 缺陷修复 |
 | 07-prompt-log.md | ✅ | Prompt 工程与纠偏 |
 | 08-ai-decisions.md | ✅ | 决策可追溯性 |
@@ -437,7 +359,8 @@ Step 4: 选择最优路径并执行
 | 10-test-report.md | ✅ | 测试运行报告 |
 | 11-review.md | ✅ | 代码审查 + 交叉 Review |
 | 12-asset-update.md | ✅ | AI 协作资产沉淀 |
-| 13-retrospective.md | ✅ | 个人复盘与改进 |
+| 13-retrospective.md | ✅ | 个人复盘与改进 + 新规则沉淀 |
+| task-rules.md | ✅ | 任务级规则（三层体系） |
 | 14-team.md | ✅ | 团队分工 + 一致性 + 贡献 |
 | 15-brief.md | ✅ | 答辩准备 |
 | CLAUDE.md 已更新 | ✅ | 分层清晰 + 内容完整 + 可维护 |
@@ -480,26 +403,52 @@ Step 4: 选择最优路径并执行
 - 用户不通过 → 根据反馈回到对应 Agent
 - **P2 决策**：如果 spec 定义了 P2（候选增强），向用户展示 P2 建议 + 触发条件，由用户决定是否继续
 
-### Step 8：最终质量检查
+### Step 8：最终质量检查（评分对齐验证）
 
-逐条核验交付物完整性：
+逐条核验，确保每个评分维度都有明确证据。以下清单对齐 team-score 全部评分子项。
 
-**基础门槛：**
-- [ ] 01-plan.md 包含目标澄清、上下文、阶段拆分、修改范围、验证计划
-- [ ] 04-boundary.md 有 allow/deny 两个方向
-- [ ] 测试存在且全部通过
-- [ ] 代码通过 `bun run ci:fix` 全量检查
-- [ ] AI 协作资产含代码级可执行规则
-- [ ] 11-review.md 包含风险分析
-- [ ] 08-ai-decisions.md 能解释关键决策
-- [ ] 12-asset-update.md 中每条新增规则包含「触发条件」和「创建理由」（非空泛描述）
+**硬门槛（7 项全部必须通过）：**
+- [ ] H1: 01-plan.md 包含目标澄清、上下文、阶段拆分、修改范围、验证计划
+- [ ] H2: 04-boundary.md 有 allow/deny 两个方向
+- [ ] H3: 测试存在且有补充（09-test-matrix.md + 10-test-report.md + 测试代码）
+- [ ] H4: 代码通过项目 CI 全量检查，测试全部通过
+- [ ] H5: CLAUDE.md 中每条规则包含「触发条件 + 可执行指令」，不是空话
+- [ ] H6: 05-risk.md 有风险识别 + 11-review.md §四 有剩余风险说明
+- [ ] H7: 08-ai-decisions.md 能解释关键决策 + 15-brief.md 有决策解释表
 
-**全流程产出完整性：**
-- [ ] 01-05：specAgent 产出齐全（规格、上下文、SDD、边界、风险）
-- [ ] 06-08：implAgent 产出齐全（TDD 证据、Prompt 记录、决策记录）
-- [ ] 09-10：testAgent 产出齐全（测试矩阵、测试报告）
-- [ ] 11-13：reviewAgent 产出齐全（Review、资产更新、复盘）
-- [ ] 14-15：team 产出齐全（团队协作、答辩提纲）
+**D1 AI 协作资产沉淀（25 分）：**
+- [ ] D1.1 分层组织：CLAUDE.md（项目级）+ 模块 CLAUDE.md（模块级）+ task-rules.md（任务级）三层齐全
+- [ ] D1.2 内容覆盖：业务术语、架构、代码结构、接口约定、编码规范、测试要求、Review 标准、交付要求 8 类有对应文件
+- [ ] D1.3 规则可执行：12-asset-update.md 中每条规则有「触发条件 + 可执行指令 + 示例」
+- [ ] D1.4 工具适配 ≥ 2 类：CLAUDE.md + (review-checklist / delivery-checklist / prompt-template.md) 至少 2 种
+- [ ] D1.5 可维护性：CLAUDE.md 有「资产维护机制」段落（更新触发条件 + 版本记录 + 规则管理层级）
+
+**D2 AI 协作任务规划（25 分）：**
+- [ ] D2.1 目标澄清：01-plan.md 有成功标准 ≥ 3 条 + 非目标 ≥ 2 条
+- [ ] D2.2 上下文选择：02-context.md 有必要引用 + 已排除上下文
+- [ ] D2.3 任务拆分：01-plan.md 有探索→方案→实现→验证→总结 ≥ 5 阶段
+- [ ] D2.4 执行约束：04-boundary.md 有 allow/deny + 依赖约束
+- [ ] D2.5 验证风控：05-risk.md 有验证计划（具体命令 + 预期结果）+ 停下来问人条件 ≥ 3 个
+
+**D3 AI 交付质量保障（27 分）：**
+- [ ] D3.1 SDD 规格：03-sdd.md 含输入/输出/边界/异常/验收 Checklist
+- [ ] D3.2 TDD 流程：06-tdd-log.md 含红-绿-重构循环记录
+- [ ] D3.3 测试覆盖：09-test-matrix.md 四维矩阵（功能/边界/异常/代码），不仅限 Happy Path
+- [ ] D3.4 缺陷修复：06-tdd-log.md + 11-review.md 有修复记录
+- [ ] D3.5 Review 风险：11-review.md 含五维度审查 + §四剩余风险
+
+**D4 AI 使用过程与复盘（13 分）：**
+- [ ] D4.1 Prompt 结构：07-prompt-log.md 每条含五要素（目标/上下文/边界/输出格式/验证标准）
+- [ ] D4.2 逐代纠偏：07-prompt-log.md 有纠偏前后对比
+- [ ] D4.3 过程可追溯：07-prompt-log.md + 08-ai-decisions.md 有关键过程记录
+- [ ] D4.4 个人复盘：13-retrospective.md 有 §二.5「本次沉淀的新规则」
+- [ ] D4.5 答辩准备：15-brief.md 有 Elevator Pitch + 决策解释 + 亮点 + 风险
+
+**D5 团队协作表现（10 分）：**
+- [ ] D5.1 角色分工：14-team.md §一 有角色 / 负责人 / 职责 / 产出物
+- [ ] D5.2 资产一致：14-team.md §二 一致性检查全部 ✅ 或已修复
+- [ ] D5.3 交叉 Review：14-team.md §四 真实问题占比 > 0
+- [ ] D5.4 个人贡献：14-team.md §三 每位贡献者有明确产出物和提交数
 
 如有未通过项，回到对应 Agent 补全。
 
@@ -508,6 +457,6 @@ Step 4: 选择最优路径并执行
 ```
 Team 全流程完成 ✅
 产出目录：docs/tasks/{slug}/
-文件总数：15 个文档 + 代码 + 测试 + 资产更新
-全部质量检查通过
+文件总数：17 个文档（01-15 + prompt-template + task-rules）+ 代码 + 测试 + 资产更新
+全部质量检查通过（对齐 team-score 全部评分子项）
 ```
