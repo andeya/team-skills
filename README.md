@@ -1,6 +1,6 @@
 # Team Skills
 
-AI 协作团队 Skills 仓库 — 托管 `team-` 前缀的一组关联 Skills，包括编排器、规格、实现、测试、审查五个 Agent Skills 及配套命令。
+AI 协作团队 Skills 仓库 — 托管 `team-` 前缀的一组关联 Skills，包括编排器、规格、实现、测试、审查、评分六个 Agent Skills 及配套命令。
 
 ## Skills 清单
 
@@ -13,6 +13,7 @@ AI 协作团队 Skills 仓库 — 托管 `team-` 前缀的一组关联 Skills，
 | team-impl-agent | `skills/team-impl-agent/` | 实现 Agent — TDD 开发，产出代码 + 全过程证据链 |
 | team-test-agent | `skills/team-test-agent/` | 测试 Agent — 四维测试覆盖 |
 | team-review-agent | `skills/team-review-agent/` | 审查 Agent — 代码 Review + 风险识别 + AI 协作资产维护 |
+| team-score | `skills/team-score/` | 评分 Skill — 按 AI 协作评分标准扫描项目并输出评分报告 |
 | team-setup | `.claude/commands/team-setup.md` | 安装命令 — 将本仓库安装到 `~/.agents/skills/` |
 | team-pull | `.claude/commands/team-pull.md` | 拉取命令 — git pull 更新 Skills |
 | team-push | `.claude/commands/team-push.md` | 推送命令 — git commit + push 提交变更 |
@@ -42,6 +43,7 @@ AI 协作团队 Skills 仓库 — 托管 `team-` 前缀的一组关联 Skills，
 ├── team-impl-agent/    → skills/team-impl-agent/      (Agent Skill)
 ├── team-test-agent/    → skills/team-test-agent/      (Agent Skill)
 ├── team-review-agent/  → skills/team-review-agent/    (Agent Skill)
+├── team-score/         → skills/team-score/           (Agent Skill)
 ├── team-setup/         → .claude/commands/team-setup.md  (Command Skill)
 ├── team-pull/          → .claude/commands/team-pull.md   (Command Skill)
 └── team-push/          → .claude/commands/team-push.md   (Command Skill)
@@ -69,6 +71,7 @@ ln -sf "$PWD/skills/team-spec-agent" "$TARGET/team-spec-agent"
 ln -sf "$PWD/skills/team-impl-agent" "$TARGET/team-impl-agent"
 ln -sf "$PWD/skills/team-test-agent" "$TARGET/team-test-agent"
 ln -sf "$PWD/skills/team-review-agent" "$TARGET/team-review-agent"
+ln -sf "$PWD/skills/team-score" "$TARGET/team-score"
 
 # 安装 Command Skills（作为 Skill，Cursor 可发现）
 for cmd in team-setup team-pull team-push; do
@@ -129,7 +132,9 @@ team-skills/
 │   │   └── SKILL.md
 │   ├── team-test-agent/         # 测试 Agent Skill
 │   │   └── SKILL.md
-│   └── team-review-agent/       # 审查 Agent Skill
+│   ├── team-review-agent/       # 审查 Agent Skill
+│   │   └── SKILL.md
+│   └── team-score/              # 评分 Skill
 │       └── SKILL.md
 └── README.md
 ```

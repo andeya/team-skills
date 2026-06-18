@@ -10,7 +10,7 @@ argument-hint: [target-dir]
 将本仓库的所有内容软链接到目标目录，使 Claude Code 和 Cursor 都能发现并使用，且后续通过 `/team-pull` 即可同步更新。
 
 安装内容：
-- `skills/*` → `{target-dir}/`（Agent Skills）
+- `skills/*` → `{target-dir}/`（Agent Skills，含 team-score 评分 Skill）
 - `.claude/commands/*` → `{target-dir}/{name}/SKILL.md`（Commands 也作为 Skill 安装，Cursor 可发现）
 - `.claude/commands/*` → `~/.claude/commands/`（兼容 Claude Code 斜杠命令）
 
