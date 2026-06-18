@@ -1,26 +1,120 @@
 # Team Skills
 
-AI 协作团队 Skills 仓库 — 托管 `team-` 前缀的一组关联 Skills，包括编排器、规格、实现、测试、审查、评分六个 Agent Skills 及配套命令。
+**一套 Spec-Driven 的 AI 协作开发框架** — 让 AI Agent 团队按有向图流程完成从需求到交付的全闭环，内置质量门禁和人类介入点，确保交付物可验证、可追溯、可评分。
+
+## 为什么需要 Team Skills？
+
+| 痛点                        | 现状                                   | Team Skills 方案                                                   |
+| --------------------------- | -------------------------------------- | ------------------------------------------------------------------ |
+| AI 写代码没有规格约束       | 给 AI 一句话就开始写，产出随机         | **Spec-Driven**：先产出 SDD 规格（七部分完整），再按规格写代码     |
+| 发现问题只能从头来          | 线性流水线，Review 发现 bug 只能人工修 | **有向图回退**：testAgent/reviewAgent 发现问题自动回退到对应 Agent |
+| AI 自称"测试通过"但实际没跑 | 无法验证 AI 的声明                     | **5 步验证协议**：必须执行命令、读完整输出、检查退出码             |
+| 不知道什么时候该让人介入    | AI 要么全自动要么全手动                | **4 个结构化介入点**（H1-H4）：确认目标→确认规格→处理阻塞→验收交付 |
+| 每次协作都是从零开始        | 经验不沉淀，规则不积累                 | **三层资产体系**：项目级→模块级→任务级规则持续沉淀                 |
+| 交付质量无法量化评估        | 凭感觉判断"做得好不好"                 | **100 分制评分**：7 硬门槛 + 5 维度 25 子项，每项有可检查证据      |
+
+## 核心架构
+
+```
+用户提出需求
+    │
+    ▼
+┌─────────────────────────┐
+│ H1: 人类确认目标理解      │ ← 人类介入点 #1
+└────────┬────────────────┘
+         ▼
+┌─────────────────────────┐
+│ specAgent — 规格制定      │  产出 01-05 + prompt-template
+│ Socratic 提问 → SDD 规格 │  支持完整 SDD / Delta Spec
+└────────┬────────────────┘
+         ▼
+┌─────────────────────────┐
+│ H2: 人类确认规格方案      │ ← 人类介入点 #2
+└────────┬────────────────┘
+         ▼
+┌─────────────────────────┐
+│ implAgent — TDD 实现      │  红-绿-重构循环
+│ 增量提交 + 决策记录       │  产出 06-08 + 代码
+└────────┬────────────────┘
+         ▼
+┌─────────────────────────┐     ┌──── 发现 bug → 回退 implAgent
+│ testAgent — 四维测试      │────┤
+│ 功能/边界/异常/代码分支   │     └──── spec 遗漏 → 回退 specAgent
+└────────┬────────────────┘
+         ▼
+┌─────────────────────────┐     ┌──── P0/P1 → 回退 implAgent
+│ reviewAgent — 五维审查    │────┤
+│ 资产沉淀 + 复盘          │     └──── spec 遗漏 → 回退 specAgent
+└────────┬────────────────┘
+         ▼
+┌─────────────────────────┐
+│ H4: 人类验收交付物        │ ← 人类介入点 #4
+└─────────────────────────┘
+```
+
+> H3（人类介入点 #3）在任何阶段发现阻塞或需要人类决策时触发。
+
+## 关键特性
+
+### Spec-Driven 开发
+
+- SDD 规格包含七部分：背景/业务规则/设计决策/数据流/输入输出/边界条件/异常场景
+- 业务规则用 RFC 2119 标记强度（MUST/SHOULD/MAY），关键场景用 Given/When/Then 格式
+- 修改类任务使用 Delta Spec（ADDED/MODIFIED/REMOVED），减少 token 消耗
+
+### 质量门禁
+
+- **8 条 Constitutional Rules** — 不可被任何任务覆盖的硬约束
+- **5 步验证协议** — 杜绝"我觉得测试通过了"的虚假声明
+- **反规避条款** — 预判 6 种常见借口并逐一反驳
+- **回退次数上限** — 同一阶段 ≤ 2 次回退，超过强制人类介入
+
+### 完整产出链
+
+每个任务产出 17 个结构化文档 + 代码 + 测试：
+
+| 阶段 | 产出                                                                    | 负责 Agent   |
+| ---- | ----------------------------------------------------------------------- | ------------ |
+| 规格 | 01-plan / 02-context / 03-sdd / 04-boundary / 05-risk / prompt-template | specAgent    |
+| 实现 | 06-tdd-log / 07-prompt-log / 08-ai-decisions + 代码                     | implAgent    |
+| 测试 | 09-test-matrix / 10-test-report + 补充测试                              | testAgent    |
+| 审查 | 11-review / 12-asset-update / 13-retrospective / task-rules             | reviewAgent  |
+| 交付 | 14-team / 15-brief                                                      | orchestrator |
+
+### 评分体系
+
+内置 `team-score` 评分 Skill，按 100 分制评估项目的 AI 协作成熟度：
+
+- **7 项硬门槛**：任一不过则整体不通过
+- **5 个维度**：资产沉淀(25) + 任务规划(25) + 交付质量(27) + 过程复盘(13) + 团队协作(10)
+
+## 体系来源
+
+Team Skills 融合了业界两大 AI 协作框架的精华，并在此基础上构建了独有的有向图回退和评分追溯体系：
+
+| 来源                      | 吸收的精华                                                          |
+| ------------------------- | ------------------------------------------------------------------- |
+| **SuperPowers** (obra)    | 5 步验证协议、四态完成状态、反规避条款、Socratic 探索、进度账本     |
+| **OpenSpec** (Fission AI) | Delta Spec 增量规格、RFC 2119 + Given/When/Then、归档与知识合并     |
+| **独创**                  | 有向图回退、评分追溯矩阵、消费方契约原则、结构化人类介入点（H1-H4） |
 
 ## Skills 清单
 
-所有 Skills 统一使用 `team-` 前缀命名，便于在 `~/.agents/skills/` 中分组识别。
+| Skill               | 说明                                            |
+| ------------------- | ----------------------------------------------- |
+| `team-orchestrator` | 编排器 — 有向图流程调度，4 个人类介入点         |
+| `team-spec-agent`   | 规格 Agent — Socratic 需求澄清 + SDD 规格产出   |
+| `team-impl-agent`   | 实现 Agent — TDD 红-绿-重构循环开发             |
+| `team-test-agent`   | 测试 Agent — 四维测试矩阵 + 补充测试 + 回退路由 |
+| `team-review-agent` | 审查 Agent — 五维 Review + 资产沉淀 + 复盘      |
+| `team-score`        | 评分 Skill — 100 分制扫描评估                   |
+| `team-setup`        | 安装命令 — 一键安装到 `~/.agents/skills/`       |
+| `team-pull`         | 拉取本仓库 — git pull 更新                      |
+| `team-push`         | 提交推送本仓库 — git commit + push              |
 
-| Skill | 目录 | 说明 |
-|-------|------|------|
-| team-orchestrator | `skills/team-orchestrator/` | Team 编排器 — 串联 spec→impl→test→review 四个 Agent |
-| team-spec-agent | `skills/team-spec-agent/` | 规格制定 Agent — 将需求转化为完整规格文档 |
-| team-impl-agent | `skills/team-impl-agent/` | 实现 Agent — TDD 开发，产出代码 + 全过程证据链 |
-| team-test-agent | `skills/team-test-agent/` | 测试 Agent — 四维测试覆盖 |
-| team-review-agent | `skills/team-review-agent/` | 审查 Agent — 代码 Review + 风险识别 + AI 协作资产维护 |
-| team-score | `skills/team-score/` | 评分 Skill — 按 AI 协作评分标准扫描项目并输出评分报告 |
-| team-setup | `.claude/commands/team-setup.md` | 安装命令 — 将本仓库安装到 `~/.agents/skills/` |
-| team-pull | `.claude/commands/team-pull.md` | 拉取命令 — git pull 更新 Skills |
-| team-push | `.claude/commands/team-push.md` | 推送命令 — git commit + push 提交变更 |
+## 快速开始
 
-## 安装
-
-### 方式一：使用 /team-setup 命令（推荐）
+### 安装
 
 在 Claude Code 中执行：
 
@@ -28,113 +122,78 @@ AI 协作团队 Skills 仓库 — 托管 `team-` 前缀的一组关联 Skills，
 /team-setup
 ```
 
-将本仓库所有内容安装到 `~/.agents/skills/`。也可指定目标目录：
-
-```
-/team-setup ~/.claude/skills
-```
-
-安装后效果（以默认目录为例）：
+安装后目录结构：
 
 ```
 ~/.agents/skills/
-├── team-orchestrator/  → skills/team-orchestrator/    (Agent Skill)
-├── team-spec-agent/    → skills/team-spec-agent/      (Agent Skill)
-├── team-impl-agent/    → skills/team-impl-agent/      (Agent Skill)
-├── team-test-agent/    → skills/team-test-agent/      (Agent Skill)
-├── team-review-agent/  → skills/team-review-agent/    (Agent Skill)
-├── team-score/         → skills/team-score/           (Agent Skill)
-├── team-setup/         → .claude/commands/team-setup.md  (Command Skill)
-├── team-pull/          → .claude/commands/team-pull.md   (Command Skill)
-└── team-push/          → .claude/commands/team-push.md   (Command Skill)
+├── team-orchestrator/    (编排器)
+├── team-spec-agent/      (规格 Agent)
+├── team-impl-agent/      (实现 Agent)
+├── team-test-agent/      (测试 Agent)
+├── team-review-agent/    (审查 Agent)
+└── team-score/           (评分 Skill)
 
-~/.claude/commands/          (兼容 Claude Code 斜杠命令)
-├── team-setup.md       → .claude/commands/team-setup.md
-├── team-pull.md        → .claude/commands/team-pull.md
-└── team-push.md        → .claude/commands/team-push.md
+~/.claude/commands/
+├── team-setup.md         (安装)
+├── team-pull.md          (拉取)
+└── team-push.md          (推送)
 ```
 
-### 方式二：手动安装
+### 使用
 
-```bash
-# 克隆仓库
-git clone <repo-url> ~/team-skills
-cd ~/team-skills
-
-# 定义目标目录
-TARGET=~/.agents/skills
-mkdir -p "$TARGET"
-
-# 安装 Agent Skills
-ln -sf "$PWD/skills/team-orchestrator" "$TARGET/team-orchestrator"
-ln -sf "$PWD/skills/team-spec-agent" "$TARGET/team-spec-agent"
-ln -sf "$PWD/skills/team-impl-agent" "$TARGET/team-impl-agent"
-ln -sf "$PWD/skills/team-test-agent" "$TARGET/team-test-agent"
-ln -sf "$PWD/skills/team-review-agent" "$TARGET/team-review-agent"
-ln -sf "$PWD/skills/team-score" "$TARGET/team-score"
-
-# 安装 Command Skills（作为 Skill，Cursor 可发现）
-for cmd in team-setup team-pull team-push; do
-  mkdir -p "$TARGET/$cmd"
-  ln -sf "$PWD/.claude/commands/$cmd.md" "$TARGET/$cmd/SKILL.md"
-done
-
-# 安装 Commands（兼容 Claude Code 斜杠命令）
-mkdir -p ~/.claude/commands
-ln -sf "$PWD/.claude/commands/team-setup.md" ~/.claude/commands/team-setup.md
-ln -sf "$PWD/.claude/commands/team-pull.md" ~/.claude/commands/team-pull.md
-ln -sf "$PWD/.claude/commands/team-push.md" ~/.claude/commands/team-push.md
-```
-
-## 使用
-
-### 更新 Skills
-
-拉取最新 Skills：
+**全自动编排**（推荐）：
 
 ```
-/team-pull
+/team-orchestrator 实现用户登录功能
 ```
 
-### 提交 Skills 变更
+编排器自动调度 specAgent → implAgent → testAgent → reviewAgent，在 H1-H4 暂停等待确认。
 
-提交并推送本地 Skills 变更：
+**手动分步**：
 
 ```
-/team-push "feat: add new validation rules"
+/team-spec-agent 实现用户登录功能    # 产出规格
+/team-impl-agent 0001-user-login     # TDD 实现
+/team-test-agent 0001-user-login     # 测试补充
+/team-review-agent 0001-user-login   # 审查沉淀
+/team-orchestrator 0001-user-login   # 补全团队证据
 ```
 
-如不提供 commit message，默认使用 `chore: update team skills [YYYY-MM-DD]`。
+**评分**：
 
-## 命令参考
+```
+/team-score
+```
 
-| 命令 | 说明 |
-|------|------|
-| `/team-setup [dir]` | 将本仓库安装到指定目录（默认 `~/.agents/skills`） |
-| `/team-pull` | 执行 git pull 拉取最新 Skills |
-| `/team-push [msg]` | 执行 git commit + git push 提交 Skills 变更 |
+**更新 / 推送**：
 
-## 目录结构
+```
+/team-pull                           # 拉取最新
+/team-push "feat: add login skill"   # 提交变更
+```
+
+## 兼容性
+
+| 工具        | 调用方式                | 自动发现机制          |
+| ----------- | ----------------------- | --------------------- |
+| Claude Code | `/team-{name}` 斜杠命令 | `~/.claude/commands/` |
+| Cursor      | Skill 自动发现          | `~/.agents/skills/`   |
+
+## 项目结构
 
 ```
 team-skills/
-├── .claude/
-│   └── commands/
-│       ├── team-setup.md        # /team-setup 命令
-│       ├── team-pull.md         # /team-pull 命令
-│       └── team-push.md         # /team-push 命令
-├── skills/
-│   ├── team-orchestrator/       # Team 编排器 Skill
-│   │   └── SKILL.md
-│   ├── team-spec-agent/         # 规格制定 Agent Skill
-│   │   └── SKILL.md
-│   ├── team-impl-agent/         # 实现 Agent Skill
-│   │   └── SKILL.md
-│   ├── team-test-agent/         # 测试 Agent Skill
-│   │   └── SKILL.md
-│   ├── team-review-agent/       # 审查 Agent Skill
-│   │   └── SKILL.md
-│   └── team-score/              # 评分 Skill
-│       └── SKILL.md
-└── README.md
+├── CLAUDE.md                         # Spec-Driven 通用最佳实践
+├── README.md
+├── .claude/commands/
+│   ├── team-setup.md                 # /team-setup 安装命令
+│   ├── team-pull.md                  # /team-pull 拉取命令
+│   └── team-push.md                  # /team-push 推送命令
+└── skills/
+    ├── team-orchestrator/SKILL.md    # 编排器
+    ├── team-spec-agent/SKILL.md      # 规格 Agent
+    ├── team-impl-agent/SKILL.md      # 实现 Agent
+    ├── team-test-agent/SKILL.md      # 测试 Agent
+    ├── team-review-agent/SKILL.md    # 审查 Agent
+    └── team-score/SKILL.md           # 评分 Skill
 ```
