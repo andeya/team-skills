@@ -202,7 +202,7 @@ Step 4: 选择最优路径并执行
 ### Step 1：初始化 + H1 人类确认
 
 1. 从用户参数提取任务描述
-2. 生成 `{slug}`（kebab-case，≤40 字符）
+2. 生成 `{slug}`：扫描 `docs/tasks/` 已有目录，取最大序号 +1（从 `0001` 起），拼接为 `{NNNN}-{关键词}`（关键词 kebab-case，整体 ≤ 50 字符），例如 `0001-add-tooltip`、`0012-refactor-auth`
 3. 创建 `docs/tasks/{slug}/` 目录
 4. 记录启动时间
 5. **向用户展示任务理解 + 初步方案 + 风险预判 + 分期建议**，等待确认
@@ -251,9 +251,10 @@ Step 4: 选择最优路径并执行
 
 等待 testAgent 完成。
 
-**回退检查**：如果 testAgent 报告发现 bug 或 spec 遗漏：
-- bug → 回到 Step 3 重新调度 implAgent，传递 bug 上下文
-- spec 遗漏 → 回到 Step 2 重新调度 specAgent，传递遗漏上下文
+**回退检查**（遵守 Constitutional Rule #7：同一阶段回退 ≤ 2 次）：如果 testAgent 报告发现 bug 或 spec 遗漏：
+- bug → 回到 Step 3 重新调度 implAgent，传递 bug 上下文（累计回退计数 +1）
+- spec 遗漏 → 回到 Step 2 重新调度 specAgent，传递遗漏上下文（累计回退计数 +1）
+- 同一阶段第 3 次回退 → 强制触发 H3，由人类决定是否继续
 - **Kill Switch**：如果发现任务不可行（如依赖不可用、技术方案不可行）→ 触发 H3 让人类决策是否终止
 - 人类需决策 → 触发 H3
 
@@ -269,9 +270,10 @@ Step 4: 选择最优路径并执行
 
 等待 reviewAgent 完成。
 
-**回退检查**：如果 reviewAgent 报告发现 P0/P1 bug 或 spec 遗漏：
-- bug → 回到 Step 3 重新调度 implAgent，传递 bug 上下文
-- spec 遗漏 → 回到 Step 2 重新调度 specAgent，传递遗漏上下文
+**回退检查**（遵守 Constitutional Rule #7：同一阶段回退 ≤ 2 次）：如果 reviewAgent 报告发现 P0/P1 bug 或 spec 遗漏：
+- bug → 回到 Step 3 重新调度 implAgent，传递 bug 上下文（累计回退计数 +1）
+- spec 遗漏 → 回到 Step 2 重新调度 specAgent，传递遗漏上下文（累计回退计数 +1）
+- 同一阶段第 3 次回退 → 强制触发 H3，由人类决定是否继续
 - **Kill Switch**：如果发现任务不可行 → 触发 H3 让人类决策是否终止
 - 人类需决策 → 触发 H3
 
@@ -281,8 +283,8 @@ Step 4: 选择最优路径并执行
 
 #### 6.1 一致性自动化检查（先执行再写入 14-team.md）
 
-1. **术语一致性**：从 `02-context.md` 提取术语表，grep 检查 01-15 所有文件中是否使用了不一致的别名
-2. **文档格式**：检查 01-15 所有文件是否遵循统一的 Markdown 标题层级（# > ## > ###）
+1. **术语一致性**：从 `02-context.md` 提取术语表，grep 检查任务目录下所有文件中是否使用了不一致的别名
+2. **文档格式**：检查任务目录下所有文件是否遵循统一的 Markdown 标题层级（# > ## > ###）
 3. **commit message 规范**：`git log --oneline` 检查本次任务所有 commit 是否遵循 `type: description`
 4. **CLAUDE.md 同步**：检查 reviewAgent 新增的规则是否与已有规则矛盾
 5. **模块 CLAUDE.md 风格**：对比多个模块级 CLAUDE.md 是否结构一致
@@ -314,11 +316,11 @@ Step 4: 选择最优路径并执行
 | 检查项 | 验证方式 | 结果 | 修复说明 |
 |--------|---------|------|---------|
 | 术语一致性 | grep 02-context 术语 vs 全部文件 | ✅/⚠️ | {不一致处已修复} |
-| 文档标题层级 | 检查 01-15 的 Markdown 结构 | ✅/⚠️ | ... |
+| 文档标题层级 | 检查任务目录下所有文件的 Markdown 结构 | ✅/⚠️ | ... |
 | commit message | git log 检查 type: 前缀 | ✅/⚠️ | ... |
 | CLAUDE.md 规则无矛盾 | diff 新增 vs 已有规则 | ✅/⚠️ | ... |
 | 模块 CLAUDE.md 结构统一 | 对比各模块 CLAUDE.md 章节 | ✅/⚠️ | ... |
-| 各 Agent 产出无遗漏 | 检查 01-13 文件完整性 | ✅/⚠️ | ... |
+| 各 Agent 产出无遗漏 | 检查全部文档文件完整性 | ✅/⚠️ | ... |
 
 （对发现的不一致立即修复）
 

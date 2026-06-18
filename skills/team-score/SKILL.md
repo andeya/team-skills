@@ -113,7 +113,7 @@ description: 根据 AI 协作评分标准，快速扫描项目并输出结构化
 - 查找所有 CLAUDE.md / AGENTS.md / .cursorrules / .cursor/rules / .copilot-instructions.md / docs/ai/* 文件
 - 查找任务级规则文件：docs/tasks/*/task-rules.md
 - 检查内容是否分层（项目级 vs 模块级 vs 任务级）
-- 检查是否覆盖：业务术语表、系统架构、代码结构、接口约定、编码规范、测试规范、Review Checklist、Delivery Checklist、交付要求
+- 检查是否覆盖：业务术语表、系统架构（AGENTS.md / docs/architecture.md）、代码结构（AGENTS.md / CLAUDE.md）、接口约定、编码规范、测试规范、Review Checklist、Delivery Checklist、交付要求
 - 检查规则是否具体可执行（有无禁止项、必选项、示例、编码方式）
 - 检查有无 Prompt 模板（docs/tasks/*/prompt-template.md）、检查清单等工具适配产物（≥ 2 类）
 - 检查有无维护说明、版本记录、集中新增规则机制（CLAUDE.md 中的「资产维护机制」段落）

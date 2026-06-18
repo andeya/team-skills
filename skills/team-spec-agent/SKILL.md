@@ -51,7 +51,7 @@ Step 5: 我的理解对吗？（→ 展示给用户确认）
 
 ## 产出目录
 
-`docs/tasks/{slug}/`，其中 `{slug}` 从任务描述提取关键词，kebab-case，≤40 字符。若目录已存在，在 slug 末尾加序号。
+`docs/tasks/{slug}/`，其中 `{slug}` 格式为 `{NNNN}-{关键词}`：扫描 `docs/tasks/` 已有目录取最大序号 +1（从 `0001` 起），关键词从任务描述提取，kebab-case，整体 ≤ 50 字符。例如 `0001-add-tooltip`、`0012-refactor-auth`。
 
 ## 执行步骤
 
