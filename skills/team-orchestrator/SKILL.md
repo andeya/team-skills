@@ -1,8 +1,6 @@
-------
+---
 name: team-orchestrator
 description: Team 编排器 — 有向图流程编排，支持灵活回退和人类介入，确保交付质量与协作闭环
----
-
 ---
 
 # Team 编排器
@@ -70,10 +68,10 @@ description: Team 编排器 — 有向图流程编排，支持灵活回退和人
 在每次调度 Agent 或触发人类介入点之前，按以下步骤推理：
 
 ```
-Step 1: 当前状态是什么？（哪个 Agent 刚完成？产出是什么？）
-Step 2: 下一步有哪些选项？（继续下一个 Agent / 回退 / Kill Switch / 人类介入）
-Step 3: 每个选项的依据是什么？（产出质量检查结果 / 回退条件 / Constitutional Rules）
-Step 4: 选择最优路径并执行
+Step 1: 当前状态是什么？（哪个 Agent 刚完成？产出状态是 DONE/DONE_WITH_CONCERNS/NEEDS_CONTEXT/BLOCKED？）
+Step 2: 产出质量检查——文件是否齐全？自检是否通过？有无 P0/P1 问题？
+Step 3: 下一步路由——根据 Step 2 结果选择：继续下一个 Agent / 回退（检查回退计数）/ Kill Switch / H3 人类介入
+Step 4: 执行选择并记录路由决策理由
 ```
 
 ### Constitutional Rules（不可覆盖的硬约束）
@@ -230,9 +228,9 @@ Step 4: 选择最优路径并执行
 ### Step 1：初始化 + H1 人类确认
 
 1. 从用户参数提取任务描述
-2. 生成 `{slug}`：扫描 `docs/tasks/` 已有目录，取最大序号 +1（从 `0001` 起），拼接为 `{NNNN}-{关键词}`（关键词 kebab-case，整体 ≤ 50 字符），例如 `0001-add-tooltip`、`0012-refactor-auth`
+2. 生成 `{slug}`：扫描 `docs/tasks/` 已有目录（如目录不存在则创建），取最大序号 +1（从 `0001` 起），拼接为 `{NNNN}-{关键词}`（关键词 kebab-case，整体 ≤ 50 字符），例如 `0001-add-tooltip`、`0012-refactor-auth`
 3. 创建 `docs/tasks/{slug}/` 目录
-4. **进度账本检查**：如果 `docs/tasks/progress.md` 不存在则创建（含表头）；读取 progress.md 确认 `{slug}` 未被重复派发
+4. **进度账本检查**：如果 `docs/tasks/progress.md` 不存在则创建（含表头）；读取 progress.md 确认 `{slug}` 未被重复派发（如已存在且状态为 DONE，提示用户该任务已完成，询问是否新建变体任务）
 5. 记录启动时间
 6. **向用户展示任务理解 + 初步方案 + 风险预判 + 分期建议**，等待确认
 7. 用户确认后继续，否则根据反馈调整
@@ -247,9 +245,7 @@ Step 4: 选择最优路径并执行
 - **产出目录**：`docs/tasks/{slug}/`
 - **约束**：遵守 team-spec-agent Skill 的 Phase 1-3 步骤；所有结论标注来源标签；产出前执行自检清单
 
-**完成验证**：确认 6 个文件已产出（01-plan.md / 02-context.md / 03-sdd.md / 04-boundary.md / 05-risk.md / prompt-template.md），自检清单通过率 ≥ 17/19（清单定义见 team-spec-agent Skill §自检清单）。
-
-等待 specAgent 完成，验证文件都已产出。
+**完成验证**：确认 6 个文件已产出（01-plan.md / 02-context.md / 03-sdd.md / 04-boundary.md / 05-risk.md / prompt-template.md），自检清单全部通过（19/19，清单定义见 team-spec-agent Skill §自检清单）。
 
 ### Step 2.5：H2 人类确认规格 + Kill Switch 检查
 
@@ -453,7 +449,7 @@ Step 4: 选择最优路径并执行
 用户验收通过后，执行以下知识沉淀：
 
 1. **规则合并**：将 `docs/tasks/{slug}/task-rules.md` 中标记为"可泛化"的规则，合并到项目级 CLAUDE.md 或模块级 CLAUDE.md
-2. **SDD 快照归档**：如果项目维护了 `docs/specs/` 目录，将本次 `03-sdd.md` 的关键规格合并进去（增量模式则执行 delta 合并：ADDED 追加、MODIFIED 替换、REMOVED 删除）
+2. **SDD 快照归档**：如果项目维护了 `docs/specs/` 目录，将本次 `03-sdd.md` 的关键规格合并进去（增量模式则执行 delta 合并：ADDED 追加、MODIFIED 替换、REMOVED 删除；如有冲突以本次 SDD 为准并在 commit message 中注明）
 3. **进度账本更新**：在 `docs/tasks/progress.md` 追加本次任务记录
 
 ```markdown

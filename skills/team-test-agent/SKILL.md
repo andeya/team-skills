@@ -1,8 +1,6 @@
-------
+---
 name: team-test-agent
 description: 测试 Agent — 四维测试矩阵 + 补充测试 + 回退路由，发现 bug 回退 impl，发现 spec 遗漏回退 spec
----
-
 ---
 
 # testAgent — 测试 Agent
@@ -59,7 +57,7 @@ Step 5: 全量测试通过了吗？
 
 ## 输入
 
-1. 读取 `docs/tasks/{slug}/` 下的 01-plan.md、03-sdd.md、04-boundary.md、05-risk.md、06-tdd-log.md
+1. 读取 `docs/tasks/{slug}/` 下的 01-plan.md、02-context.md（术语对齐）、03-sdd.md、04-boundary.md、05-risk.md、06-tdd-log.md
 2. 读取 implAgent 的代码变更（`git diff` 或查看实现文件）
 3. 读取 implAgent 已有的测试文件
 4. 读取项目规范：`CLAUDE.md`、`AGENTS.md`
@@ -75,7 +73,7 @@ Step 5: 全量测试通过了吗？
 2. **读取 TDD 日志**：从 `06-tdd-log.md` 了解 implAgent 已覆盖的测试
 3. **读取代码**：查看 implAgent 的实际实现，检查是否有未测试的分支
 4. **读取边界**：从 `04-boundary.md` 确认是否有需要验证的兼容性约束
-5. **识别 GWT 场景**：如果 SDD §二 包含 Given/When/Then 场景，每个场景必须对应至少一个测试用例
+5. **识别 GWT 场景**：如果 SDD §二 包含 Given/When/Then 场景，每个场景必须对应至少一个测试用例；如果 SDD 使用其他格式描述业务规则，则从业务规则中提取等价的测试场景
 
 > **禁止**：只检查测试文件不看 SDD 规格 | 只检查 Happy Path 忽略边界异常 | 发现 spec 遗漏自行决定实现（应回退 specAgent） | 修改测试让它通过
 
@@ -105,13 +103,7 @@ Step 5: 全量测试通过了吗？
 3. 记录测试结果到 `10-test-report.md`
 4. 如果测试失败，分析失败原因——区分真实 bug、环境问题和测试隔离问题
 
-> **验证协议**（声明"测试通过"前必须执行）：
->
-> 1. 确定验证命令（参考 CLAUDE.md / 05-risk.md §一）
-> 2. 执行命令，不使用缓存结果
-> 3. 完整阅读输出（不截断）
-> 4. 检查退出码 = 0 且失败数 = 0
-> 5. 只有全部通过才可声明"✅ 通过"，否则记录失败详情
+> **验证协议**（声明"测试通过"前必须执行 CLAUDE.md §三 验证协议的 5 个步骤）
 
 ### Phase 5：回退路由决策
 
@@ -232,4 +224,5 @@ testAgent 完成
 全量测试：{N} 通过，{N} 失败
 路由决策：→ {reviewAgent / implAgent / specAgent / H3}
 如有保留意见或阻塞，列出具体内容
+→ 编排器将根据路由决策调度下一个 Agent
 ```
