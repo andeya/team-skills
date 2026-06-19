@@ -38,7 +38,7 @@ description: Team 编排器 — 有向图流程编排，支持灵活回退和人
   D3.4 缺陷修复   → 06-tdd-log.md + 11-review.md
   D3.5 Review风险 → 11-review.md §四
   D4.1 Prompt结构 → 07-prompt-log.md（五要素）
-  D4.2 逐代纠偏   → 07-prompt-log.md（前后对比）
+  D4.2 迭代纠偏   → 07-prompt-log.md（前后对比）
   D4.3 过程可追溯 → 07-prompt-log.md + 08-ai-decisions.md
   D4.4 个人复盘   → 13-retrospective.md §二.5 新规则沉淀
   D4.5 答辩表现   → 15-brief.md
@@ -489,7 +489,7 @@ Step 4: 执行选择并记录路由决策理由
 - [ ] D1.2 内容覆盖：业务术语、架构、代码结构、接口约定、编码规范、测试要求、Review 标准、交付要求 8 类有对应文件
 - [ ] D1.3 规则可执行：12-asset-update.md 中每条规则有「触发条件 + 可执行指令 + 示例」
 - [ ] D1.4 工具适配 ≥ 2 类：CLAUDE.md + (review-checklist / delivery-checklist / prompt-template.md) 至少 2 种
-- [ ] D1.5 可维护性：CLAUDE.md 有「资产维护机制」段落（更新触发条件 + 版本记录 + 规则管理层级）
+- [ ] D1.5 可维护性：CLAUDE.md 有「资产维护机制」段落（更新触发条件 + 版本记录 + 复盘中新增规则）
 
 **D2 AI 协作任务规划（25 分）：**
 
@@ -510,7 +510,7 @@ Step 4: 执行选择并记录路由决策理由
 **D4 AI 使用过程与复盘（13 分）：**
 
 - [ ] D4.1 Prompt 结构：07-prompt-log.md 每条含五要素（目标/上下文/边界/输出格式/验证标准）
-- [ ] D4.2 逐代纠偏：07-prompt-log.md 有纠偏前后对比
+- [ ] D4.2 迭代纠偏：07-prompt-log.md 有纠偏前后对比
 - [ ] D4.3 过程可追溯：07-prompt-log.md + 08-ai-decisions.md 有关键过程记录
 - [ ] D4.4 个人复盘：13-retrospective.md 有 §二.5「本次沉淀的新规则」
 - [ ] D4.5 答辩准备：15-brief.md 有 Elevator Pitch + 决策解释 + 亮点 + 风险
