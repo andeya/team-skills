@@ -353,33 +353,29 @@ Team Skills 融合了业界多个 AI 协作框架的精华：
 
 ### 前置要求
 
-- Python >= 3.8（内置，无需安装依赖）
+- Node.js >= 18
 
-### 常用命令
-
-```bash
-make lint       # 检查 Markdown 格式
-make format     # 自动修复 Markdown 格式
-make check      # 完整本地检查
-```
-
-### Git Hooks（推荐）
-
-提交前自动格式化 Markdown 文件，防止格式问题进入仓库：
+### 安装依赖
 
 ```bash
-make setup
+make deps     # 或: npm install
 ```
 
-这会将 `make format` 注册为 pre-commit hook，每次 `git commit` 前自动执行。
+### 开发命令
+
+```bash
+make lint     # 检查 Markdown 格式（CI 同款）
+make format   # 自动修复 Markdown 格式
+make setup    # 安装 git hooks（提交前自动 format）
+```
 
 ### CI 流程
 
-提交后 GitHub Actions 会自动运行：
+提交后 GitHub Actions 自动运行：
 
 | Job | 命令 | 说明 |
 |-----|------|------|
-| Markdown Lint | markdownlint-cli2 | Markdown 格式检查（GitHub Action） |
+| Markdown Lint | `npm run lint` | 与本地 `make lint` 完全一致 |
 | Check Links | lychee | 外部链接有效性 |
 | Verify Skill Structure | bash | SKILL.md 结构完整性 |
 | Verify Shared Rules | bash | 共享规则文件完整性 |

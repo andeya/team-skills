@@ -1,0 +1,10 @@
+{
+  "private": true,
+  "scripts": {
+    "lint": "markdownlint-cli2 '**/*.md' '#node_modules' --config .markdownlint.json",
+    "format": "markdownlint-cli2 '**/*.md' '#node_modules' --config .markdownlint.json --fix"
+  },
+  "devDependencies": {
+    "markdownlint-cli2": "^0.17.2"
+  }
+}

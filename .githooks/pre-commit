@@ -1,25 +1,11 @@
 #!/usr/bin/env bash
-# Pre-commit hook: auto-format Markdown files before commit
-# Installed via: make setup
+# Pre-commit hook: auto-format Markdown before commit
 set -euo pipefail
 
-echo "=== pre-commit: Markdown format check ==="
-
-# Get staged .md files
 STAGED=$(git diff --cached --name-only --diff-filter=ACM | grep '\.md$' || true)
+[ -z "$STAGED" ] && exit 0
 
-if [ -z "$STAGED" ]; then
-    echo "✅ 无 Markdown 文件变更，跳过"
-    exit 0
-fi
+npm run format
 
-# Run format on all files (mdlint.py handles all .md files)
-echo "运行 Markdown 格式化..."
-python3 scripts/mdlint.py format
-
-# Re-stage any formatted files
-git diff --name-only --diff-filter=M | grep '\.md$' | while IFS= read -r file; do
-    git add "$file"
-done
-
-echo "✅ pre-commit format 完成"
+# Re-stage formatted files
+git diff --name-only --diff-filter=M | grep '\.md$' | xargs -r git add
