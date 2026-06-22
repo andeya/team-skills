@@ -5,6 +5,16 @@
 
 ## 一、Spec-Driven 开发原则
 
+### 0. 快速开始：不确定从哪开始？
+
+如果你不确定当前场景该用哪个 Skill，先加载 `using-team-skills` meta-skill：
+
+```
+Skill: using-team-skills
+```
+
+它会根据你的场景推荐合适的 Skill。也可直接参考 README.md 中的 Skill 选择矩阵。
+
 ### 1.1 规格先于代码
 
 - 任何功能实现必须有对应的 SDD（Software Design Document）作为输入
@@ -224,6 +234,16 @@ docs/tasks/{NNNN}-{keyword}/
 | 测试要求    | CLAUDE.md §三 验证协议 + testAgent 四维测试矩阵                   |
 | Review 标准 | reviewAgent 五维度审查 + 严重级别校准（P0-P3 实例）               |
 | 交付要求    | orchestrator Step 8 完整性检查 + team-score 交付物清单            |
+
+### 7.6 共享规则文件
+
+以下共享文件被所有 Skill 引用，不内联重复：
+
+| 文件 | 内容 |
+| ---- | ---- |
+| `skills/_team-rules/constitutional-rules.md` | 8 条 Constitutional Rules + 常见规避借口 |
+| `skills/_team-rules/verification-protocol.md` | 5 步验证协议 + Iron Law + 常见失败模式 |
+| `skills/_team-rules/four-state-protocol.md` | 四态完成状态（DONE / DONE_WITH_CONCERNS / NEEDS_CONTEXT / BLOCKED） |
 
 ## 八、完成状态协议
 

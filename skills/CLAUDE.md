@@ -8,15 +8,23 @@
 
 1. **YAML Frontmatter**：`name` + `description`（`---` 分隔，非 `------`）
 2. **角色定位**：系统提示词 + 思维链
-3. **质量职责**：产出文件表
-4. **输入**：读取哪些文件
-5. **执行步骤**：分 Phase 描述
-6. **产出文件模板**：Markdown 模板（含占位符）
-7. **完成标志**：四态状态 + 产出清单
+3. **Iron Law + Spirit-over-Letter**（Discipline Skill 必须包含）
+4. **质量职责**：产出文件表
+5. **输入**：读取哪些文件
+6. **执行步骤**：分 Phase 描述
+7. **产出文件模板**：内联 Markdown 模板或引用 `references/` 目录下的模板文件
+8. **自检门禁**：产出前强制自检清单
+9. **完成标志**：四态状态 + 产出清单
+10. **Red Flags**：常见违规行为和规避借口（参考 _team-rules/constitutional-rules.md）
+11. **Common Rationalizations**：常见规避借口表
+12. **集成关系**：被谁调用 + 配对使用
+13. **下一步**：完成后推荐操作
 
 ## 二、跨 Skill 一致性规则
 
-- 验证协议引用：所有需要声明"通过"的 Skill **MUST** 引用 `CLAUDE.md §三 验证协议`，不内联重复
+- 验证协议引用：所有需要声明"通过"的 Skill **MUST** 引用 `_team-rules/verification-protocol.md`，不内联重复
+- 四态协议引用：所有完成状态 **MUST** 引用 `_team-rules/four-state-protocol.md`，不内联重复
+- Constitutional Rules 引用：所有涉及质量红线的 Skill **MUST** 引用 `_team-rules/constitutional-rules.md`
 - 禁止项风格：动词短语 + 竖线分隔，如 `直接写文件不先读源码 | 全量塞入上下文不精选`
 - 模板变量：使用 `{slug}`、`{日期}`、`{N}` 等统一占位符
 - 完成状态：统一使用四态协议（DONE / DONE_WITH_CONCERNS / NEEDS_CONTEXT / BLOCKED）
@@ -26,3 +34,74 @@
 - **MUST NOT** 硬编码特定工具命令（如 `bun test`、`cargo test`）
 - 使用"项目测试命令""项目 CI 检查命令"等通用表述
 - 具体命令从项目 CLAUDE.md / package.json / Makefile 中动态获取
+
+## 四、目录命名规范（全局部署）
+
+本套 skills 设计为可全局安装到 `~/.agents/skills/`，与其它 skill 集共存。目录命名必须遵守以下规范：
+
+| 规则 | 说明 | 示例 |
+| ---- | ---- | ---- |
+| Skill 目录统一 `team-` 前缀 | 避免与其它 skill 集命名冲突 | `team-spec`, `team-debug` |
+| 内部目录以下划线 `_` 开头 | 非 skill 目录，排序靠前，不参与 skill 发现 | `_team-rules/` |
+| Skill 名称保持 2 段式 | `team-{name}`，避免 3 段 | ✅ `team-feedback` ❌ `team-review-feedback` |
+| 名称使用动词或名词 | 动词表示动作，名词表示角色 | `team-debug`(动词), `team-spec`(名词) |
+| 不使用 `-agent` 后缀 | 冗余，skill 本身就是 agent | ✅ `team-spec` ❌ `team-spec-agent` |
+
+## 五、Iron Law 规范
+
+每个 Discipline Skill（约束性 skill）**MUST** 包含一条 Iron Law — 全大写、代码块、不可协商的原则：
+
+```markdown
+## Iron Law
+
+```
+NO {违规行为} WITHOUT {前置条件} FIRST
+```
+```
+
+示例：
+
+| Skill | Iron Law |
+|-------|----------|
+| team-debug | `NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST` |
+| team-verify | `NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE` |
+| team-finish | `NO BRANCH COMPLETION WITHOUT TEST VERIFICATION FIRST` |
+
+Iron Law **MUST** 出现在执行步骤之前，作为不可协商的门禁。
+
+## 六、Spirit-over-Letter 条款
+
+每个包含 Iron Law 的 Skill **MUST** 包含以下条款：
+
+> **Spirit-over-Letter**：违反规则的文字但遵守精神 = 遵守规则。遵守规则的文字但违反精神 = 违反规则。
+
+此条款切断"技术上我没违规"这类规避借口。
+
+## 七、自检门禁规范
+
+每个 Skill **MUST** 在产出前执行自检。自检清单至少包含：
+
+1. 产出文件完整性检查
+2. 占位符残留检查（`{N}`、`{slug}` 等是否被实际值替换）
+3. Iron Law 遵守检查（如果有）
+4. 四态状态声明
+
+## 八、集成关系规范
+
+每个 Skill **MUST** 包含 `## 集成关系` 章节，记录：
+
+- **被谁调用**：哪些上游 Skill 或场景会调用本 Skill
+- **配对使用**：本 Skill 完成后应该调用哪些下游 Skill，标注 REQUIRED（必须）或推荐
+
+示例：
+
+```markdown
+## 集成关系
+
+**被谁调用：**
+- `team-orchestrator`（编排模式）
+
+**配对使用：**
+- `team-test` — REQUIRED：实现完成后必须进行测试审计
+- `team-debug` — 发现 bug 时使用
+```

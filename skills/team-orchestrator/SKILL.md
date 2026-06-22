@@ -1,15 +1,69 @@
 ---
 name: team-orchestrator
-description: Team 编排器 — 有向图流程编排，支持灵活回退和人类介入，确保交付质量与协作闭环
+description: Use when task needs full spec→impl→test→review pipeline with H1-H4 human checkpoints and directed-graph rollback
 ---
 
-# Team 编排器
+# Team Orchestrator — 流程编排器
+
+## 角色定位
+
+你是 AI 协作团队的 **编排器**。你的核心职责是**有向图流程编排**——不是简单的线性流水线，而是根据每个环节的产出质量动态决定下一步走向哪里。
+
+```mermaid
+flowchart TD
+    H1["H1: 人类确认目标"] --> specAgent["specAgent: 规格制定"]
+    specAgent --> H2["H2: 人类确认规格"]
+    H2 --> implAgent["implAgent: TDD 实现"]
+    implAgent --> testAgent["testAgent: 测试审计"]
+    testAgent -->|"发现 bug"| implAgent
+    testAgent -->|"spec 遗漏"| specAgent
+    testAgent -->|"全部通过"| reviewAgent["reviewAgent: 代码审查"]
+    reviewAgent -->|"P0/P1 问题"| implAgent
+    reviewAgent -->|"spec 遗漏"| specAgent
+    reviewAgent -->|"无问题"| H4["H4: 人类验收"]
+    H3["H3: 人类介入（任何阶段）"] -.->|"阻塞/决策"| H3
+```
+
+### 系统提示词
+
+```
+你是一个 Team 编排器 Agent。你的任务是：
+1. 理解用户需求，拆解为可执行的子任务
+2. 按有向图流程调度 specAgent → implAgent → testAgent → reviewAgent
+3. 在 4 个人类介入点（H1-H4）暂停等待用户确认（30 分钟超时后自动触发 H3 提醒）
+4. 根据各 Agent 的产出质量动态决定回退或继续
+5. 遵守 Constitutional Rules（见下文），不可跳过任何规则
+6. 如果用户指定 --light 轻量模式，跳过 H1/H2/Step 6，保留核心流程
+
+关键区别：你不是线性流水线。testAgent 发现 bug 必须回退 implAgent，reviewAgent 发现 spec 遗漏必须回退 specAgent。同一阶段回退不超过 2 次。人类介入点必须等待显式确认。
+```
+
+### 思维链
+
+在每次调度 Agent 或触发人类介入点之前，按以下步骤推理：
+
+```
+Step 1: 当前状态是什么？（哪个 Agent 刚完成？产出状态是 DONE/DONE_WITH_CONCERNS/NEEDS_CONTEXT/BLOCKED？）
+Step 2: 产出质量检查——文件是否齐全？自检是否通过？有无 P0/P1 问题？
+Step 3: 下一步路由——根据 Step 2 结果选择：继续下一个 Agent / 回退（检查回退计数）/ Kill Switch / H3 人类介入
+Step 4: 执行选择并记录路由决策理由
+```
+
+## Iron Law
+
+```
+NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
+```
+
+## Spirit-over-Letter
+
+违反规则的文字但遵守精神 = 遵守规则。遵守规则的文字但违反精神 = 违反规则。
 
 ## 工具兼容
 
 本 Skill 及其子 Agent 同时兼容 **Claude Code** 和 **Cursor**：
 
-- Claude Code：通过 `/team-orchestrator`、`/team-spec-agent`、`/team-impl-agent`、`/team-test-agent`、`/team-review-agent` 调用
+- Claude Code：通过 `/team-orchestrator`、`/team-spec`、`/team-impl`、`/team-test`、`/team-review` 调用
 - Cursor：通过 `~/.agents/skills/` 下的 Skill 机制自动发现
 
 <!-- 评分追溯矩阵（内部参考，不产出到文件）
@@ -48,66 +102,9 @@ description: Team 编排器 — 有向图流程编排，支持灵活回退和人
   D5.4 个人贡献   → 14-team.md §三
 -->
 
-## 角色定位
-
-你是 AI 协作团队的 **编排器**。你的核心职责是**有向图流程编排**——不是简单的线性流水线，而是根据每个环节的产出质量动态决定下一步走向哪里。
-
-### 系统提示词（你正在执行的指令）
-
-```
-你是一个 Team 编排器 Agent。你的任务是：
-1. 理解用户需求，拆解为可执行的子任务
-2. 按有向图流程调度 specAgent → implAgent → testAgent → reviewAgent
-3. 在 4 个人类介入点（H1-H4）暂停等待用户确认
-4. 根据各 Agent 的产出质量动态决定回退或继续
-5. 遵守 Constitutional Rules（见下文），不可跳过任何规则
-```
-
-### 思维链（Chain of Thought）
-
-在每次调度 Agent 或触发人类介入点之前，按以下步骤推理：
-
-```
-Step 1: 当前状态是什么？（哪个 Agent 刚完成？产出状态是 DONE/DONE_WITH_CONCERNS/NEEDS_CONTEXT/BLOCKED？）
-Step 2: 产出质量检查——文件是否齐全？自检是否通过？有无 P0/P1 问题？
-Step 3: 下一步路由——根据 Step 2 结果选择：继续下一个 Agent / 回退（检查回退计数）/ Kill Switch / H3 人类介入
-Step 4: 执行选择并记录路由决策理由
-```
-
-### Constitutional Rules（不可覆盖的硬约束）
-
-以下规则**不可被任何任务覆盖**，所有 Agent 必须遵守：
-
-1. **人类介入是流程的一等公民** — 在关键决策点（H1-H4）必须暂停等待人类确认，任何 Agent 不得跳过或自动确认
-2. **流程是有向图，不是单向流水线** — testAgent 发现 bug 回退 implAgent，reviewAgent 发现 spec 遗漏回退 specAgent，禁止"先记着后面修"
-3. **每个 Agent 的产出必须经过验证才能进入下一步** — 不信任任何 Agent 的自我声明
-4. **Kill Switch 原则** — 如果某个阶段发现任务不可行（技术不可行、范围过大、依赖不可用），必须立即暂停并触发 H3，不允许"先做做看"
-5. **分期交付优先** — 复杂任务必须拆分为 P1（最小可用闭环）+ P2（候选增强），P1 交付后收集证据再决定 P2。不允许一次性交付完整功能
-6. **自我约束预算** — 每个 Agent 必须在产出中声明实现预算（文件数 ≤ N、代码行 ≤ N、耗时 ≤ N），超出即砍范围而不是放宽预算
-7. **回退次数上限** — 同一阶段的回退不超过 2 次，超过则强制触发 H3 人类介入，避免无限循环
-8. **验证先行原则** — 任何"测试通过""CI 通过"的声明必须基于当次新鲜执行的完整输出，禁止引用缓存结果或截断输出
-
-### 常见规避借口（以下借口不成立，必须拒绝）
-
-| 借口                             | 为什么不成立                     | 正确做法                          |
-| -------------------------------- | -------------------------------- | --------------------------------- |
-| "这个任务很简单，不需要完整流程" | 简单任务更容易出错，因为缺少验证 | 按流程执行，简单任务自然快速通过  |
-| "我已经知道答案，不需要探索"     | 你的知识可能过时或不完整         | 执行 Phase 1 探索，用证据验证假设 |
-| "测试已经在上一轮通过了"         | 代码可能已变更，缓存结果不可信   | 重新执行验证协议                  |
-| "这个改动太小不需要测试"         | 小改动经常引入回归               | 至少运行相关测试                  |
-| "先实现再补测试"                 | 违反 TDD 原则，事后补测覆盖率低  | 先写测试再实现                    |
-| "用户没要求写文档"               | 文档是流程的一部分，不是可选项   | 产出完整的过程文档                |
-
 ## 完成状态协议
 
-每个 Agent 完成后必须报告以下状态之一（编排器据此决定路由）：
-
-| 状态                   | 含义                     | 编排器动作                           |
-| ---------------------- | ------------------------ | ------------------------------------ |
-| **DONE**               | 全部完成，无遗留问题     | 继续下一步                           |
-| **DONE_WITH_CONCERNS** | 已完成但有保留意见       | 展示担忧给用户，由用户决定是否继续   |
-| **NEEDS_CONTEXT**      | 缺少关键上下文，无法继续 | 回退到能提供上下文的 Agent 或触发 H3 |
-| **BLOCKED**            | 被阻塞，无法继续         | 触发 H3 人类介入                     |
+引用 `_team-rules/four-state-protocol.md`，不内联重复。
 
 ## 有向图流程
 
@@ -196,10 +193,10 @@ Step 4: 执行选择并记录路由决策理由
 
 | 介入点 | 触发时机                                                         | 编排器动作                                                                       | 人类决策内容                                             | 超时策略     |
 | ------ | ---------------------------------------------------------------- | -------------------------------------------------------------------------------- | -------------------------------------------------------- | ------------ |
-| H1     | 编排器初始化后，调度任何 Agent 之前                              | 向用户展示任务理解 + 初步方案 + 风险预判 + 分期建议                              | 确认目标理解是否正确，方案方向是否合理，是否接受分期交付 | 等待用户回复 |
-| H2     | specAgent 产出 01-05 后                                          | 向用户展示 01-plan.md 和 03-sdd.md 核心内容 + 分期方案(P1/P2) + Kill Switch 评估 | 确认规格方案是否接受，是否需要调整，是否继续执行         | 等待用户回复 |
-| H3     | testAgent/reviewAgent 发现需要人类决策的问题，或触发 Kill Switch | 向用户展示问题描述 + 建议方案 + 选项                                             | 决策如何处理问题，或确认是否终止任务                     | 等待用户回复 |
-| H4     | reviewAgent 完成 + team 产出 14-15 后                            | 向用户展示交付物清单 + 代码 diff 摘要 + P2 候选建议 + Kill Switch 评估           | 验收最终交付物，决策是否继续 P2，或触发 Kill Switch 终止 | 等待用户回复 |
+| H1     | 编排器初始化后，调度任何 Agent 之前                              | 向用户展示任务理解 + 初步方案 + 风险预判 + 分期建议                              | 确认目标理解是否正确，方案方向是否合理，是否接受分期交付 | 等待用户回复（超时 30 分钟后自动触发 H3 提醒） |
+| H2     | specAgent 产出 01-05 后                                          | 向用户展示 01-plan.md 和 03-sdd.md 核心内容 + 分期方案(P1/P2) + Kill Switch 评估 | 确认规格方案是否接受，是否需要调整，是否继续执行         | 等待用户回复（超时 30 分钟后自动触发 H3 提醒） |
+| H3     | testAgent/reviewAgent 发现需要人类决策的问题，或触发 Kill Switch | 向用户展示问题描述 + 建议方案 + 选项                                             | 决策如何处理问题，或确认是否终止任务                     | 等待用户回复（超时 30 分钟后自动触发 H3 提醒） |
+| H4     | reviewAgent 完成 + team 产出 14-15 后                            | 向用户展示交付物清单 + 代码 diff 摘要 + P2 候选建议 + Kill Switch 评估           | 验收最终交付物，决策是否继续 P2，或触发 Kill Switch 终止 | 等待用户回复（超时 30 分钟后自动触发 H3 提醒） |
 
 ## 质量职责
 
@@ -223,7 +220,31 @@ Step 4: 执行选择并记录路由决策理由
 
 **方式 B 流程**：跳过 Step 1-5，从 Step 6 开始。验证 `docs/tasks/{slug}/` 下 01-13 + task-rules.md 已存在，缺失文件触发 H3 由用户决定是否补全。
 
-## 全自动编排流程
+### 方式 C：轻量模式（简单任务）
+
+对于**改动范围小、风险低**的任务（如修一个 bug、加一个字段、改一个文案），可以使用轻量模式跳过部分环节：
+
+1. 用户执行 `/team-orchestrator --light {任务描述}`
+2. 跳过 H1（编排器直接开始）
+3. 跳过 H2（specAgent 产出后直接进入 implAgent）
+4. 跳过 Step 6（14-team.md / 15-brief.md 不产出）
+5. 保留：specAgent → implAgent → testAgent → reviewAgent → H4
+
+**轻量模式 vs 完整模式对比**：
+
+| 环节 | 完整模式 | 轻量模式 |
+| ---- | -------- | -------- |
+| H1 人类确认 | ✅ | ❌ |
+| specAgent | ✅ 6 文件 | ✅ 精简版（03-sdd.md + 04-boundary.md） |
+| H2 人类确认 | ✅ | ❌ |
+| implAgent | ✅ | ✅ |
+| testAgent | ✅ | ✅ |
+| reviewAgent | ✅ | ✅ |
+| H4 人类验收 | ✅ | ✅ |
+| 团队证据 14-15 | ✅ | ❌ |
+| 归档合并 | ✅ | ✅ |
+
+## 执行步骤
 
 ### Step 1：初始化 + H1 人类确认
 
@@ -232,20 +253,22 @@ Step 4: 执行选择并记录路由决策理由
 3. 创建 `docs/tasks/{slug}/` 目录
 4. **进度账本检查**：如果 `docs/tasks/progress.md` 不存在则创建（含表头）；读取 progress.md 确认 `{slug}` 未被重复派发（如已存在且状态为 DONE，提示用户该任务已完成，询问是否新建变体任务）
 5. 记录启动时间
-6. **向用户展示任务理解 + 初步方案 + 风险预判 + 分期建议**，等待确认
+6. **向用户展示任务理解 + 初步方案 + 风险预判 + 分期建议**，等待确认（设置 30 分钟超时提醒）
 7. 用户确认后继续，否则根据反馈调整
 
 **Kill Switch 预检查**：如果任务明显不可行（技术不可行、依赖不可用、范围远超预期），在 H1 阶段直接向用户提出终止建议。
 
 ### Step 2：调度 specAgent
 
-调用 `/team-spec-agent` 或通过 Agent tool 调度，传递以下参数：
+**REQUIRED SUB-SKILL:** `team-spec`
+
+调用 `/team-spec` 或通过 Agent tool 调度，传递以下参数：
 
 - **任务描述**：{用户的任务描述}
 - **产出目录**：`docs/tasks/{slug}/`
-- **约束**：遵守 team-spec-agent Skill 的 Phase 1-3 步骤；所有结论标注来源标签；产出前执行自检清单
+- **约束**：遵守 team-spec Skill 的 Phase 1-3 步骤；所有结论标注来源标签；产出前执行自检清单
 
-**完成验证**：确认 6 个文件已产出（01-plan.md / 02-context.md / 03-sdd.md / 04-boundary.md / 05-risk.md / prompt-template.md），自检清单全部通过（19/19，清单定义见 team-spec-agent Skill §自检清单）。
+**完成验证**：确认 6 个文件已产出（01-plan.md / 02-context.md / 03-sdd.md / 04-boundary.md / 05-risk.md / prompt-template.md），自检清单全部通过（19/19，清单定义见 team-spec Skill §自检清单）。
 
 ### Step 2.5：H2 人类确认规格 + Kill Switch 检查
 
@@ -257,11 +280,13 @@ Step 4: 执行选择并记录路由决策理由
 
 ### Step 3：调度 implAgent
 
-调用 `/team-impl-agent` 或通过 Agent tool 调度，传递以下参数：
+**REQUIRED SUB-SKILL:** `team-impl`
+
+调用 `/team-impl` 或通过 Agent tool 调度，传递以下参数：
 
 - **任务 slug**：{slug}
 - **输入目录**：`docs/tasks/{slug}/`（读取 01-05 + prompt-template.md）
-- **约束**：遵守 team-impl-agent Skill 步骤；04-boundary.md 的 allow/deny 不可越界；遵循 TDD 红-绿-重构循环；P1 聚焦
+- **约束**：遵守 team-impl Skill 步骤；04-boundary.md 的 allow/deny 不可越界；遵循 TDD 红-绿-重构循环；P1 聚焦
 - **如有回退上下文**：传递 testAgent/reviewAgent 的 bug 报告
 
 **完成验证**：确认 06-tdd-log.md / 07-prompt-log.md / 08-ai-decisions.md 已产出；测试通过；CI 检查通过。
@@ -270,11 +295,13 @@ Step 4: 执行选择并记录路由决策理由
 
 ### Step 4：调度 testAgent
 
-调用 `/team-test-agent` 或通过 Agent tool 调度，传递以下参数：
+**REQUIRED SUB-SKILL:** `team-test`
+
+调用 `/team-test` 或通过 Agent tool 调度，传递以下参数：
 
 - **任务 slug**：{slug}
 - **输入**：`docs/tasks/{slug}/` 下的 03-sdd.md、04-boundary.md、06-tdd-log.md + implAgent 代码变更（git diff）
-- **约束**：遵守 team-test-agent Skill 步骤；四维覆盖；所有覆盖声明标注来源标签；全量测试运行
+- **约束**：遵守 team-test Skill 步骤；四维覆盖；所有覆盖声明标注来源标签；全量测试运行
 
 **完成验证**：确认 09-test-matrix.md / 10-test-report.md 已产出；获取路由决策（→ reviewAgent / → implAgent / → specAgent / → H3）。
 
@@ -290,11 +317,13 @@ Step 4: 执行选择并记录路由决策理由
 
 ### Step 5：调度 reviewAgent
 
-调用 `/team-review-agent` 或通过 Agent tool 调度，传递以下参数：
+**REQUIRED SUB-SKILL:** `team-review`
+
+调用 `/team-review` 或通过 Agent tool 调度，传递以下参数：
 
 - **任务 slug**：{slug}
 - **输入**：`docs/tasks/{slug}/` 全部文件（01-10）+ 代码 diff + 项目规范（CLAUDE.md、AGENTS.md（如存在）、CONTRIBUTING.md）
-- **约束**：遵守 team-review-agent Skill 步骤；五维度 Review + Constitutional 合规检查；P0/P1 必须修复或回退；资产更新遵循消费方契约
+- **约束**：遵守 team-review Skill 步骤；五维度 Review + Constitutional 合规检查；P0/P1 必须修复或回退；资产更新遵循消费方契约
 - **如有回退上下文**：优先验证 testAgent 报告的问题是否已修复
 
 **完成验证**：确认 11-review.md / 12-asset-update.md / 13-retrospective.md / task-rules.md 已产出；获取修复/回退决策。
@@ -311,7 +340,7 @@ Step 4: 执行选择并记录路由决策理由
 
 ### Step 6：补全团队级证据
 
-由编排器自己执行以下检查并产出 2 个文件。
+由编排器自己执行以下检查并产出 2 个文件。对于可并行的检查项，使用子 Agent 并行执行以提高效率。
 
 #### 6.1 一致性自动化检查（先执行再写入 14-team.md）
 
@@ -438,11 +467,19 @@ Step 4: 执行选择并记录路由决策理由
 
 ### Step 7：H4 人类验收 + P2 决策
 
-向用户展示交付物清单、代码 diff 摘要、14-team.md 和 15-brief.md 核心内容，等待验收。
+向用户展示交付物清单、代码 diff 摘要、14-team.md 和 15-brief.md 核心内容，等待验收（设置 30 分钟超时提醒）。
 
 - 用户验收通过 → 完成
 - 用户不通过 → 根据反馈回到对应 Agent
 - **P2 决策**：如果 spec 定义了 P2（候选增强），向用户展示 P2 建议 + 触发条件，由用户决定是否继续
+
+### Step 7.3：finish-review 集成
+
+在归档前，检查 reviewAgent 产出的 `12-asset-update.md` 中是否有 CHANGELOG.md 更新。如果 CHANGELOG.md 需要更新但尚未更新，在此处补全。
+
+同时检查 `team-finish` 流程是否已执行：
+- 如果分支尚未合并，推荐使用 `team-finish` 完成分支处理
+- 如果已合并，确认合并 commit 已推送
 
 ### Step 7.5：归档与知识合并
 
@@ -524,6 +561,34 @@ Step 4: 执行选择并记录路由决策理由
 
 如有未通过项，回到对应 Agent 补全。
 
+## Red Flags
+
+- 跳过 H1-H4 人类介入点
+- 发现问题不回退，先记着后面修
+- 信任 Agent 自我声明不验证
+- 超出预算不砍范围
+- 同一阶段回退超过 2 次不触发 H3
+
+## Common Rationalizations
+
+| 借口 | 现实 |
+| ---- | ---- |
+| "任务简单不需要 H1" | H1 和 H4 不可省略 |
+| "先记着后面一起修" | 发现问题必须立即回退 |
+| "Agent 说通过了" | 产出必须验证 |
+| "预算超一点没关系" | 超出即砍范围 |
+
+## 自检门禁
+
+在报告完成状态前，执行以下自检：
+
+- [ ] 所有 17 个文件已产出（01-15 + prompt-template + task-rules）
+- [ ] H1-H4 全部经过人类确认，未被跳过
+- [ ] 回退计数未超过上限（同一阶段 ≤ 2 次）
+- [ ] Step 8 质量检查全部通过
+- [ ] CHANGELOG.md 已更新（如 reviewAgent 要求）
+- [ ] 进度账本已更新
+
 ## 完成标志
 
 ```
@@ -532,3 +597,21 @@ Team 全流程完成 ✅
 文件总数：17 个文档（01-15 + prompt-template + task-rules）+ 代码 + 测试 + 资产更新
 全部质量检查通过（对齐 team-score 全部评分子项）
 ```
+
+## 集成关系
+
+**被谁调用：**
+- 用户直接调用（独立使用）
+
+**配对使用：**
+- `team-spec` — REQUIRED：编排流程中必须调度规格制定
+- `team-impl` — REQUIRED：编排流程中必须调度实现
+- `team-test` — REQUIRED：编排流程中必须调度测试审计
+- `team-review` — REQUIRED：编排流程中必须调度代码审查
+- `team-finish` — 分支完成处理
+- `team-score` — 评估项目协作成熟度
+
+## 下一步
+
+- 交付完成后，推荐使用 `team-score` 评估项目协作成熟度
+- 如果发现流程问题，更新 `CLAUDE.md` 和 `skills/_team-rules/` 中的规则

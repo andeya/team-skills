@@ -1,5 +1,5 @@
 ---
-description: 将当前仓库的 skills 和 commands 安装到指定目录（默认 ~/.agents/skills）
+description: 将当前仓库的 skills 和 commands 安装到指定目录（默认 ~/.agents/skills），含 _team-rules/ 共享规则
 argument-hint: [target-dir]
 ---
 
@@ -11,9 +11,11 @@ argument-hint: [target-dir]
 
 安装内容：
 
-- `skills/*` → `{target-dir}/`（Agent Skills，含 team-score 评分 Skill）
+- `skills/*` → `{target-dir}/`（Agent Skills，含 team-score 评分 Skill 和 using-team-skills meta-skill）
+- `skills/_team-rules/*` → `{target-dir}/_team-rules/`（共享规则文件，被所有 Skill 引用）
 - `.claude/commands/*` → `{target-dir}/{name}/SKILL.md`（Commands 也作为 Skill 安装，Cursor 可发现）
 - `.claude/commands/*` → `~/.claude/commands/`（兼容 Claude Code 斜杠命令）
+- `hooks/hooks.json` → Cursor/Claude Code hooks 目录（可选，用于 session-start 注入）
 
 ## 参数
 
@@ -36,6 +38,15 @@ argument-hint: [target-dir]
 ### 4. 安装 Commands（兼容 Claude Code）
 
 对本仓库 `.claude/commands/` 下的每个 `.md` 文件，在 `~/.claude/commands/` 下创建同名软链接，使其可作为斜杠命令在 Claude Code 中使用。
+
+### 5. 安装 Hooks（可选）
+
+如果目标平台支持 hooks（Cursor / Claude Code），将 `hooks/hooks.json` 和 `hooks/session-start` 安装到对应平台的 hooks 目录：
+
+- Cursor：`~/.cursor/hooks/`
+- Claude Code：`~/.claude/hooks/`
+
+此步骤为可选，不影响核心功能。
 
 ## 验证
 
