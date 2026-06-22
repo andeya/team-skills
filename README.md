@@ -70,40 +70,116 @@ reviewAgent 发现 spec 遗漏 ──→ 自动回退 specAgent
 
 ---
 
-## 🚀 30 秒快速开始
+## 🚀 安装与使用
 
-### 安装
+### 前置条件
+
+- **Claude Code**：已安装并可用（`/` 斜杠命令模式）
+- **Cursor**：已安装，Skill 自动发现机制就绪
+
+### 一键安装
+
+在 Claude Code 或 Cursor 的聊天框中执行：
 
 ```bash
-# 在 Claude Code 中
 /team-setup
-
-# 在 Cursor 中，克隆项目后运行：
-#   cd ~/.cursor/agents/skills/
-#   ln -sf /path/to/team-skills/skills/* .
-# 或直接执行 /team-setup（如已配置 Cursor 的 Claude CLI）
 ```
 
-### 使用
+这条命令会自动完成：
+
+| 安装内容 | 说明 |
+|----------|------|
+| 12 个 Agent Skills | 安装到 `~/.agents/skills/`，Cursor 自动发现 |
+| 斜杠命令 | 安装到 `~/.claude/commands/`，Claude Code 可用 `/team-{name}` |
+| 共享规则 | `_team-rules/` 被所有 Skill 引用 |
+| Hooks（可选） | session-start 钩子，每次新 session 自动加载 |
+
+### 验证安装
+
+安装后，在聊天框中输入 `/` 查看是否出现 `team-` 开头的命令列表。或直接尝试：
 
 ```bash
-# 全自动编排（推荐）
+# 查看所有可用 Skill
+/using-team-skills
+
+# 评估项目协作成熟度
+/team-score
+```
+
+### 更新 Skills
+
+项目有更新时，在仓库目录下执行：
+
+```bash
+git pull
+/team-setup
+```
+
+或直接使用内置命令：
+
+```bash
+/team-pull
+```
+
+### 分步安装（手动）
+
+如果 `/team-setup` 不可用，可以手动创建软链接：
+
+```bash
+# 假设项目克隆在 ~/team-skills
+# Cursor
+ln -sf ~/team-skills/skills/* ~/.cursor/agents/skills/
+
+# Claude Code
+ln -sf ~/team-skills/.claude/commands/* ~/.claude/commands/
+```
+
+### 使用方式
+
+#### 方式一：全自动编排（推荐）
+
+一条命令启动完整流水线，适合从零开始的功能开发：
+
+```bash
 /team-orchestrator 实现用户登录功能
+```
 
-# 编排器自动完成：
-#   1. H1: 向你确认目标理解
-#   2. specAgent: 产出 SDD 规格
-#   3. H2: 向你确认规格方案
-#   4. implAgent: TDD 实现
-#   5. testAgent: 四维测试
-#   6. reviewAgent: 五维审查
-#   7. H4: 向你交付验收
+编排器会自动完成 7 个步骤：
 
-# 轻量模式（简单任务，跳过 H1/H2）
+```
+1. H1: 向你确认目标理解
+2. specAgent: 产出 SDD 规格
+3. H2: 向你确认规格方案
+4. implAgent: TDD 实现
+5. testAgent: 四维测试
+6. reviewAgent: 五维审查
+7. H4: 向你交付验收
+```
+
+简单任务可用轻量模式跳过 H1/H2：
+
+```bash
 /team-orchestrator --light 修复登录页按钮样式
 ```
 
-### 评分
+#### 方式二：按需调用单个 Skill
+
+你可以在任意阶段单独调用某个 Skill，适合只想做其中一步的场景：
+
+| 场景 | 命令 |
+|------|------|
+| 需求模糊，需要讨论 | `/team-brainstorm 这个功能怎么做？` |
+| 一句话需求展开为规格 | `/team-spec 实现登录功能` |
+| 已有规格，开始编码 | `/team-impl` |
+| 测试覆盖够吗？ | `/team-test` |
+| 代码质量如何？ | `/team-review` |
+| 这个 bug 怎么回事？ | `/team-debug` |
+| 测试真的过了吗？ | `/team-verify` |
+| Review 反馈来了 | `/team-feedback` |
+| 代码写完了 | `/team-finish` |
+| 不知道用哪个 | `/using-team-skills` |
+
+#### 方式三：评估项目成熟度
 
 ```bash
 /team-score
