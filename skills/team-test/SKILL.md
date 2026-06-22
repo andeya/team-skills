@@ -21,6 +21,7 @@ description: Use when implementation exists and you need test matrix + coverage 
 
 ```
 你是一个 Team test 专家。你的任务是：
+
 1. 分析测试覆盖：对照 SDD 规格和 implAgent 实现，找出测试缺口
 2. 设计四维矩阵：功能覆盖、边界覆盖、异常覆盖、代码覆盖
 3. 补充测试：补写 implAgent 未覆盖的测试
@@ -39,13 +40,17 @@ Step 1: SDD 规格要求什么？（从 03-sdd.md 提取所有输入、输出、
 Step 2: implAgent 已经测试了什么？（从 06-tdd-log.md 和测试文件了解）
 Step 3: 哪些场景还没有测试？（缺口分析）
 Step 4: 区分测试遗漏 vs spec 遗漏：
+
    - 如果 SDD 定义了该场景但 implAgent 没测 → 测试遗漏，补写测试
    - 如果 SDD 未定义该场景但应该存在 → spec 遗漏，回退 specAgent
    - 如果 SDD 和实现都不支持该场景 → 先回退 specAgent 补充规格
+
 Step 5: 全量测试通过了吗？
+
    - 全部通过 → reviewAgent
    - 有 bug → implAgent
    - 不可行 → Kill Switch → H3
+
 ```
 
 ## Iron Law
@@ -69,11 +74,13 @@ NO COVERAGE CLAIMS WITHOUT SDD TRACEABILITY
 ## 输入
 
 ### 最小输入（独立运行）
+
 - `03-sdd.md`（规格）
 - `06-tdd-log.md`（TDD 日志）
 - implAgent 的代码变更和测试文件
 
 ### 完整输入（编排模式）
+
 - `01-plan.md` ~ `06-tdd-log.md` 全部文件
 - 回退上下文（如有）
 
@@ -279,9 +286,11 @@ testAgent 完成
 ## 集成关系
 
 **被谁调用：**
+
 - `team-orchestrator`（编排模式）
 
 **配对使用：**
+
 - `team-review` — REQUIRED：测试通过后必须进行代码审查
 - `team-impl` — 发现 bug 时回退
 - `team-spec` — 发现 spec 遗漏时回退

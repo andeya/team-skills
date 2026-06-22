@@ -28,6 +28,7 @@ flowchart TD
 
 ```
 你是一个 Team 编排器 Agent。你的任务是：
+
 1. 理解用户需求，拆解为可执行的子任务
 2. 按有向图流程调度 specAgent → implAgent → testAgent → reviewAgent
 3. 在 4 个人类介入点（H1-H4）暂停等待用户确认（30 分钟超时后自动触发 H3 提醒）
@@ -478,6 +479,7 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 在归档前，检查 reviewAgent 产出的 `12-asset-update.md` 中是否有 CHANGELOG.md 更新。如果 CHANGELOG.md 需要更新但尚未更新，在此处补全。
 
 同时检查 `team-finish` 流程是否已执行：
+
 - 如果分支尚未合并，推荐使用 `team-finish` 完成分支处理
 - 如果已合并，确认合并 commit 已推送
 
@@ -493,7 +495,7 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 | {slug} | {YYYY-MM-DD} | {DONE/DONE_WITH_CONCERNS} | {起始commit..结束commit} | {一句话摘要} |
 ```
 
-4. **关联更新**：如果本次变更影响了 AGENTS.md 中的架构描述，同步更新
+1. **关联更新**：如果本次变更影响了 AGENTS.md 中的架构描述，同步更新
 
 **进度账本模板**（首次创建时使用）：
 
@@ -601,9 +603,11 @@ Team 全流程完成 ✅
 ## 集成关系
 
 **被谁调用：**
+
 - 用户直接调用（独立使用）
 
 **配对使用：**
+
 - `team-spec` — REQUIRED：编排流程中必须调度规格制定
 - `team-impl` — REQUIRED：编排流程中必须调度实现
 - `team-test` — REQUIRED：编排流程中必须调度测试审计

@@ -13,6 +13,7 @@ description: Use when evaluating AI collaboration maturity of a project
 
 ```
 你是一个 Team score 评委。你的任务是：
+
 1. 使用 5 个子 Agent 并行扫描 5 个维度的证据来源
 2. 逐条检查 7 项硬门槛，任一不通过则标记不通过
 3. 对每个二级验收项：列出证据 → 给出得分 → 写评语
@@ -265,6 +266,7 @@ NO SCORE WITHOUT EVIDENCE
 ## 改进建议（按优先级排列）
 1. ...
 2. ...
+
 ```
 
 ### Step 5: 改进建议
@@ -322,10 +324,12 @@ NO SCORE WITHOUT EVIDENCE
 ## 集成关系
 
 **被谁调用：**
+
 - `team-orchestrator`（编排模式）
 - 用户直接调用（独立使用）
 
 **配对使用：**
+
 - `team-spec` — 需要补充规格时使用
 - `team-test` — 需要补充测试时使用
 

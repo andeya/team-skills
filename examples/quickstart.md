@@ -107,9 +107,11 @@ COMMIT:   git commit 提交
 👥 团队协作：     8/10
 
 主要改进项：
+
 1. 补充更多边界测试用例（+3 分）
 2. 在 08-ai-decisions.md 中记录设计决策（+2 分）
 3. 完成 13-retrospective.md 复盘（+2 分）
+
 ```
 
 ## 下一步

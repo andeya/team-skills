@@ -5,7 +5,7 @@
 ## 🚀 快速开始
 
 1. **Fork** 本仓库
-2. **Clone** 你的 fork：`git clone https://github.com/你的用户名/team-skills.git`
+2. **Clone** 你的 fork：`git clone <<https://github.com/你的用户名/team-skills.git`>>
 3. **创建分支**：`git checkout -b feat/你的功能`
 4. **修改代码**（参见[开发指南](#-开发指南)）
 5. **测试**你的修改
@@ -72,18 +72,31 @@ test: 添加验证协议测试用例
 
 ```
 # 标题
+
 ## 角色定位
+
 ### 系统提示词
+
 ### 思维链
+
 ## Iron Law
+
 ## Spirit-over-Letter
+
 ## 输入
+
 ## 执行步骤
+
 ## 自检门禁
+
 ## 完成标志
+
 ## Red Flags
+
 ## Common Rationalizations
+
 ## 集成关系
+
 ## 下一步
 ```
 
@@ -100,6 +113,7 @@ test: 添加验证协议测试用例
 ### Bug 报告
 
 包含以下内容：
+
 - 问题的清晰描述
 - 复现步骤
 - 期望行为 vs 实际行为
@@ -109,6 +123,7 @@ test: 添加验证协议测试用例
 ### 功能请求
 
 包含以下内容：
+
 - 解决什么问题？
 - 谁会受益？
 - 应该怎么工作？
@@ -120,7 +135,7 @@ test: 添加验证协议测试用例
 
 ## ❓ 问题？
 
-发起[讨论](https://github.com/andeya/team-skills/discussions)或在 Issue 中提问。
+发起[讨论](https://github.com/andeya/team-skills/issues)或在 Issue 中提问。
 
 ---
 

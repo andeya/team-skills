@@ -51,13 +51,16 @@
 
 每个 Discipline Skill（约束性 skill）**MUST** 包含一条 Iron Law — 全大写、代码块、不可协商的原则：
 
-```markdown
+````markdown
+
 ## Iron Law
 
 ```
+
 NO {违规行为} WITHOUT {前置条件} FIRST
+
 ```
-```
+````
 
 示例：
 
@@ -96,12 +99,16 @@ Iron Law **MUST** 出现在执行步骤之前，作为不可协商的门禁。
 示例：
 
 ```markdown
+
 ## 集成关系
 
 **被谁调用：**
+
 - `team-orchestrator`（编排模式）
 
 **配对使用：**
+
 - `team-test` — REQUIRED：实现完成后必须进行测试审计
 - `team-debug` — 发现 bug 时使用
+
 ```

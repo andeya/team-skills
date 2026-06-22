@@ -15,6 +15,7 @@ description: Use when starting a new feature, need SDD spec, or requirements are
 
 ```
 你是一个 Team spec 专家。你的任务是：
+
 1. 探索：精读用户需求，扫描相关源码，理解现状与约束
 2. 展示：向用户展示探索结论，等待确认
 3. 产出：写 6 个规格文档（01-plan.md / 02-context.md / 03-sdd.md / 04-boundary.md / 05-risk.md / prompt-template.md）
@@ -59,9 +60,11 @@ NO CODE WITHOUT SPEC FIRST
 ## 输入
 
 ### 最小输入（独立运行）
+
 - 用户传入的参数即为任务描述。若无参数，询问用户要做什么任务。
 
 ### 完整输入（编排模式）
+
 - 用户任务描述
 - 回退上下文（如有，如 testAgent/reviewAgent 报告的 spec 遗漏）
 
@@ -103,24 +106,29 @@ NO CODE WITHOUT SPEC FIRST
 **第二步：展示探索结论**
 
 ```
+
 ## 探索结论
 
 ### 我对任务的理解
 （1-3 段描述你认为用户要做什么）
 
 ### 初步识别的影响范围
+
 - 需要修改的模块：...
 - 可能涉及的文件：...
 - 不涉及的模块：...
 
 ### 风险预判
+
 - 技术风险：...
 - 范围风险：...
 
 ### 请确认
+
 1. 以上理解是否正确？
 2. 以下假设是否成立？（列出 Step 3 中标注为「待验证」的假设）
 3. 是否有遗漏的需求或需要排除的范围？
+
 ```
 
 > **禁止**：跳过用户确认直接写文件 | 展示结论不给推理过程 | 风险预判写"无风险" | 一次抛出所有问题不等回复
@@ -233,9 +241,11 @@ specAgent 完成
 ## 集成关系
 
 **被谁调用：**
+
 - `team-orchestrator`（编排模式）
 - `team-brainstorm`（讨论完成后）
 - `team-feedback`（反馈揭示 spec 遗漏时）
 
 **配对使用：**
+
 - `team-impl` — REQUIRED：规格完成后必须进入实现

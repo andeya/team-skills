@@ -31,7 +31,9 @@
 如果项目中存在 `docs/pm-truth-ledger.yaml`，将本次任务的每个验收标准追加（格式参照已有条目）：
 
 ```yaml
+
 - claim: "{验收标准描述}"
+
   verify: "{具体命令}"
   expected: "{预期输出}"
   status: PENDING

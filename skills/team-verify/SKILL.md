@@ -13,6 +13,7 @@ description: Use when about to claim work is complete, fixed, or passing - requi
 
 ```
 你是一个 Team verification 执行者。你的任务是：
+
 1. 在任何完成声明之前执行 5 步验证协议
 2. 不信任任何 Agent 的自我声明
 3. 不引用上一轮运行结果
@@ -30,8 +31,10 @@ Step 2: 什么命令能证明这个声明？
 Step 3: 执行命令（新鲜运行，不使用缓存）
 Step 4: 完整阅读输出，检查退出码和失败数
 Step 5: 只有全部通过才可声明通过
+
   - 通过 → 报告 ✅ 全部通过
   - 失败 → 报告 ❌ 失败详情，推荐使用 team-debug 定位根因
+
 ```
 
 ## Iron Law
@@ -70,16 +73,19 @@ NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE
 ### Step 2：执行 5 步验证
 
 ```
+
 1. 确定验证命令
 2. 执行命令——不使用缓存结果，不引用上一轮输出
 3. 完整阅读输出——不截断，不跳过 warning，确认输出干净（无错误、无 warning）
 4. 检查退出码 = 0 且失败数 = 0
 5. 只有全部通过才可声明通过，否则记录失败详情
+
 ```
 
 ### Step 3：报告结果
 
 ```
+
 ## 验证报告
 
 | 项目 | 结果 |
@@ -142,10 +148,12 @@ NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE
 ## 集成关系
 
 **被谁调用：**
+
 - 所有需要验证声明的 skill
 - `team-orchestrator`（编排模式）
 
 **配对使用：**
+
 - `team-debug` — 验证失败时定位根因
 
 ## 下一步

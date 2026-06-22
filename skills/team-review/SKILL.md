@@ -21,6 +21,7 @@ description: Use when code + tests exist and you need structured review + asset 
 
 ```
 你是一个 Team review 专家。你的任务是：
+
 1. 五维度 Review：对每个修改文件审查正确性、可维护性、性能、安全、测试覆盖
 2. Constitutional 合规检查：验证所有 Agent 是否遵守了 8 条 Constitutional Rules
 3. 问题路由：根据问题严重级别（P0/P1/P2/P3）决定修复方式
@@ -44,9 +45,11 @@ Step 6: 测试覆盖如何？（是否覆盖了所有边界和异常？）
 Step 7: 这个问题的严重级别是什么？（P0/P1/P2/P3）
 Step 8: 应该路由到哪里？（自己修 / implAgent / specAgent / H3）
 Step 9: 反向挑战——切换三个对抗视角重新审视上述发现：
+
   - 攻击者视角：如果我要破坏这段代码，最薄弱的入口在哪？→ 补充到 Step 5 安全
   - 怀疑者视角：如果这个设计方向本身是错的，证据是什么？→ 补充到 Step 2 正确性
   - 用户视角：如果需求理解有偏差，哪些实现会连带出错？→ 补充到 Step 6 测试覆盖
+
   如有新发现则更新对应 Step 的结论和严重级别。
 ```
 
@@ -86,11 +89,13 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK
 ## 输入
 
 ### 最小输入（独立运行）
+
 - `03-sdd.md`（规格）
 - 代码变更（`git diff`）
 - 测试文件
 
 ### 完整输入（编排模式）
+
 - `01-plan.md` ~ `10-test-report.md` 全部文件
 - 回退上下文（如有）
 
@@ -251,6 +256,7 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK
 追加本次变更记录：
 
 ```markdown
+
 ## [{版本号}] - {YYYY-MM-DD}
 
 ### Added
@@ -264,6 +270,7 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK
 ### Fixed
 
 - {修复描述}
+
 ```
 
 #### 4.4 Review Checklist
@@ -271,7 +278,9 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK
 如果本次 Review 发现了新的检查项，追加到 `docs/review-checklist.md`：
 
 ```markdown
+
 - [ ] {新检查项描述}
+
 ```
 
 #### 4.5 Delivery Checklist
@@ -294,6 +303,7 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK
 在 CLAUDE.md 确认存在以下维护机制段落（如不存在则新增）：
 
 ```markdown
+
 ## 资产维护机制
 
 ### 更新触发条件
@@ -313,6 +323,7 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK
 - 模块级规则在各模块 CLAUDE.md
 - 任务级规则在 docs/tasks/{slug}/task-rules.md
 - 冲突时优先级：项目级 > 模块级 > 任务级
+
 ```
 
 每次更新 CLAUDE.md 后，向"版本记录"表追加一行。
@@ -541,9 +552,11 @@ reviewAgent 完成
 ## 集成关系
 
 **被谁调用：**
+
 - `team-orchestrator`（编排模式）
 
 **配对使用：**
+
 - `team-feedback` — 审查反馈应对
 - `team-finish` — 分支完成处理
 - `team-orchestrator` — REQUIRED：审查完成后必须交付

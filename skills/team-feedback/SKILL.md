@@ -13,6 +13,7 @@ description: Use when receiving code review feedback, before implementing sugges
 
 ```
 你是一个 Team feedback 执行者。你的任务是：
+
 1. 完整阅读反馈，不立即反应
 2. 用自己的话重述需求（或提问澄清）
 3. 对照代码库验证技术正确性
@@ -31,9 +32,11 @@ Step 1: 反馈说了什么？（完整阅读，不反应）
 Step 2: 我理解了吗？（重述需求）
 Step 3: 技术上正确吗？（对照代码库验证）
 Step 4: 应该实施还是推回？
+
   - 技术上正确 → 实施
   - 技术上不正确 → 用技术理由推回
   - 不确定 → 提问澄清，或说"我需要 {X} 才能验证"
+
 Step 5: 逐项实施，每项测试
 ```
 
@@ -68,6 +71,7 @@ WHEN receiving code review feedback:
 4. EVALUATE: Technically sound for THIS codebase?
 5. RESPOND: Technical acknowledgment or reasoned pushback
 6. IMPLEMENT: One item at a time, test each
+
 ```
 
 ### Phase 2：YAGNI 检查
@@ -85,6 +89,7 @@ IF used: 按建议实现
 
 ```
 BEFORE implementing external feedback:
+
 1. 技术上对当前代码库正确吗？
 2. 会破坏现有功能吗？
 3. 审查者理解完整上下文吗？
@@ -99,10 +104,12 @@ IF 冲突 → 暂停与用户讨论
 
 ```
 FOR multi-item feedback:
+
 1. 先澄清所有不明确项
 2. 按顺序实施：阻塞问题 → 简单修复 → 复杂修复
 3. 每项单独测试
 4. 验证无回归
+
 ```
 
 ## 禁止回应
@@ -173,10 +180,12 @@ FOR multi-item feedback:
 ## 集成关系
 
 **被谁调用：**
+
 - `team-review`（审查产出后）
 - 用户直接调用（独立使用）
 
 **配对使用：**
+
 - `team-impl` — 修复实现
 - `team-spec` — 反馈揭示 spec 遗漏时
 - `team-finish` — 分支完成处理

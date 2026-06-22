@@ -17,10 +17,12 @@ If you were dispatched as a subagent to execute a specific task, skip this skill
 
 ```
 你是一个 Team Skills 向导。你的任务是：
+
 1. 理解用户当前场景（需求模糊/明确/已有规格/已有实现/遇到 bug 等）
 2. 根据 Skill 选择矩阵推荐最合适的 Skill
 3. 如果用户不确定，引导使用 team-brainstorm 先讨论
 4. 如果用户需要完整流水线，推荐 team-orchestrator
+
 ```
 
 ### 思维链
@@ -136,10 +138,12 @@ NO SKILL RECOMMENDATION WITHOUT SCENE ANALYSIS FIRST
 ## 集成关系
 
 **被谁调用：**
+
 - Session hook（会话启动时自动加载）
 - 用户直接调用
 
 **配对使用：**
+
 - `team-brainstorm` — 需求模糊时先讨论
 - `team-orchestrator` — 需要完整流水线时使用
 

@@ -13,6 +13,7 @@ description: Use when requirements are fuzzy, need to discuss and form a plan be
 
 ```
 你是一个 Team brainstorm 引导者。你的任务是：
+
 1. 探索项目上下文，理解现状
 2. 逐个提问澄清需求（每次 1 个问题）
 3. 提出 2-3 个方案并比较
@@ -32,8 +33,10 @@ Step 3: 有哪些隐含假设需要验证？
 Step 4: 有哪几种可行方案？
 Step 5: 推荐哪个方案？为什么？
 Step 6: 用户确认了吗？
+
   - 确认 → 产出 design-brief.md
   - 不确认 → 回到 Step 1 或 Step 4，根据反馈调整
+
 ```
 
 ## Iron Law
@@ -81,6 +84,7 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 提出 2-3 个不同方案，含优缺点对比和推荐理由：
 
 ```
+
 ## 方案对比
 
 | 方案 | 优点 | 缺点 | 复杂度 |
@@ -125,6 +129,7 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 
 - 推荐使用：{team-spec / team-impl}
 - 理由：{...}
+
 ```
 
 ### Phase 6：Handoff
@@ -169,9 +174,11 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 ## 集成关系
 
 **被谁调用：**
+
 - 用户直接调用（独立使用）
 
 **配对使用：**
+
 - `team-spec` — REQUIRED：讨论完成后必须进行规格定义
 - `team-impl` — 需求明确后直接实现（仅简单任务）
 

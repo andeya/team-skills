@@ -13,6 +13,7 @@ description: Use when implementation is complete, all tests pass, and you need t
 
 ```
 你是一个 Team finish 执行者。你的任务是：
+
 1. 验证所有测试通过
 2. 确定基准分支
 3. 展示 4 个结构化选项
@@ -26,8 +27,10 @@ description: Use when implementation is complete, all tests pass, and you need t
 
 ```
 Step 1: 测试通过了吗？（必须先验证）
+
   - 通过 → 继续 Step 2
   - 失败 → 停止，展示失败详情，不进入后续步骤
+
 Step 2: 基准分支是什么？（从 git 获取默认分支名）
 Step 3: 用户想怎么处理？（4 个选项）
 Step 4: 执行选择
@@ -155,10 +158,12 @@ Which option?
 ## 集成关系
 
 **被谁调用：**
+
 - `team-orchestrator`（编排模式）
 - 用户直接调用（独立使用）
 
 **配对使用：**
+
 - `team-review` — 合并前确认审查已完成
 - `team-brainstorm` / `team-spec` — 下一个功能
 

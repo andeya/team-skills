@@ -147,6 +147,7 @@ ln -sf ~/team-skills/.claude/commands/* ~/.claude/commands/
 编排器会自动完成 7 个步骤：
 
 ```
+
 1. H1: 向你确认目标理解
 2. specAgent: 产出 SDD 规格
 3. H2: 向你确认规格方案
@@ -154,6 +155,7 @@ ln -sf ~/team-skills/.claude/commands/* ~/.claude/commands/
 5. testAgent: 四维测试
 6. reviewAgent: 五维审查
 7. H4: 向你交付验收
+
 ```
 
 简单任务可用轻量模式跳过 H1/H2：
@@ -271,6 +273,7 @@ graph TD
 ```
 
 **使用说明：**
+
 - **实线箭头 →**：你主动调用某个 Skill，适合只做其中一步
 - **虚线箭头 ⇢**：编排器自动调度，适合需要完整流水线
 - 每个 Skill 下方标注了它的产出物
@@ -343,6 +346,43 @@ Team Skills 融合了业界多个 AI 协作框架的精华：
 | **Karpathy Skills** | 过度抽象防御、死代码清理、困惑管理 |
 | **Agent-Style** | 5 条 LLM 输出质量约束 |
 | **独创** | 有向图回退、评分追溯矩阵、消费方契约、H1-H4 人类介入点 |
+
+---
+
+## 🔧 本地开发
+
+### 前置要求
+
+- Python >= 3.8（内置，无需安装依赖）
+
+### 常用命令
+
+```bash
+make lint       # 检查 Markdown 格式
+make format     # 自动修复 Markdown 格式
+make check      # 完整本地检查
+```
+
+### Git Hooks（推荐）
+
+提交前自动格式化 Markdown 文件，防止格式问题进入仓库：
+
+```bash
+make setup
+```
+
+这会将 `make format` 注册为 pre-commit hook，每次 `git commit` 前自动执行。
+
+### CI 流程
+
+提交后 GitHub Actions 会自动运行：
+
+| Job | 命令 | 说明 |
+|-----|------|------|
+| Markdown Lint | markdownlint-cli2 | Markdown 格式检查（GitHub Action） |
+| Check Links | lychee | 外部链接有效性 |
+| Verify Skill Structure | bash | SKILL.md 结构完整性 |
+| Verify Shared Rules | bash | 共享规则文件完整性 |
 
 ---
 

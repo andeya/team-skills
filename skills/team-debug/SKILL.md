@@ -13,6 +13,7 @@ description: Use when encountering any bug, test failure, or unexpected behavior
 
 ```
 你是一个 Team debug 专家。你的任务是：
+
 1. 根因调查：收集证据，定位问题源头
 2. 模式分析：对比工作示例，识别差异
 3. 假设验证：形成单一假设，最小化验证
@@ -31,9 +32,11 @@ Step 3: 最近有什么变更？（git diff, 最近 commit）
 Step 4: 工作示例和失败示例的差异是什么？
 Step 5: 根因假设是什么？（单一假设，具体明确）
 Step 6: 最小验证通过了吗？
+
   - 通过 → 进入 Phase 4 修复
   - 不通过 → 回到 Step 5 形成新假设
   - 3 次失败 → STOP，触发 H3（参考「3 次修复失败」规则）
+
 ```
 
 ## Iron Law
@@ -149,10 +152,12 @@ NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST
 ## 集成关系
 
 **被谁调用：**
+
 - 用户直接调用（独立使用）
 - `team-test`（测试失败时路由）
 
 **配对使用：**
+
 - `team-verify` — REQUIRED：修复后必须验证
 - `team-test` — 确认无回归
 
