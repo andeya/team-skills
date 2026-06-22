@@ -8,4 +8,4 @@ STAGED=$(git diff --cached --name-only --diff-filter=ACM | grep '\.md$' || true)
 npm run format
 
 # Re-stage formatted files
-git diff --name-only --diff-filter=M | grep '\.md$' | xargs -r git add
+git diff --name-only --diff-filter=M | grep '\.md$' | xargs -r git add || true
