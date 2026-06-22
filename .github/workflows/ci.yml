@@ -24,7 +24,7 @@ jobs:
             - name: Check external links
               uses: lycheeverse/lychee-action@v2
               with:
-                  args: --no-progress --exclude 'localhost' --exclude 'claude\.ai' --exclude 'package-lock\.json' '**/*.md' '**/*.json'
+                  args: --no-progress --exclude 'localhost' --exclude 'claude\.ai' '**/*.md'
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
