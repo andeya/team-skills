@@ -1,4 +1,4 @@
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { copyFileSync as fsCopyFile } from 'node:fs';
 import { PACKAGE_ROOT } from '../lib/constants.js';
 import { discoverSkills, discoverSharedRules, discoverCommands } from '../lib/inventory.js';
@@ -18,6 +18,7 @@ export function registerInit(program) {
 }
 
 function runInit(dir, opts) {
+  dir = resolve(dir);
   const { ide, withScore, dryRun } = opts;
   const exclude = withScore ? [] : ['team-score'];
   const ides = detectIDE(dir, ide, { strict: true });
@@ -54,13 +55,24 @@ function runInit(dir, opts) {
     }
   }
 
-  // Claude Code: commands → .claude/commands/
+  // Claude Code: skills as slash commands + CLI helpers → .claude/commands/
   if (ides.includes('claude')) {
     const cmdsDst = join(dir, '.claude', 'commands');
-    log.heading(`复制 Commands → ${cmdsDst}`);
+    log.heading(`复制 Skills → ${cmdsDst}`);
 
-    const cmds = discoverCommands();
     if (!dryRun) ensureDir(cmdsDst);
+
+    // Each skill's SKILL.md becomes a slash command
+    for (const skill of skills) {
+      const src = join(skill.path, 'SKILL.md');
+      const dest = join(cmdsDst, `${skill.name}.md`);
+      if (!dryRun) fsCopyFile(src, dest);
+      log.success(`${tag}/${skill.name}`);
+      count++;
+    }
+
+    // CLI helper commands
+    const cmds = discoverCommands();
     for (const c of cmds) {
       if (!dryRun) fsCopyFile(c.path, join(cmdsDst, c.filename));
       log.success(`${tag}Command: ${c.filename}`);

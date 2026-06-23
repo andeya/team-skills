@@ -1,10 +1,9 @@
 import {
   mkdirSync, symlinkSync, unlinkSync, readlinkSync,
   lstatSync, existsSync, readdirSync, statSync,
-  copyFileSync, readFileSync, chmodSync, rmSync,
+  copyFileSync, chmodSync, rmSync,
 } from 'node:fs';
 import { join, dirname } from 'node:path';
-import { createHash } from 'node:crypto';
 
 export function ensureDir(dir) {
   mkdirSync(dir, { recursive: true });
@@ -13,14 +12,6 @@ export function ensureDir(dir) {
 export function isSymlink(p) {
   try {
     return lstatSync(p).isSymbolicLink();
-  } catch {
-    return false;
-  }
-}
-
-export function isSymlinkTo(p, target) {
-  try {
-    return lstatSync(p).isSymbolicLink() && readlinkSync(p) === target;
   } catch {
     return false;
   }
@@ -35,7 +26,7 @@ export function createSymlinkSafe(source, target, { force = false, dryRun = fals
     unlinkSync(target);
   } else if (existsSync(target)) {
     if (!force) return 'conflict';
-    unlinkSync(target);
+    rmSync(target, { recursive: true });
   }
 
   ensureDir(dirname(target));
@@ -55,11 +46,6 @@ export function removeSymlinkSafe(target, expectedSource) {
 
   unlinkSync(target);
   return 'removed';
-}
-
-export function computeFileHash(filePath) {
-  const content = readFileSync(filePath);
-  return createHash('sha256').update(content).digest('hex');
 }
 
 export function copyRecursive(source, target) {
@@ -82,25 +68,6 @@ export function copyRecursive(source, target) {
       }
     }
   }
-}
-
-export function computeDirectoryHashes(dirPath, prefix = '') {
-  const hashes = {};
-  if (!existsSync(dirPath)) return hashes;
-
-  const entries = readdirSync(dirPath, { withFileTypes: true });
-  for (const entry of entries) {
-    const fullPath = join(dirPath, entry.name);
-    const relPath = prefix ? `${prefix}/${entry.name}` : entry.name;
-
-    if (entry.isDirectory()) {
-      Object.assign(hashes, computeDirectoryHashes(fullPath, relPath));
-    } else {
-      hashes[relPath] = computeFileHash(fullPath);
-    }
-  }
-
-  return hashes;
 }
 
 export function rmdirIfEmpty(dir) {

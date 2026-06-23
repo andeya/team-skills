@@ -19,7 +19,7 @@ export function registerList(program) {
 
 function runList(opts) {
   const { target, json } = opts;
-  const results = { skills: [], rules: [], commands: [], hooks: [] };
+  const results = { skills: [], rules: [], skillCommands: [], commands: [], hooks: [] };
 
   // Check symlink-based install
   const skills = discoverSkills();
@@ -42,7 +42,18 @@ function runList(opts) {
     });
   }
 
-  // Commands
+  // Skill slash commands in Claude Code
+  for (const skill of skills) {
+    const skillMd = join(skill.path, 'SKILL.md');
+    const dest = join(DEFAULT_COMMANDS_TARGET, `${skill.name}.md`);
+    results.skillCommands.push({
+      name: skill.name,
+      status: getStatus(dest, skillMd),
+      path: dest,
+    });
+  }
+
+  // CLI helper commands
   for (const cmd of discoverCommands()) {
     const dest = join(DEFAULT_COMMANDS_TARGET, cmd.filename);
     results.commands.push({
@@ -53,9 +64,12 @@ function runList(opts) {
   }
 
   // Hooks
-  for (const dir of [CURSOR_HOOKS_DIR, CLAUDE_HOOKS_DIR]) {
-    const platform = dir.includes('.cursor') ? 'Cursor' : 'Claude Code';
-    for (const hook of discoverHooks()) {
+  for (const hook of discoverHooks()) {
+    const dirs = hook.name === 'hooks.json'
+      ? [CURSOR_HOOKS_DIR]
+      : [CURSOR_HOOKS_DIR, CLAUDE_HOOKS_DIR];
+    for (const dir of dirs) {
+      const platform = dir.includes('.cursor') ? 'Cursor' : 'Claude Code';
       const dest = join(dir, hook.name);
       results.hooks.push({
         name: `${platform}/${hook.name}`,
@@ -77,7 +91,10 @@ function runList(opts) {
   log.heading('共享规则');
   printTable(results.rules);
 
-  log.heading('Claude Code 命令');
+  log.heading('Claude Code Skill 斜杠命令');
+  printTable(results.skillCommands);
+
+  log.heading('CLI 辅助命令');
   printTable(results.commands);
 
   log.heading('Hooks');

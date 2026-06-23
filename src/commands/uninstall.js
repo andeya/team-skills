@@ -1,5 +1,4 @@
 import { join } from 'node:path';
-import { readdirSync } from 'node:fs';
 import {
   PACKAGE_ROOT, DEFAULT_SKILLS_TARGET, DEFAULT_COMMANDS_TARGET,
   CURSOR_HOOKS_DIR, CLAUDE_HOOKS_DIR,
@@ -19,91 +18,72 @@ export function registerUninstall(program) {
     .action(runUninstall);
 }
 
+function remove(dest, expectedSource, label, dryRun) {
+  if (dryRun) {
+    log.info(`[dry-run] 将移除: ${dest}`);
+    return true;
+  }
+  const result = removeSymlinkSafe(dest, expectedSource);
+  if (result === 'removed') {
+    log.success(label);
+    return true;
+  } else if (result === 'foreign') {
+    log.skip(`${label}（指向其他来源，跳过）`);
+  }
+  return false;
+}
+
 function runUninstall(target, opts) {
   const { hooks, commands, dryRun } = opts;
   let removed = 0;
 
-  log.heading('移除 Agent Skills');
-  for (const skill of discoverSkills()) {
-    const dest = join(target, skill.name);
-    if (dryRun) {
-      log.info(`[dry-run] 将移除: ${dest}`);
-      removed++;
-      continue;
-    }
-    const result = removeSymlinkSafe(dest, skill.path);
-    if (result === 'removed') {
-      log.success(`Skill: ${skill.name}`);
-      removed++;
-    } else if (result === 'foreign') {
-      log.skip(`${skill.name}（指向其他来源，跳过）`);
-    }
+  // Cursor Skills → ~/.agents/skills/
+  log.heading('移除 Cursor Skills');
+  const skills = discoverSkills();
+  for (const skill of skills) {
+    if (remove(join(target, skill.name), skill.path, `Skill: ${skill.name}`, dryRun)) removed++;
   }
 
+  // Claude Code skill slash commands → ~/.claude/commands/
+  log.heading('移除 Claude Code Skill 命令');
+  for (const skill of skills) {
+    const skillMd = join(skill.path, 'SKILL.md');
+    const dest = join(DEFAULT_COMMANDS_TARGET, `${skill.name}.md`);
+    if (remove(dest, skillMd, `/${skill.name}`, dryRun)) removed++;
+  }
+
+  // Shared rules
   log.heading('移除共享规则');
   for (const rule of discoverSharedRules()) {
-    const dest = join(target, '_team-rules', rule.name);
-    if (dryRun) {
-      log.info(`[dry-run] 将移除: ${dest}`);
-      removed++;
-      continue;
-    }
-    const result = removeSymlinkSafe(dest, rule.path);
-    if (result === 'removed') {
-      log.success(`Rule: ${rule.name}`);
-      removed++;
-    }
+    if (remove(join(target, '_team-rules', rule.name), rule.path, `Rule: ${rule.name}`, dryRun)) removed++;
   }
   if (!dryRun) rmdirIfEmpty(join(target, '_team-rules'));
 
   if (commands !== false) {
-    log.heading('移除 Command Skills + Claude Code 命令');
+    log.heading('移除 CLI 辅助命令');
     for (const cmd of discoverCommands()) {
-      // Command Skill directory
+      // Cursor Skill directory
       const skillDest = join(target, cmd.name, 'SKILL.md');
-      if (!dryRun) {
-        const result = removeSymlinkSafe(skillDest, cmd.path);
-        if (result === 'removed') {
-          log.success(`Command Skill: ${cmd.name}`);
-          removed++;
-          rmdirIfEmpty(join(target, cmd.name));
-        }
-      } else {
-        log.info(`[dry-run] 将移除: ${skillDest}`);
+      if (remove(skillDest, cmd.path, `Cursor Skill: ${cmd.name}`, dryRun)) {
         removed++;
+        if (!dryRun) rmdirIfEmpty(join(target, cmd.name));
       }
 
       // Claude Code command
       const cmdDest = join(DEFAULT_COMMANDS_TARGET, cmd.filename);
-      if (!dryRun) {
-        const result = removeSymlinkSafe(cmdDest, cmd.path);
-        if (result === 'removed') {
-          log.success(`Claude Command: ${cmd.filename}`);
-          removed++;
-        }
-      } else {
-        log.info(`[dry-run] 将移除: ${cmdDest}`);
-        removed++;
-      }
+      if (remove(cmdDest, cmd.path, `Claude Command: ${cmd.filename}`, dryRun)) removed++;
     }
   }
 
   if (hooks !== false) {
     log.heading('移除 Hooks');
-    const hookFiles = discoverHooks();
-    for (const dir of [CURSOR_HOOKS_DIR, CLAUDE_HOOKS_DIR]) {
-      for (const hook of hookFiles) {
+    for (const hook of discoverHooks()) {
+      const dirs = hook.name === 'hooks.json'
+        ? [CURSOR_HOOKS_DIR]
+        : [CURSOR_HOOKS_DIR, CLAUDE_HOOKS_DIR];
+      for (const dir of dirs) {
         const dest = join(dir, hook.name);
-        if (!dryRun) {
-          const result = removeSymlinkSafe(dest, hook.path);
-          if (result === 'removed') {
-            log.success(`Hook: ${dest}`);
-            removed++;
-          }
-        } else {
-          log.info(`[dry-run] 将移除: ${dest}`);
-          removed++;
-        }
+        if (remove(dest, hook.path, `Hook: ${dest}`, dryRun)) removed++;
       }
     }
   }

@@ -1,5 +1,5 @@
-import { join } from 'node:path';
-import { existsSync, copyFileSync as fsCopyFile, rmSync, readdirSync } from 'node:fs';
+import { join, resolve } from 'node:path';
+import { existsSync, copyFileSync as fsCopyFile, rmSync, readdirSync, readFileSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 import { PACKAGE_ROOT } from '../lib/constants.js';
 import { discoverSkills, discoverSharedRules, discoverCommands } from '../lib/inventory.js';
@@ -26,10 +26,9 @@ function upgradeSelf(dryRun) {
       'npm view team-skills version --registry https://registry.npmjs.org 2>/dev/null',
       { encoding: 'utf8' },
     ).trim();
-    const local = execSync(
-      `node -e "console.log(require('${join(PACKAGE_ROOT, 'package.json')}').version)"`,
-      { encoding: 'utf8' },
-    ).trim();
+    const local = JSON.parse(
+      readFileSync(join(PACKAGE_ROOT, 'package.json'), 'utf8'),
+    ).version;
     if (current === local) {
       log.skip(`已是最新版本 (${local})`);
       return;
@@ -49,7 +48,7 @@ function upgradeSelf(dryRun) {
 function cleanStaleSkills(targetDir, currentNames, dryRun) {
   if (!existsSync(targetDir)) return;
   const existing = readdirSync(targetDir).filter(
-    name => !name.startsWith('_') && name !== 'CLAUDE.md',
+    name => !name.startsWith('_') && name !== 'CLAUDE.md' && name.startsWith('team-'),
   );
   for (const name of existing) {
     if (!currentNames.has(name)) {
@@ -60,7 +59,23 @@ function cleanStaleSkills(targetDir, currentNames, dryRun) {
   }
 }
 
+function cleanStaleCommands(cmdDir, currentNames, dryRun) {
+  if (!existsSync(cmdDir)) return;
+  const existing = readdirSync(cmdDir).filter(
+    name => name.startsWith('team-') && name.endsWith('.md'),
+  );
+  for (const name of existing) {
+    const skillName = name.slice(0, -3);
+    if (!currentNames.has(skillName)) {
+      const tag = dryRun ? '[dry-run] ' : '';
+      if (!dryRun) rmSync(join(cmdDir, name));
+      log.warn(`${tag}移除旧命令: ${name}`);
+    }
+  }
+}
+
 function runUpdate(dir, opts) {
+  dir = resolve(dir);
   const { ide, withScore, skipSelf, dryRun } = opts;
 
   if (!skipSelf) upgradeSelf(dryRun);
@@ -82,9 +97,11 @@ function runUpdate(dir, opts) {
 
   const skills = discoverSkills(PACKAGE_ROOT, { exclude });
   const rules = discoverSharedRules();
+  const cmds = discoverCommands();
   const currentSkillNames = new Set(skills.map(s => s.name));
+  const currentCmdNames = new Set(cmds.map(c => c.name));
 
-  // Cursor skills → .cursor/skills/
+  // Cursor: skills → .cursor/skills/
   if (ides.includes('cursor')) {
     const skillsDst = join(dir, '.cursor', 'skills');
     log.heading(`更新 Skills → ${skillsDst}`);
@@ -111,13 +128,25 @@ function runUpdate(dir, opts) {
     }
   }
 
-  // Claude Code commands → .claude/commands/
+  // Claude Code: skills as commands + CLI helpers → .claude/commands/
   if (ides.includes('claude')) {
     const cmdsDst = join(dir, '.claude', 'commands');
     log.heading(`更新 Commands → ${cmdsDst}`);
 
-    const cmds = discoverCommands();
+    cleanStaleCommands(cmdsDst, new Set([...currentSkillNames, ...currentCmdNames]), dryRun);
+
     if (!dryRun) ensureDir(cmdsDst);
+
+    // Each skill's SKILL.md becomes a slash command
+    for (const skill of skills) {
+      const src = join(skill.path, 'SKILL.md');
+      const dest = join(cmdsDst, `${skill.name}.md`);
+      if (!dryRun) fsCopyFile(src, dest);
+      log.success(`${tag}/${skill.name}`);
+      count++;
+    }
+
+    // CLI helper commands
     for (const c of cmds) {
       if (!dryRun) fsCopyFile(c.path, join(cmdsDst, c.filename));
       log.success(`${tag}Command: ${c.filename}`);
