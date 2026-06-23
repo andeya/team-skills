@@ -25,24 +25,15 @@ If you were dispatched as a subagent to execute a specific task, skip this skill
 
 ```
 
-### 思维链
+### 推理指引
 
-```
-Step 1: 用户当前处于什么阶段？（需求/规格/实现/测试/审查/调试/完成？）
-Step 2: 根据阶段从选择矩阵中找到对应 Skill
-Step 3: 推荐 Skill 并说明为什么适合当前场景
-Step 4: 如果场景模糊，推荐 team-brainstorm 先讨论
-```
+根据用户描述的当前阶段（需求/规格/实现/测试/审查/调试/完成），从选择矩阵中匹配最合适的 Skill 并说明理由。
 
 ## Iron Law
 
 ```
 NO SKILL RECOMMENDATION WITHOUT SCENE ANALYSIS FIRST
 ```
-
-## Spirit-over-Letter
-
-违反规则的文字但遵守精神 = 遵守规则。遵守规则的文字但违反精神 = 违反规则。
 
 ## 质量职责
 
@@ -119,21 +110,13 @@ NO SKILL RECOMMENDATION WITHOUT SCENE ANALYSIS FIRST
 推荐理由：{reason}
 ```
 
-## Red Flags
+## STOP Signals
 
-| 想法 | 现实 |
-| ---- | ---- |
-| "这只是个简单问题" | 问题也是任务，检查是否有 skill 适用 |
-| "我需要先看代码" | Skill 告诉你如何探索，先检查 |
-| "我记得这个 skill" | Skill 会演化，读取当前版本 |
-| "这个 skill 太重了" | 简单的事用 skill 自然快 |
+如果你发现自己即将做以下任何一件事——立即停止，重新审视：
 
-## Common Rationalizations
-
-| 借口 | 现实 |
-| ---- | ---- |
-| "用户直接说了用哪个 skill" | 仍需确认场景是否匹配 |
-| "这个场景没有对应 skill" | 至少推荐 team-brainstorm 讨论 |
+- 不分析场景就直接推荐 Skill
+- 场景模糊时跳过 team-brainstorm 直接推荐实现类 Skill
+- 凭记忆推荐 Skill 而不读取当前版本的选择矩阵
 
 ## 集成关系
 

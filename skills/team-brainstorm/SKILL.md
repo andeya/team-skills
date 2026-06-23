@@ -24,30 +24,15 @@ description: Use when requirements are fuzzy, need to discuss and form a plan be
 关键区别：你不是在写方案，你是在引导讨论。不要一次抛出所有问题。用户没确认之前不能进入实现阶段。每次只问一个问题，等回复后再问下一个。
 ```
 
-### 思维链
+### 推理指引
 
-```
-Step 1: 用户真正想要什么？（从业务本质出发）
-Step 2: 当前代码基线是什么状态？
-Step 3: 有哪些隐含假设需要验证？
-Step 4: 有哪几种可行方案？
-Step 5: 推荐哪个方案？为什么？
-Step 6: 用户确认了吗？
-
-  - 确认 → 产出 design-brief.md
-  - 不确认 → 回到 Step 1 或 Step 4，根据反馈调整
-
-```
+始终从用户的业务本质出发，逐步澄清隐含假设，确保在用户确认前不进入实现阶段。
 
 ## Iron Law
 
 ```
 NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 ```
-
-## Spirit-over-Letter
-
-违反规则的文字但遵守精神 = 遵守规则。遵守规则的文字但违反精神 = 违反规则。
 
 ## 质量职责
 
@@ -134,8 +119,8 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 
 ### Phase 6：Handoff
 
-- 如果需求仍需细化 → 推荐 `team-spec` 产出完整 SDD
-- 如果需求已明确 → 推荐 `team-impl` 直接 TDD 实现
+- 默认路径 → 推荐 `team-spec` 产出完整 SDD（推荐）
+- 仅当用户明确要求跳过规格阶段 → 可推荐 `team-impl` 直接 TDD 实现（需用户显式确认）
 
 ## 自检门禁
 
@@ -155,21 +140,14 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 下一步：→ team-spec / → team-impl
 ```
 
-## Red Flags
+## STOP Signals
 
-- 跳过探索直接写方案
-- 一次抛出所有问题不等回复
-- 方案对比只给一个选项
-- 用户没确认就进入实现
-- 产出 01-plan.md（那是 team-spec 的职责）
+如果你发现自己即将做以下任何一件事——立即停止，重新审视：
 
-## Common Rationalizations
-
-| 借口 | 现实 |
-| ---- | ---- |
-| "这个需求很简单，不需要讨论" | 简单需求也有隐含假设，讨论能暴露它们 |
-| "我已经知道方案了" | 你的方案可能忽略了上下文中的约束 |
-| "先写代码再讨论" | 顺序反了，讨论确认后才能写代码 |
+- 跳过代码库探索，凭空设计方案
+- 一次抛出所有问题，不等用户逐个回复
+- 方案对比只提供一个选项，没有备选方案
+- 用户没有确认就进入实现或产出 01-plan.md
 
 ## 集成关系
 
@@ -180,11 +158,11 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 **配对使用：**
 
 - `team-spec` — REQUIRED：讨论完成后必须进行规格定义
-- `team-impl` — 需求明确后直接实现（仅简单任务）
+- `team-impl` — 仅当用户明确要求跳过规格阶段时可直接实现
 
-> **终端状态**：讨论完成后，唯一调用的 skill 是 `team-spec`。不要跳过规格定义直接进入实现。
+> **终端状态**：讨论完成后，默认调用 `team-spec` 进行规格定义。仅当用户**显式要求**跳过规格阶段时，才可直接进入 `team-impl`。
 
 ## 下一步
 
-- 产出 design-brief.md 后，如果需求仍需细化，推荐使用 `team-spec`
-- 如果需求已明确，可直接使用 `team-impl` 进行 TDD 实现
+- 产出 design-brief.md 后，推荐使用 `team-spec` 进行规格定义（默认路径）
+- 仅当用户明确要求跳过规格时，可直接使用 `team-impl` 进行 TDD 实现

@@ -23,29 +23,15 @@ description: Use when implementation is complete, all tests pass, and you need t
 关键区别：你不是在帮你合并代码。测试没通过之前不能展示选项。丢弃必须用户输入 "discard" 确认。不要 force-push 除非用户明确要求。
 ```
 
-### 思维链
+### 推理指引
 
-```
-Step 1: 测试通过了吗？（必须先验证）
-
-  - 通过 → 继续 Step 2
-  - 失败 → 停止，展示失败详情，不进入后续步骤
-
-Step 2: 基准分支是什么？（从 git 获取默认分支名）
-Step 3: 用户想怎么处理？（4 个选项）
-Step 4: 执行选择
-Step 5: 清理
-```
+在展示任何完成选项之前，先确认测试已通过并确定基准分支，所有操作必须等待用户明确选择。
 
 ## Iron Law
 
 ```
 NO BRANCH COMPLETION WITHOUT TEST VERIFICATION FIRST
 ```
-
-## Spirit-over-Letter
-
-违反规则的文字但遵守精神 = 遵守规则。遵守规则的文字但违反精神 = 违反规则。
 
 ## 质量职责
 
@@ -132,28 +118,20 @@ Which option?
 ## 完成标志
 
 ```
-状态：DONE
+状态：DONE | DONE_WITH_CONCERNS | NEEDS_CONTEXT | BLOCKED
 选择：{merge / PR / keep / discard}
 测试：{N} 通过，0 失败
 分支：{branch-name} → {base-branch}
 ```
 
-## Red Flags
+## STOP Signals
 
-- 测试未通过就展示选项
-- 未验证合并后测试就声明完成
-- 丢弃前不确认
-- 不清理工作目录
-- force-push 未显式请求
+如果你发现自己即将做以下任何一件事——立即停止，重新审视：
 
-## Common Rationalizations
-
-| 借口 | 现实 |
-| ---- | ---- |
-| "测试应该能过" | 运行验证 |
-| "改动很小不用测试" | 至少运行相关测试 |
-| "先合并再修" | 先修再合 |
-| "工作目录留着以后用" | 只有 Option 3 才保留 |
+- 测试未通过就展示合并/PR 选项
+- 合并后没有重新运行测试就声明完成
+- 丢弃分支前没有要求用户输入 "discard" 确认
+- 执行 force-push 但用户没有明确要求
 
 ## 集成关系
 

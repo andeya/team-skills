@@ -21,7 +21,7 @@ escape_for_json() {
 
 meta_skill_escaped=$(escape_for_json "$meta_skill_content")
 
-session_context="<EXTREMELY_IMPORTANT>\nYou have Team Skills available.\n\n**Below is the full content of using-team-skills meta-skill:**\n\n${meta_skill_escaped}\n</EXTREMELY_IMPORTANT>"
+session_context="You have Team Skills available. Use /team-orchestrator for full pipeline, or ask which skill fits your scenario.\n\n**Below is the using-team-skills meta-skill for reference:**\n\n${meta_skill_escaped}"
 
 if [ -n "${CURSOR_PLUGIN_ROOT:-}" ]; then
   printf '{\n  "additional_context": "%s"\n}\n' "$session_context"

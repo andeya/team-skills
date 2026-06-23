@@ -31,34 +31,23 @@ flowchart TD
 
 1. 理解用户需求，拆解为可执行的子任务
 2. 按有向图流程调度 specAgent → implAgent → testAgent → reviewAgent
-3. 在 4 个人类介入点（H1-H4）暂停等待用户确认（30 分钟超时后自动触发 H3 提醒）
+3. 在 4 个人类介入点（H1-H4）暂停等待用户确认
 4. 根据各 Agent 的产出质量动态决定回退或继续
 5. 遵守 Constitutional Rules（见下文），不可跳过任何规则
-6. 如果用户指定 --light 轻量模式，跳过 H1/H2/Step 6，保留核心流程
+6. 如果用户指定 --compact 精简模式，简化 H1 为单句确认、跳过 H2、跳过 Step 6，保留 H4 验收不可省略
 
-关键区别：你不是线性流水线。testAgent 发现 bug 必须回退 implAgent，reviewAgent 发现 spec 遗漏必须回退 specAgent。同一阶段回退不超过 2 次。人类介入点必须等待显式确认。
+关键区别：你不是线性流水线。testAgent 发现 bug 必须回退 implAgent，reviewAgent 发现 spec 遗漏必须回退 specAgent。同一阶段回退不超过 2 次。H1 和 H4 在任何模式下均不可省略（H1 可在精简模式下简化为单句确认）。
 ```
 
-### 思维链
+### 路由推理
 
-在每次调度 Agent 或触发人类介入点之前，按以下步骤推理：
-
-```
-Step 1: 当前状态是什么？（哪个 Agent 刚完成？产出状态是 DONE/DONE_WITH_CONCERNS/NEEDS_CONTEXT/BLOCKED？）
-Step 2: 产出质量检查——文件是否齐全？自检是否通过？有无 P0/P1 问题？
-Step 3: 下一步路由——根据 Step 2 结果选择：继续下一个 Agent / 回退（检查回退计数）/ Kill Switch / H3 人类介入
-Step 4: 执行选择并记录路由决策理由
-```
+在每次调度 Agent 或触发人类介入点之前，推理当前状态、产出质量、下一步路由选择及其理由。
 
 ## Iron Law
 
 ```
 NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 ```
-
-## Spirit-over-Letter
-
-违反规则的文字但遵守精神 = 遵守规则。遵守规则的文字但违反精神 = 违反规则。
 
 ## 工具兼容
 
@@ -194,10 +183,10 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 
 | 介入点 | 触发时机                                                         | 编排器动作                                                                       | 人类决策内容                                             | 超时策略     |
 | ------ | ---------------------------------------------------------------- | -------------------------------------------------------------------------------- | -------------------------------------------------------- | ------------ |
-| H1     | 编排器初始化后，调度任何 Agent 之前                              | 向用户展示任务理解 + 初步方案 + 风险预判 + 分期建议                              | 确认目标理解是否正确，方案方向是否合理，是否接受分期交付 | 等待用户回复（超时 30 分钟后自动触发 H3 提醒） |
-| H2     | specAgent 产出 01-05 后                                          | 向用户展示 01-plan.md 和 03-sdd.md 核心内容 + 分期方案(P1/P2) + Kill Switch 评估 | 确认规格方案是否接受，是否需要调整，是否继续执行         | 等待用户回复（超时 30 分钟后自动触发 H3 提醒） |
-| H3     | testAgent/reviewAgent 发现需要人类决策的问题，或触发 Kill Switch | 向用户展示问题描述 + 建议方案 + 选项                                             | 决策如何处理问题，或确认是否终止任务                     | 等待用户回复（超时 30 分钟后自动触发 H3 提醒） |
-| H4     | reviewAgent 完成 + team 产出 14-15 后                            | 向用户展示交付物清单 + 代码 diff 摘要 + P2 候选建议 + Kill Switch 评估           | 验收最终交付物，决策是否继续 P2，或触发 Kill Switch 终止 | 等待用户回复（超时 30 分钟后自动触发 H3 提醒） |
+| H1     | 编排器初始化后，调度任何 Agent 之前                              | 向用户展示任务理解 + 初步方案 + 风险预判 + 分期建议                              | 确认目标理解是否正确，方案方向是否合理，是否接受分期交付 | 等待用户回复 |
+| H2     | specAgent 产出 01-05 后                                          | 向用户展示 01-plan.md 和 03-sdd.md 核心内容 + 分期方案(P1/P2) + Kill Switch 评估 | 确认规格方案是否接受，是否需要调整，是否继续执行         | 等待用户回复 |
+| H3     | testAgent/reviewAgent 发现需要人类决策的问题，或触发 Kill Switch | 向用户展示问题描述 + 建议方案 + 选项                                             | 决策如何处理问题，或确认是否终止任务                     | 等待用户回复 |
+| H4     | reviewAgent 完成 + team 产出 14-15 后                            | 向用户展示交付物清单 + 代码 diff 摘要 + P2 候选建议 + Kill Switch 评估           | 验收最终交付物，决策是否继续 P2，或触发 Kill Switch 终止 | 等待用户回复 |
 
 ## 质量职责
 
@@ -221,31 +210,78 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 
 **方式 B 流程**：跳过 Step 1-5，从 Step 6 开始。验证 `docs/tasks/{slug}/` 下 01-13 + task-rules.md 已存在，缺失文件触发 H3 由用户决定是否补全。
 
-### 方式 C：轻量模式（简单任务）
+### 方式 C：精简模式（简单任务）
 
-对于**改动范围小、风险低**的任务（如修一个 bug、加一个字段、改一个文案），可以使用轻量模式跳过部分环节：
+对于**改动范围小、风险低**的任务（如修一个 bug、加一个字段、改一个文案），可以使用精简模式减少环节：
 
-1. 用户执行 `/team-orchestrator --light {任务描述}`
-2. 跳过 H1（编排器直接开始）
+1. 用户执行 `/team-orchestrator --compact {任务描述}`
+2. H1 简化为单句确认（编排器展示一句话任务理解，用户回复确认即可）
 3. 跳过 H2（specAgent 产出后直接进入 implAgent）
 4. 跳过 Step 6（14-team.md / 15-brief.md 不产出）
-5. 保留：specAgent → implAgent → testAgent → reviewAgent → H4
+5. **H4 不可省略**：reviewAgent 完成后仍需人类验收
+6. specAgent 产出精简版文档（见下方对比表）
 
-**轻量模式 vs 完整模式对比**：
+### 任务规模分级参考
 
-| 环节 | 完整模式 | 轻量模式 |
+| 级别 | 典型场景 | 推荐模式 | 预期文档产出 |
+| ---- | -------- | -------- | ------------ |
+| Small | 修 bug、改文案、加字段、调样式 | `--compact` 精简模式 | 03-sdd + 04-boundary + 06-tdd-log（最少 3 文件） |
+| Medium | 新增功能模块、重构组件、加 API | 完整模式（默认） | 全部 17 文件 |
+| Large | 跨系统重构、架构变更、多模块联动 | 完整模式 + P1/P2 分期 | 全部 17 文件 + 多期迭代 |
+
+判断标准：预计修改文件数 ≤ 3 且无跨模块影响 → Small；修改文件 4-15 → Medium；修改文件 > 15 或跨 2+ 模块 → Large。
+
+> **评分注意**：精简模式跳过 01-plan、02-context、05-risk、14-team、15-brief，无法通过 team-score 满分评估。如需满分评估，使用完整模式。
+
+**精简模式 vs 完整模式对比**：
+
+| 环节 | 完整模式 | 精简模式 |
 | ---- | -------- | -------- |
-| H1 人类确认 | ✅ | ❌ |
+| H1 人类确认 | ✅ 完整展示 | ✅ 单句确认（不可省略） |
 | specAgent | ✅ 6 文件 | ✅ 精简版（03-sdd.md + 04-boundary.md） |
 | H2 人类确认 | ✅ | ❌ |
 | implAgent | ✅ | ✅ |
 | testAgent | ✅ | ✅ |
 | reviewAgent | ✅ | ✅ |
-| H4 人类验收 | ✅ | ✅ |
+| H4 人类验收 | ✅ | ✅（不可省略） |
 | 团队证据 14-15 | ✅ | ❌ |
 | 归档合并 | ✅ | ✅ |
 
 ## 执行步骤
+
+### 执行模型
+
+默认执行模型是**单会话顺序执行**：编排器在同一个 AI 会话中依次调用各 sub-skill（`/team-spec` → `/team-impl` → `/team-test` → `/team-review`）。每个 sub-skill 的产出（文件）作为下一个 sub-skill 的输入。
+
+如果工具支持 Agent tool 并行调度，可在不相互依赖的阶段使用并行执行（如 Step 6 的一致性检查），但 spec→impl→test→review 主链路必须顺序执行。
+
+### 断点续传机制
+
+当 session 中断或跨 session 继续任务时：
+
+1. **写入检查点**：每个 Agent（specAgent/implAgent/testAgent/reviewAgent）完成后，自动写入 `docs/tasks/{slug}/.checkpoint.json` 文件：
+
+   ```json
+   {
+     "phase": "spec|impl|test|review|team",
+     "completed_at": "2026-01-15T10:30:00Z",
+     "rollback_counts": {
+       "test→impl": 0,
+       "test→spec": 0,
+       "review→impl": 0,
+       "review→spec": 0
+     },
+     "status": "DONE|DONE_WITH_CONCERNS|NEEDS_CONTEXT|BLOCKED",
+     "next_step": "Step 3",
+     "blocked_reason": null
+   }
+   ```
+
+2. **恢复检测**：当用户执行 `/team-orchestrator {slug}`（已有 slug），检查 `.checkpoint.json` 文件：
+   - 如存在且 `status = DONE` → 从 `next_step` 对应的 Step 继续
+   - 如存在且 `status = BLOCKED` → 触发 H3 展示 `blocked_reason`
+   - 如不存在 → 检查已有文件推断阶段（有 01-05 → 从 Step 3，有 06-08 → 从 Step 4，有 09-10 → 从 Step 5）
+3. **恢复时回退计数**：从 `.checkpoint.json` 恢复 `rollback_counts`，避免重置
 
 ### Step 1：初始化 + H1 人类确认
 
@@ -263,13 +299,22 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 
 **REQUIRED SUB-SKILL:** `team-spec`
 
-调用 `/team-spec` 或通过 Agent tool 调度，传递以下参数：
+调用方式取决于工具能力：
 
-- **任务描述**：{用户的任务描述}
-- **产出目录**：`docs/tasks/{slug}/`
-- **约束**：遵守 team-spec Skill 的 Phase 1-3 步骤；所有结论标注来源标签；产出前执行自检清单
+- **Claude Code**：直接执行 `/team-spec {任务描述}`，在同一会话中运行
+- **支持 Agent tool 的工具**：通过 Agent tool 调度，传递以下 prompt
 
-**完成验证**：确认 6 个文件已产出（01-plan.md / 02-context.md / 03-sdd.md / 04-boundary.md / 05-risk.md / prompt-template.md），自检清单全部通过（19/19，清单定义见 team-spec Skill §自检清单）。
+```
+执行 team-spec skill。
+
+任务描述：{用户的任务描述}
+产出目录：docs/tasks/{slug}/
+约束：遵守 team-spec Skill 的 Phase 1-3 步骤；所有结论标注来源标签；产出前执行自检清单。
+
+读取 skills/team-spec/SKILL.md 获取完整执行步骤。
+```
+
+**完成验证**：确认 6 个文件已产出（01-plan.md / 02-context.md / 03-sdd.md / 04-boundary.md / 05-risk.md / prompt-template.md），自检清单全部通过（19/19，清单定义见 team-spec Skill Phase 3 自检）。
 
 ### Step 2.5：H2 人类确认规格 + Kill Switch 检查
 
@@ -283,12 +328,21 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 
 **REQUIRED SUB-SKILL:** `team-impl`
 
-调用 `/team-impl` 或通过 Agent tool 调度，传递以下参数：
+调用方式取决于工具能力：
 
-- **任务 slug**：{slug}
-- **输入目录**：`docs/tasks/{slug}/`（读取 01-05 + prompt-template.md）
-- **约束**：遵守 team-impl Skill 步骤；04-boundary.md 的 allow/deny 不可越界；遵循 TDD 红-绿-重构循环；P1 聚焦
-- **如有回退上下文**：传递 testAgent/reviewAgent 的 bug 报告
+- **Claude Code**：直接执行 `/team-impl`，在同一会话中运行
+- **支持 Agent tool 的工具**：通过 Agent tool 调度，传递以下 prompt
+
+```
+执行 team-impl skill。
+
+任务 slug：{slug}
+输入目录：docs/tasks/{slug}/（读取 01-05 + prompt-template.md）
+约束：遵守 team-impl Skill 步骤；04-boundary.md 的 allow/deny 不可越界；遵循 TDD 红-绿-重构循环；P1 聚焦。
+回退上下文：{如有 testAgent/reviewAgent 的 bug 报告则附上，否则写"无"}
+
+读取 skills/team-impl/SKILL.md 获取完整执行步骤。
+```
 
 **完成验证**：确认 06-tdd-log.md / 07-prompt-log.md / 08-ai-decisions.md 已产出；测试通过；CI 检查通过。
 
@@ -298,20 +352,29 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 
 **REQUIRED SUB-SKILL:** `team-test`
 
-调用 `/team-test` 或通过 Agent tool 调度，传递以下参数：
+调用方式取决于工具能力：
 
-- **任务 slug**：{slug}
-- **输入**：`docs/tasks/{slug}/` 下的 03-sdd.md、04-boundary.md、06-tdd-log.md + implAgent 代码变更（git diff）
-- **约束**：遵守 team-test Skill 步骤；四维覆盖；所有覆盖声明标注来源标签；全量测试运行
+- **Claude Code**：直接执行 `/team-test`，在同一会话中运行
+- **支持 Agent tool 的工具**：通过 Agent tool 调度，传递以下 prompt
+
+```
+执行 team-test skill。
+
+任务 slug：{slug}
+输入：docs/tasks/{slug}/ 下的 03-sdd.md、04-boundary.md、06-tdd-log.md + implAgent 代码变更（git diff）
+约束：遵守 team-test Skill 步骤；四维覆盖；所有覆盖声明标注来源标签；全量测试运行。
+
+读取 skills/team-test/SKILL.md 获取完整执行步骤。
+```
 
 **完成验证**：确认 09-test-matrix.md / 10-test-report.md 已产出；获取路由决策（→ reviewAgent / → implAgent / → specAgent / → H3）。
 
 等待 testAgent 完成。
 
-**回退检查**（遵守 Constitutional Rule #7：同一阶段回退 ≤ 2 次，按 source→target 对独立计数）：如果 testAgent 报告发现 bug 或 spec 遗漏：
+**回退检查**（遵守 Constitutional Rule #7：同一阶段回退 ≤ 2 次，按 source→target 对独立计数，计数持久化到 `.checkpoint.json`）：如果 testAgent 报告发现 bug 或 spec 遗漏：
 
-- bug → 回到 Step 3 重新调度 implAgent，传递 bug 上下文（累计回退计数 +1）
-- spec 遗漏 → 回到 Step 2 重新调度 specAgent，传递遗漏上下文（累计回退计数 +1）
+- bug → 回到 Step 3 重新调度 implAgent，传递 bug 上下文（`.checkpoint.json` 中 `test→impl` +1）
+- spec 遗漏 → 回到 Step 2 重新调度 specAgent，传递遗漏上下文（`.checkpoint.json` 中 `test→spec` +1）
 - 同一阶段第 3 次回退 → 强制触发 H3，由人类决定是否继续
 - **Kill Switch**：如果发现任务不可行（如依赖不可用、技术方案不可行）→ 触发 H3 让人类决策是否终止
 - 人类需决策 → 触发 H3
@@ -320,21 +383,30 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 
 **REQUIRED SUB-SKILL:** `team-review`
 
-调用 `/team-review` 或通过 Agent tool 调度，传递以下参数：
+调用方式取决于工具能力：
 
-- **任务 slug**：{slug}
-- **输入**：`docs/tasks/{slug}/` 全部文件（01-10）+ 代码 diff + 项目规范（CLAUDE.md、AGENTS.md（如存在）、CONTRIBUTING.md）
-- **约束**：遵守 team-review Skill 步骤；五维度 Review + Constitutional 合规检查；P0/P1 必须修复或回退；资产更新遵循消费方契约
-- **如有回退上下文**：优先验证 testAgent 报告的问题是否已修复
+- **Claude Code**：直接执行 `/team-review`，在同一会话中运行
+- **支持 Agent tool 的工具**：通过 Agent tool 调度，传递以下 prompt
+
+```
+执行 team-review skill。
+
+任务 slug：{slug}
+输入：docs/tasks/{slug}/ 全部文件（01-10）+ 代码 diff + 项目规范（CLAUDE.md、AGENTS.md（如存在）、CONTRIBUTING.md）
+约束：遵守 team-review Skill 步骤；五维度 Review + Constitutional 合规检查；P0/P1 必须修复或回退；资产更新遵循消费方契约。
+回退上下文：{如有 testAgent 报告的问题则附上，否则写"无"}
+
+读取 skills/team-review/SKILL.md 获取完整执行步骤。
+```
 
 **完成验证**：确认 11-review.md / 12-asset-update.md / 13-retrospective.md / task-rules.md 已产出；获取修复/回退决策。
 
 等待 reviewAgent 完成。
 
-**回退检查**（遵守 Constitutional Rule #7：同一阶段回退 ≤ 2 次，按 source→target 对独立计数）：如果 reviewAgent 报告发现 P0/P1 bug 或 spec 遗漏：
+**回退检查**（遵守 Constitutional Rule #7：同一阶段回退 ≤ 2 次，按 source→target 对独立计数，计数持久化到 `.checkpoint.json`）：如果 reviewAgent 报告发现 P0/P1 bug 或 spec 遗漏：
 
-- bug → 回到 Step 3 重新调度 implAgent，传递 bug 上下文（累计回退计数 +1）
-- spec 遗漏 → 回到 Step 2 重新调度 specAgent，传递遗漏上下文（累计回退计数 +1）
+- bug → 回到 Step 3 重新调度 implAgent，传递 bug 上下文（`.checkpoint.json` 中 `review→impl` +1）
+- spec 遗漏 → 回到 Step 2 重新调度 specAgent，传递遗漏上下文（`.checkpoint.json` 中 `review→spec` +1）
 - 同一阶段第 3 次回退 → 强制触发 H3，由人类决定是否继续
 - **Kill Switch**：如果发现任务不可行 → 触发 H3 让人类决策是否终止
 - 人类需决策 → 触发 H3
@@ -359,112 +431,11 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 
 #### 文件 14：`14-team.md`
 
-```markdown
-# 团队协作记录
-
-> Team 编排器产出 | {日期}
-
-## 一、角色分工
-
-| 角色          | 负责人/Agent | 职责范围                                 | 产出物                        |
-| ------------- | ------------ | ---------------------------------------- | ----------------------------- |
-| 需求澄清      | specAgent    | 目标定义、SDD 规格、上下文选择、风险识别 | 01-05 + prompt-template       |
-| AI 编码       | implAgent    | TDD 开发、Prompt 优化、决策记录          | 06-08 + 代码                  |
-| 测试验证      | testAgent    | 测试矩阵设计、补充测试、覆盖率           | 09-10 + 测试代码              |
-| Review & 沉淀 | reviewAgent  | 代码审查、资产维护、复盘                 | 11-13 + task-rules + 资产更新 |
-| 编排协调      | team         | 调度、一致性检查、交付包装               | 14-15                         |
-
-## 二、协作资产一致性检查（自动化验证）
-
-| 检查项                  | 验证方式                               | 结果  | 修复说明         |
-| ----------------------- | -------------------------------------- | ----- | ---------------- |
-| 术语一致性              | grep 02-context 术语 vs 全部文件       | ✅/⚠️ | {不一致处已修复} |
-| 文档标题层级            | 检查任务目录下所有文件的 Markdown 结构 | ✅/⚠️ | ...              |
-| commit message          | git log 检查 type: 前缀                | ✅/⚠️ | ...              |
-| CLAUDE.md 规则无矛盾    | diff 新增 vs 已有规则                  | ✅/⚠️ | ...              |
-| 模块 CLAUDE.md 结构统一 | 对比各模块 CLAUDE.md 章节              | ✅/⚠️ | ...              |
-| 各 Agent 产出无遗漏     | 检查全部文档文件完整性                 | ✅/⚠️ | ...              |
-
-（对发现的不一致立即修复）
-
-## 三、个人贡献明细
-
-| 贡献者       | 角色        | 主要贡献      | 产出物 | 提交数 |
-| ------------ | ----------- | ------------- | ------ | ------ |
-| {人名/Agent} | specAgent   | 规格设计      | 01-05  | {N}    |
-| {人名/Agent} | implAgent   | 代码实现      | 06-08  | {N}    |
-| {人名/Agent} | testAgent   | 测试补全      | 09-10  | {N}    |
-| {人名/Agent} | reviewAgent | Review + 沉淀 | 11-13  | {N}    |
-
-## 四、交叉 Review 质量统计
-
-| 指标                                | 数值 |
-| ----------------------------------- | ---- |
-| Review 发现问题总数                 | {N}  |
-| 其中真实逻辑/安全/性能问题（P0+P1） | {N}  |
-| 其中格式/风格建议（P2+P3）          | {N}  |
-| 真实问题占比                        | {N}% |
-| 已修复问题数                        | {N}  |
-| 剩余风险数                          | {N}  |
-
-## 五、交付物完整性检查
-
-| 文件                | 状态 | 质量维度                      |
-| ------------------- | ---- | ----------------------------- |
-| 01-plan.md          | ✅   | 目标定义 + 阶段拆分           |
-| 02-context.md       | ✅   | 上下文选择与术语对齐          |
-| 03-sdd.md           | ✅   | 规格清晰度                    |
-| 04-boundary.md      | ✅   | 修改边界约束                  |
-| 05-risk.md          | ✅   | 风险与验证计划                |
-| prompt-template.md  | ✅   | AI 任务提示词（工具适配产物） |
-| 06-tdd-log.md       | ✅   | TDD 流程证据 + 缺陷修复       |
-| 07-prompt-log.md    | ✅   | Prompt 工程与纠偏             |
-| 08-ai-decisions.md  | ✅   | 决策可追溯性                  |
-| 09-test-matrix.md   | ✅   | 四维测试覆盖                  |
-| 10-test-report.md   | ✅   | 测试运行报告                  |
-| 11-review.md        | ✅   | 代码审查 + 交叉 Review        |
-| 12-asset-update.md  | ✅   | AI 协作资产沉淀               |
-| 13-retrospective.md | ✅   | 个人复盘与改进 + 新规则沉淀   |
-| task-rules.md       | ✅   | 任务级规则（三层体系）        |
-| 14-team.md          | ✅   | 团队分工 + 一致性 + 贡献      |
-| 15-brief.md         | ✅   | 答辩准备                      |
-| CLAUDE.md 已更新    | ✅   | 分层清晰 + 内容完整 + 可维护  |
-| CHANGELOG.md 已更新 | ✅   | 变更可追溯                    |
-```
+模板见 `references/14-team-template.md`。
 
 #### 文件 15：`15-brief.md`
 
-```markdown
-# 答辩提纲
-
-> Team 编排器产出
-
-## 一、30 秒 Elevator Pitch
-
-（一段话概述：做了什么、怎么做的、效果如何）
-
-## 二、关键决策解释
-
-（从 08-ai-decisions.md 中挑选 2-3 个最重要的决策）
-
-| 决策 | 为什么这样做 | 为什么拒绝替代方案 |
-| ---- | ------------ | ------------------ |
-| ...  | ...          | ...                |
-
-## 三、AI 协作亮点
-
-- 提示词纠偏最有效的一次：{具体描述}
-- 拒绝 AI 建议最正确的一次：{具体描述}
-- TDD 帮助发现的真实 bug：{具体描述}
-
-## 四、遗留风险坦诚说明
-
-（从 11-review.md §四 剩余风险中摘录）
-
-## 五、下次改进承诺
-
-（从 13-retrospective.md §三中摘录）
-```
+模板见 `references/15-brief-template.md`。
 
 ### Step 7：H4 人类验收 + P2 决策
 
@@ -495,7 +466,7 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 | {slug} | {YYYY-MM-DD} | {DONE/DONE_WITH_CONCERNS} | {起始commit..结束commit} | {一句话摘要} |
 ```
 
-1. **关联更新**：如果本次变更影响了 AGENTS.md 中的架构描述，同步更新
+4. **关联更新**：如果本次变更影响了 AGENTS.md 中的架构描述，同步更新
 
 **进度账本模板**（首次创建时使用）：
 
@@ -541,7 +512,7 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 **D3 AI 交付质量保障（27 分）：**
 
 - [ ] D3.1 SDD 规格：03-sdd.md 含输入/输出/边界/异常/验收 Checklist
-- [ ] D3.2 TDD 流程：06-tdd-log.md 含红-绿-重构循环记录
+- [ ] D3.2 TDD 流程：06-tdd-log.md 含红-绿-重构循环记录（RED 有失败输出在前，GREEN 有通过输出在后）+ git log 中 test: 提交早于 feat:/fix: 提交
 - [ ] D3.3 测试覆盖：09-test-matrix.md 四维矩阵（功能/边界/异常/代码），不仅限 Happy Path
 - [ ] D3.4 缺陷修复：06-tdd-log.md + 11-review.md 有修复记录
 - [ ] D3.5 Review 风险：11-review.md 含五维度审查 + §四剩余风险
@@ -552,7 +523,7 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 - [ ] D4.2 迭代纠偏：07-prompt-log.md 有纠偏前后对比
 - [ ] D4.3 过程可追溯：07-prompt-log.md + 08-ai-decisions.md 有关键过程记录
 - [ ] D4.4 个人复盘：13-retrospective.md 有 §二.5「本次沉淀的新规则」
-- [ ] D4.5 答辩准备：15-brief.md 有 Elevator Pitch + 决策解释 + 亮点 + 风险
+- [ ] D4.5 答辩准备：15-brief.md 有 Elevator Pitch + 决策解释 + 亮点 + 测试覆盖概要 + 风险
 
 **D5 团队协作表现（10 分）：**
 
@@ -563,22 +534,14 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 
 如有未通过项，回到对应 Agent 补全。
 
-## Red Flags
+## STOP Signals
 
-- 跳过 H1-H4 人类介入点
-- 发现问题不回退，先记着后面修
-- 信任 Agent 自我声明不验证
-- 超出预算不砍范围
-- 同一阶段回退超过 2 次不触发 H3
+如果你发现自己即将做以下任何一件事——立即停止，重新审视：
 
-## Common Rationalizations
-
-| 借口 | 现实 |
-| ---- | ---- |
-| "任务简单不需要 H1" | H1 和 H4 不可省略 |
-| "先记着后面一起修" | 发现问题必须立即回退 |
-| "Agent 说通过了" | 产出必须验证 |
-| "预算超一点没关系" | 超出即砍范围 |
+- 跳过 H1 或 H4
+- 延迟回退（"先记着后面一起修"）
+- 信任 Agent 的自我声明而不验证其产出
+- 超出预算却不砍范围
 
 ## 自检门禁
 

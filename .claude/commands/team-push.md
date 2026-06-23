@@ -18,7 +18,7 @@ argument-hint: [commit-message]
 1. 进入本仓库根目录：`cd "$(git rev-parse --show-toplevel)"`
 2. 检查 `git status`，确认有变更需要提交
 3. 检查是否有敏感文件（`.env`、`credentials`、`secret` 等）被意外包含，如有则排除并添加到 `.gitignore`
-4. 执行 `git add -A`
+4. 使用 `git add` 逐个添加变更的文件（不使用 `git add -A`，避免意外包含不相关文件）
 5. 使用提供的 commit message 或默认消息执行 `git commit`
 6. 执行 `git push`
 7. 报告提交结果

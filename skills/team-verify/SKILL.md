@@ -23,29 +23,15 @@ description: Use when about to claim work is complete, fixed, or passing - requi
 关键区别：你不是记录员。每种声明类型有对应的证据要求——"测试通过"需要测试命令输出 0 failures，不是"上一轮通过了"或"应该能过"。表达满意之前必须先验证。
 ```
 
-### 思维链
+### 推理指引
 
-```
-Step 1: 要验证的声明是什么？（测试通过 / lint 干净 / 构建成功 / bug 修复）
-Step 2: 什么命令能证明这个声明？
-Step 3: 执行命令（新鲜运行，不使用缓存）
-Step 4: 完整阅读输出，检查退出码和失败数
-Step 5: 只有全部通过才可声明通过
-
-  - 通过 → 报告 ✅ 全部通过
-  - 失败 → 报告 ❌ 失败详情，推荐使用 team-debug 定位根因
-
-```
+对每个待验证声明，确定所需证据类型，执行新鲜验证命令，完整阅读输出后再判定通过或失败。
 
 ## Iron Law
 
 ```
 NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE
 ```
-
-## Spirit-over-Letter
-
-违反规则的文字但遵守精神 = 遵守规则。遵守规则的文字但违反精神 = 违反规则。
 
 ## 质量职责
 
@@ -84,6 +70,8 @@ NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE
 
 ### Step 3：报告结果
 
+验证报告必须包含结构化证据（不可省略退出码和输出摘要）：
+
 ```
 
 ## 验证报告
@@ -94,8 +82,17 @@ NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE
 | 退出码 | {N} |
 | 失败数 | {N} |
 | 通过/失败 | ✅/❌ |
-| 证据 | {输出摘要或文件路径} |
+| 输出摘要 | {粘贴最后 10 行输出，含 pass/fail 统计} |
 ```
+
+### Step 4：工具失败恢复
+
+验证命令执行失败（超时、进程崩溃、环境错误）时：
+
+1. 记录失败原因和错误输出
+2. 尝试修复环境问题后重新执行（最多 2 次）
+3. 仍然失败 → 状态标记为 BLOCKED，触发 H3
+4. 不可将"工具失败"等同于"验证通过"
 
 ## 常见失败模式
 
@@ -124,26 +121,18 @@ NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE
 ## 完成标志
 
 ```
-状态：DONE | DONE_WITH_CONCERNS | BLOCKED
+状态：DONE | DONE_WITH_CONCERNS | NEEDS_CONTEXT | BLOCKED
 验证结果：✅ 全部通过 / ❌ 存在失败
 ```
 
-## Red Flags
+## STOP Signals
 
-- 使用"应该""可能""看起来"等推测性语言
-- 引用上一轮运行结果
-- 只检查部分输出
-- 跳过 warning
-- 声明通过前表达满意（"太好了""完美""完成了"）
+如果你发现自己即将做以下任何一件事——立即停止，重新审视：
 
-## Common Rationalizations
-
-| 借口 | 现实 |
-| ---- | ---- |
-| "测试上一轮通过了" | 重新执行验证协议 |
-| "改动太小不需要测试" | 至少运行相关测试 |
-| "lint 通过了" | lint 不检查编译 |
-| "我很确定" | 确定 ≠ 证据 |
+- 使用"应该""可能""看起来"等推测性语言来声明通过
+- 引用上一轮运行结果而不是当次新鲜执行的输出
+- 只检查部分输出或跳过 warning 就声明通过
+- 在验证之前就表达满意（"太好了""完美""完成了"）
 
 ## 集成关系
 

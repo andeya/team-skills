@@ -158,10 +158,10 @@ ln -sf ~/team-skills/.claude/commands/* ~/.claude/commands/
 
 ```
 
-简单任务可用轻量模式跳过 H1/H2：
+简单任务可用精简模式（H1 简化为单句确认，跳过 H2，H4 保留）：
 
 ```bash
-/team-orchestrator --light 修复登录页按钮样式
+/team-orchestrator --compact 修复登录页按钮样式
 ```
 
 #### 方式二：按需调用单个 Skill

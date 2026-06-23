@@ -7,25 +7,24 @@
 每个 SKILL.md **MUST** 包含以下结构（顺序可调）：
 
 1. **YAML Frontmatter**：`name` + `description`（`---` 分隔，非 `------`）
-2. **角色定位**：系统提示词 + 思维链
-3. **Iron Law + Spirit-over-Letter**（Discipline Skill 必须包含）
+2. **角色定位**：系统提示词 + 推理指引
+3. **Iron Law**（Discipline Skill 必须包含）
 4. **质量职责**：产出文件表
 5. **输入**：读取哪些文件
 6. **执行步骤**：分 Phase 描述
 7. **产出文件模板**：内联 Markdown 模板或引用 `references/` 目录下的模板文件
 8. **自检门禁**：产出前强制自检清单
 9. **完成标志**：四态状态 + 产出清单
-10. **Red Flags**：常见违规行为和规避借口（参考 _team-rules/constitutional-rules.md）
-11. **Common Rationalizations**：常见规避借口表
-12. **集成关系**：被谁调用 + 配对使用
-13. **下一步**：完成后推荐操作
+10. **STOP Signals**：关键违规行为的即时停止信号
+11. **集成关系**：被谁调用 + 配对使用
+12. **下一步**：完成后推荐操作
 
 ## 二、跨 Skill 一致性规则
 
 - 验证协议引用：所有需要声明"通过"的 Skill **MUST** 引用 `_team-rules/verification-protocol.md`，不内联重复
 - 四态协议引用：所有完成状态 **MUST** 引用 `_team-rules/four-state-protocol.md`，不内联重复
 - Constitutional Rules 引用：所有涉及质量红线的 Skill **MUST** 引用 `_team-rules/constitutional-rules.md`
-- 禁止项风格：动词短语 + 竖线分隔，如 `直接写文件不先读源码 | 全量塞入上下文不精选`
+- 指令风格：优先使用正向指令（"每步必须：A → B → C"），减少负向禁止（"禁止 X"）
 - 模板变量：使用 `{slug}`、`{日期}`、`{N}` 等统一占位符
 - 完成状态：统一使用四态协议（DONE / DONE_WITH_CONCERNS / NEEDS_CONTEXT / BLOCKED）
 
@@ -72,13 +71,21 @@ NO {违规行为} WITHOUT {前置条件} FIRST
 
 Iron Law **MUST** 出现在执行步骤之前，作为不可协商的门禁。
 
-## 六、Spirit-over-Letter 条款
+## 六、STOP Signals 规范
 
-每个包含 Iron Law 的 Skill **MUST** 包含以下条款：
+每个 Skill **MUST** 包含 `## STOP Signals` 章节，格式为：
 
-> **Spirit-over-Letter**：违反规则的文字但遵守精神 = 遵守规则。遵守规则的文字但违反精神 = 违反规则。
+```markdown
+## STOP Signals
 
-此条款切断"技术上我没违规"这类规避借口。
+如果你发现自己即将做以下任何一件事——立即停止，重新审视：
+
+- {违规行为 1}
+- {违规行为 2}
+- {违规行为 3}
+```
+
+STOP Signals 从该 Skill 最关键的 3-4 个违规行为中提炼，每条以动词开头。
 
 ## 七、自检门禁规范
 
