@@ -70,10 +70,14 @@ Cannot proceed with merge/PR until tests pass.
 
 ### Step 2：确定基准分支
 
-确定基准分支的优先级：
+按以下优先级确定基准分支：
 
-1. **从 checkpoint 读取**：如果 `docs/tasks/{slug}/.checkpoint.json` 存在且包含 `base_branch` 字段，直接使用
-2. **从 git 推断**：运行项目版本控制命令获取当前分支与基准分支的合并基点（如 `git merge-base HEAD main`）
+1. **从 checkpoint 读取**：如果 `docs/tasks/{slug}/.checkpoint.json` 存在且包含 `base_branch` 字段，直接使用（orchestrator Step 1.5 已确定）
+2. **从项目 AI 规范读取**：在 CLAUDE.md / .cursor/rules/ 中查找 `base_branch` 或 `default_branch` 配置项
+3. **从 Git 远程推断**：`git symbolic-ref refs/remotes/origin/HEAD | sed 's|refs/remotes/origin/||'`
+4. **常见分支名兜底**：按 `main` → `master` → `develop` 顺序检查本地是否存在
+
+确定后运行 `git merge-base HEAD {base_branch}` 获取合并基点。
 
 ### Step 3：展示选项
 

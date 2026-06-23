@@ -368,15 +368,27 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 
 ### Step 1.5：Git 分支初始化
 
-H1 确认后、specAgent 启动前，创建功能分支隔离本次任务的所有变更：
+H1 确认后、specAgent 启动前，创建功能分支隔离本次任务的所有变更。
 
-1. **检测当前分支**：获取当前分支名（`git branch --show-current`），记为 `base_branch`
+#### 1.5.1 确定基准分支（三层 Fallback）
+
+按以下优先级确定 `base_branch`，取第一个成功的结果：
+
+1. **项目 AI 规范显式声明**：在 CLAUDE.md / .cursor/rules/ 中查找 `base_branch` 或 `default_branch` 配置项（如 `base_branch: develop`）
+2. **Git 远程默认分支**：`git symbolic-ref refs/remotes/origin/HEAD` 解析出分支名；失败则 `git remote show origin` 解析 HEAD branch
+3. **常见分支名兜底**：按 `main` → `master` → `develop` 顺序检查本地是否存在（`git show-ref --verify refs/heads/{name}`）
+
+如果三层均失败 → 触发 H3，请求用户指定基准分支。
+
+#### 1.5.2 创建功能分支
+
+1. **检测当前分支**：获取当前分支名（`git branch --show-current`）
 2. **创建功能分支**：`git checkout -b {slug}`（分支名直接使用 slug，如 `0012-refactor-auth`）
-3. **写入 checkpoint**：`branch` 字段记录 `{slug}`，`base_branch` 字段记录基准分支名
+3. **写入 checkpoint**：`branch` 字段记录 `{slug}`，`base_branch` 字段记录上一步确定的基准分支名
 
 **跳过条件**（不创建分支）：
 
-- 用户已在功能分支上（当前分支名非 `main`/`master`/`develop`/默认分支）→ 使用当前分支，checkpoint 中 `branch` 记录当前分支名
+- 用户已在功能分支上（当前分支名不等于 `base_branch`）→ 使用当前分支，checkpoint 中 `branch` 记录当前分支名
 - 用户明确指定 `--no-branch` → 直接在当前分支上工作
 
 **恢复场景**：断点续传（`docs/tasks/{slug}/.checkpoint.json` 已有 `branch` 字段）时，检查当前分支是否与 checkpoint 记录一致。不一致则提示用户切换分支（`git checkout {branch}`），不自动切换。
