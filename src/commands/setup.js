@@ -86,21 +86,28 @@ function runSetup(target, opts) {
     }
   }
 
-  log.heading('验证安装');
-  let errors = 0;
-  for (const skill of skills) {
-    const dest = join(target, skill.name);
-    if (isSymlink(dest)) {
-      log.success(`${skill.name}`);
-    } else if (!dryRun) {
-      log.error(`${skill.name} 未正确安装`);
-      errors++;
+  if (!dryRun) {
+    log.heading('验证安装');
+    let errors = 0;
+    const verify = (label, dest) => {
+      if (isSymlink(dest)) {
+        log.success(label);
+      } else {
+        log.error(`${label} 未正确安装`);
+        errors++;
+      }
+    };
+    for (const skill of skills) verify(`Skill: ${skill.name}`, join(target, skill.name));
+    for (const rule of rules) verify(`Rule: ${rule.name}`, join(rulesTarget, rule.name));
+    if (commands !== false) {
+      for (const cmd of discoverCommands()) {
+        verify(`Command: ${cmd.filename}`, join(DEFAULT_COMMANDS_TARGET, cmd.filename));
+      }
     }
-  }
-
-  if (errors > 0) {
-    log.error(`有 ${errors} 个组件安装异常，请检查。`);
-    process.exit(1);
+    if (errors > 0) {
+      log.error(`有 ${errors} 个组件安装异常，请检查。`);
+      process.exit(1);
+    }
   }
 
   log.done(`安装完成！${dryRun ? '(dry-run)' : `共处理 ${count} 个组件。`}`);

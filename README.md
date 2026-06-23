@@ -100,11 +100,13 @@ npx team-skills@latest init
 npx team-skills@latest init --with-score
 ```
 
-创建 `.team-skills/` 目录，包含 Skills、Hooks 和命令文件。后续更新：
+自动检测项目中的 `.claude/` 和 `.cursor/` 目录，将对应文件复制到 IDE 能发现的位置。后续更新：
 
 ```bash
 npx team-skills@latest update
 ```
+
+> **提示**：Hooks 仅在全局安装（`setup`）模式下生效，`init` 不安装 hooks。
 
 ### 安装内容
 
@@ -124,13 +126,13 @@ npx team-skills@latest update
 
 ### CLI 参考
 
-| 命令 | 说明 |
-|------|------|
-| `team-skills setup` | symlink 安装到全局目录 |
-| `team-skills init [dir]` | 复制到项目目录 |
-| `team-skills update [dir]` | 增量更新项目副本 |
-| `team-skills uninstall` | 移除所有 symlink |
-| `team-skills list` | 查看安装状态 |
+| 命令 | 说明 | 关键选项 |
+|------|------|----------|
+| `team-skills setup` | symlink 安装到全局目录 | `--with-score` `--no-hooks` `--force` |
+| `team-skills init [dir]` | 复制到项目 IDE 目录 | `--ide <claude\|cursor\|both>` `--with-score` |
+| `team-skills update [dir]` | 升级包 + 更新项目副本 | `--skip-self` `--ide` `--with-score` |
+| `team-skills uninstall` | 移除所有全局 symlink | `--no-hooks` `--no-commands` |
+| `team-skills list` | 查看全局安装状态 | `--json` |
 
 所有命令支持 `--dry-run`。
 

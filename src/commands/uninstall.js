@@ -13,14 +13,14 @@ export function registerUninstall(program) {
     .command('uninstall')
     .description('Remove all team-skills symlinks')
     .argument('[target]', 'Target skills directory', DEFAULT_SKILLS_TARGET)
-    .option('--keep-hooks', 'Do not remove hooks')
-    .option('--keep-commands', 'Do not remove Claude Code commands')
+    .option('--no-hooks', 'Skip removing hooks')
+    .option('--no-commands', 'Skip removing commands')
     .option('--dry-run', 'Show what would be removed', false)
     .action(runUninstall);
 }
 
 function runUninstall(target, opts) {
-  const { keepHooks, keepCommands, dryRun } = opts;
+  const { hooks, commands, dryRun } = opts;
   let removed = 0;
 
   log.heading('移除 Agent Skills');
@@ -56,7 +56,7 @@ function runUninstall(target, opts) {
   }
   if (!dryRun) rmdirIfEmpty(join(target, '_team-rules'));
 
-  if (!keepCommands) {
+  if (commands !== false) {
     log.heading('移除 Command Skills + Claude Code 命令');
     for (const cmd of discoverCommands()) {
       // Command Skill directory
@@ -88,7 +88,7 @@ function runUninstall(target, opts) {
     }
   }
 
-  if (!keepHooks) {
+  if (hooks !== false) {
     log.heading('移除 Hooks');
     const hookFiles = discoverHooks();
     for (const dir of [CURSOR_HOOKS_DIR, CLAUDE_HOOKS_DIR]) {

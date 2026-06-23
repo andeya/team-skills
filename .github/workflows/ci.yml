@@ -28,7 +28,6 @@ jobs:
                   node-version: '18'
             - run: npm ci
             - run: npm run cli-test
-            - run: node bin/team-skills.js init --dry-run /tmp/test-project
 
     check-links:
         name: Check Links

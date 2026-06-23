@@ -1,9 +1,10 @@
 import { join } from 'node:path';
-import { existsSync, copyFileSync as fsCopyFile, rmSync } from 'node:fs';
+import { existsSync, copyFileSync as fsCopyFile, rmSync, readdirSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 import { PACKAGE_ROOT } from '../lib/constants.js';
-import { discoverSkills, discoverSharedRules, discoverCommands, discoverHooks, discoverSkillsModuleClaude } from '../lib/inventory.js';
+import { discoverSkills, discoverSharedRules, discoverCommands, discoverSkillsModuleClaude } from '../lib/inventory.js';
 import { copyRecursive, ensureDir } from '../lib/fs-utils.js';
+import { detectIDE } from '../lib/detect-ide.js';
 import * as log from '../lib/logger.js';
 
 export function registerUpdate(program) {
@@ -12,8 +13,6 @@ export function registerUpdate(program) {
     .description('Upgrade team-skills package and update project installations')
     .argument('[dir]', 'Project directory', '.')
     .option('--ide <type>', 'Force IDE type: claude, cursor, or both')
-    .option('--no-hooks', 'Skip hooks')
-    .option('--no-commands', 'Skip command files')
     .option('--with-score', 'Include team-score skill (hidden by default)', false)
     .option('--skip-self', 'Skip self-upgrade, only update project', false)
     .option('--dry-run', 'Show what would change', false)
@@ -23,12 +22,14 @@ export function registerUpdate(program) {
 function upgradeSelf(dryRun) {
   log.heading('升级 team-skills 包');
   try {
-    const current = JSON.parse(
-      execSync('npm view team-skills version --registry https://registry.npmjs.org 2>/dev/null', { encoding: 'utf8' }).trim()
-    );
-    const local = JSON.parse(
-      execSync(`node -e "console.log(require('${join(PACKAGE_ROOT, 'package.json')}').version)"`, { encoding: 'utf8' }).trim()
-    );
+    const current = execSync(
+      'npm view team-skills version --registry https://registry.npmjs.org 2>/dev/null',
+      { encoding: 'utf8' },
+    ).trim();
+    const local = execSync(
+      `node -e "console.log(require('${join(PACKAGE_ROOT, 'package.json')}').version)"`,
+      { encoding: 'utf8' },
+    ).trim();
     if (current === local) {
       log.skip(`已是最新版本 (${local})`);
       return;
@@ -45,28 +46,25 @@ function upgradeSelf(dryRun) {
   }
 }
 
-function detectIDE(projectDir, forceIDE) {
-  if (forceIDE) {
-    if (!['claude', 'cursor', 'both'].includes(forceIDE)) {
-      log.error(`不支持的 IDE 类型: ${forceIDE}。可选: claude, cursor, both`);
-      process.exit(1);
+function cleanStaleSkills(targetDir, currentNames, dryRun) {
+  if (!existsSync(targetDir)) return;
+  const existing = readdirSync(targetDir).filter(
+    name => !name.startsWith('_') && name !== 'CLAUDE.md',
+  );
+  for (const name of existing) {
+    if (!currentNames.has(name)) {
+      const tag = dryRun ? '[dry-run] ' : '';
+      if (!dryRun) rmSync(join(targetDir, name), { recursive: true });
+      log.warn(`${tag}移除旧 Skill: ${name}`);
     }
-    return forceIDE === 'both' ? ['claude', 'cursor'] : [forceIDE];
   }
-
-  const detected = [];
-  if (existsSync(join(projectDir, '.claude'))) detected.push('claude');
-  if (existsSync(join(projectDir, '.cursor'))) detected.push('cursor');
-  return detected;
 }
 
 function runUpdate(dir, opts) {
-  const { ide, hooks, commands, withScore, skipSelf, dryRun } = opts;
+  const { ide, withScore, skipSelf, dryRun } = opts;
 
-  // Step 1: self-upgrade
   if (!skipSelf) upgradeSelf(dryRun);
 
-  // Step 2: update project if IDE detected
   const exclude = withScore ? [] : ['team-score'];
   const ides = detectIDE(dir, ide);
 
@@ -82,12 +80,18 @@ function runUpdate(dir, opts) {
   log.info(`项目目录: ${dir}`);
   log.info(`目标 IDE: ${ides.join(', ')}`);
 
+  const skills = discoverSkills(PACKAGE_ROOT, { exclude });
+  const rules = discoverSharedRules();
+  const skillsClaude = discoverSkillsModuleClaude();
+  const currentSkillNames = new Set(skills.map(s => s.name));
+
   // Cursor skills → .cursor/skills/
   if (ides.includes('cursor')) {
     const skillsDst = join(dir, '.cursor', 'skills');
     log.heading(`更新 Skills → ${skillsDst}`);
 
-    const skills = discoverSkills(PACKAGE_ROOT, { exclude });
+    cleanStaleSkills(skillsDst, currentSkillNames, dryRun);
+
     if (!dryRun) ensureDir(skillsDst);
     for (const skill of skills) {
       const dest = join(skillsDst, skill.name);
@@ -99,7 +103,6 @@ function runUpdate(dir, opts) {
       count++;
     }
 
-    const rules = discoverSharedRules();
     const rulesDst = join(skillsDst, '_team-rules');
     if (!dryRun) ensureDir(rulesDst);
     for (const r of rules) {
@@ -108,29 +111,15 @@ function runUpdate(dir, opts) {
       count++;
     }
 
-    const skillsClaude = discoverSkillsModuleClaude();
     if (skillsClaude) {
       if (!dryRun) fsCopyFile(skillsClaude, join(skillsDst, 'CLAUDE.md'));
       log.success(`${tag}skills/CLAUDE.md`);
       count++;
     }
-
-    if (hooks !== false) {
-      const hookFiles = discoverHooks();
-      const hooksDst = join(dir, '.cursor', 'hooks');
-      if (hookFiles.length > 0) {
-        if (!dryRun) ensureDir(hooksDst);
-        for (const h of hookFiles) {
-          if (!dryRun) fsCopyFile(h.path, join(hooksDst, h.name));
-          log.success(`${tag}Cursor Hook: ${h.name}`);
-          count++;
-        }
-      }
-    }
   }
 
   // Claude Code commands → .claude/commands/
-  if (commands !== false && ides.includes('claude')) {
+  if (ides.includes('claude')) {
     const cmdsDst = join(dir, '.claude', 'commands');
     log.heading(`更新 Commands → ${cmdsDst}`);
 
@@ -140,31 +129,6 @@ function runUpdate(dir, opts) {
       if (!dryRun) fsCopyFile(c.path, join(cmdsDst, c.filename));
       log.success(`${tag}Command: ${c.filename}`);
       count++;
-    }
-
-    if (ides.includes('cursor')) {
-      const skillsDst = join(dir, '.cursor', 'skills');
-      for (const c of cmds) {
-        const skillDir = join(skillsDst, c.name);
-        if (!existsSync(skillDir) || dryRun) {
-          if (!dryRun) { ensureDir(skillDir); fsCopyFile(c.path, join(skillDir, 'SKILL.md')); }
-          log.success(`${tag}Command → Skill: ${c.name}`);
-          count++;
-        }
-      }
-    }
-
-    if (hooks !== false) {
-      const hookFiles = discoverHooks();
-      const hooksDst = join(dir, '.claude', 'hooks');
-      if (hookFiles.length > 0) {
-        if (!dryRun) ensureDir(hooksDst);
-        for (const h of hookFiles) {
-          if (!dryRun) fsCopyFile(h.path, join(hooksDst, h.name));
-          log.success(`${tag}Claude Hook: ${h.name}`);
-          count++;
-        }
-      }
     }
   }
 
