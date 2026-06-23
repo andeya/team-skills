@@ -1,9 +1,10 @@
 import { join } from 'node:path';
+import { homedir } from 'node:os';
 import {
   PACKAGE_ROOT, DEFAULT_SKILLS_TARGET, DEFAULT_COMMANDS_TARGET,
   CURSOR_HOOKS_DIR, CLAUDE_HOOKS_DIR,
 } from '../lib/constants.js';
-import { discoverSkills, discoverSharedRules, discoverCommands, discoverHooks } from '../lib/inventory.js';
+import { discoverSkills, discoverSharedRules, discoverCommands, discoverHooks, discoverCursorRules } from '../lib/inventory.js';
 import { createSymlinkSafe, ensureDir, isSymlink } from '../lib/fs-utils.js';
 import * as log from '../lib/logger.js';
 
@@ -84,6 +85,18 @@ function runSetup(target, opts) {
         if (result === 'created' || result === 'dry-run') count++;
       }
     }
+  }
+
+  // Cursor rules → ~/.cursor/rules/
+  log.heading('安装 Cursor Rules');
+  const cursorRules = discoverCursorRules();
+  const cursorRulesDir = join(homedir(), '.cursor', 'rules');
+  if (!dryRun) ensureDir(cursorRulesDir);
+  for (const rule of cursorRules) {
+    const dest = join(cursorRulesDir, rule.name);
+    const result = createSymlinkSafe(rule.path, dest, { force, dryRun });
+    logResult(`${tag}Cursor Rule: ${rule.name}`, result, dest);
+    if (result === 'created' || result === 'dry-run') count++;
   }
 
   if (!dryRun) {

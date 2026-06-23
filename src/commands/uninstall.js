@@ -1,10 +1,11 @@
 import { join } from 'node:path';
 import { readdirSync } from 'node:fs';
+import { homedir } from 'node:os';
 import {
   PACKAGE_ROOT, DEFAULT_SKILLS_TARGET, DEFAULT_COMMANDS_TARGET,
   CURSOR_HOOKS_DIR, CLAUDE_HOOKS_DIR,
 } from '../lib/constants.js';
-import { discoverSkills, discoverSharedRules, discoverCommands, discoverHooks } from '../lib/inventory.js';
+import { discoverSkills, discoverSharedRules, discoverCommands, discoverHooks, discoverCursorRules } from '../lib/inventory.js';
 import { removeSymlinkSafe, rmdirIfEmpty } from '../lib/fs-utils.js';
 import * as log from '../lib/logger.js';
 
@@ -105,6 +106,22 @@ function runUninstall(target, opts) {
           removed++;
         }
       }
+    }
+  }
+
+  log.heading('移除 Cursor Rules');
+  const cursorRulesDir = join(homedir(), '.cursor', 'rules');
+  for (const rule of discoverCursorRules()) {
+    const dest = join(cursorRulesDir, rule.name);
+    if (!dryRun) {
+      const result = removeSymlinkSafe(dest, rule.path);
+      if (result === 'removed') {
+        log.success(`Cursor Rule: ${rule.name}`);
+        removed++;
+      }
+    } else {
+      log.info(`[dry-run] 将移除: ${dest}`);
+      removed++;
     }
   }
 

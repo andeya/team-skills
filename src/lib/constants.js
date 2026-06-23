@@ -12,4 +12,5 @@ export const CURSOR_HOOKS_DIR = join(homedir(), '.cursor', 'hooks');
 export const CLAUDE_HOOKS_DIR = join(homedir(), '.claude', 'hooks');
 export const SKILLS_DIR = 'skills';
 export const HOOKS_DIR = 'hooks';
+export const RULES_DIR = 'rules';
 export const COMMANDS_DIR = join('.claude', 'commands');

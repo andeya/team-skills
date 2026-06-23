@@ -1,7 +1,7 @@
 import { join } from 'node:path';
 import { copyFileSync as fsCopyFile } from 'node:fs';
 import { PACKAGE_ROOT } from '../lib/constants.js';
-import { discoverSkills, discoverSharedRules, discoverCommands, discoverSkillsModuleClaude } from '../lib/inventory.js';
+import { discoverSkills, discoverSharedRules, discoverCommands, discoverSkillsModuleClaude, discoverCursorRules } from '../lib/inventory.js';
 import { copyRecursive, ensureDir } from '../lib/fs-utils.js';
 import { detectIDE } from '../lib/detect-ide.js';
 import * as log from '../lib/logger.js';
@@ -58,6 +58,18 @@ function runInit(dir, opts) {
       if (!dryRun) fsCopyFile(skillsClaude, join(skillsDst, 'CLAUDE.md'));
       log.success(`${tag}skills/CLAUDE.md`);
       count++;
+    }
+
+    // Cursor rules → .cursor/rules/
+    const cursorRules = discoverCursorRules();
+    if (cursorRules.length > 0) {
+      const cursorRulesDst = join(dir, '.cursor', 'rules');
+      if (!dryRun) ensureDir(cursorRulesDst);
+      for (const r of cursorRules) {
+        if (!dryRun) fsCopyFile(r.path, join(cursorRulesDst, r.name));
+        log.success(`${tag}Cursor Rule: ${r.name}`);
+        count++;
+      }
     }
   }
 
