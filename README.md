@@ -395,12 +395,12 @@ npm run setup      # 安装 Skills 到全局目录
 
 提交后 GitHub Actions 自动运行：
 
-| Job | 命令 | 说明 |
-|-----|------|------|
-| Lint | `npm run lint` | Markdown 格式 + Skill 结构检查 |
-| CLI Smoke Test | `npm run cli-test` | CLI 功能验证 |
-| Check Links | lychee | 外部链接有效性 |
-| Publish | `npm publish` | tag 触发，发布到 npm |
+| Workflow | Job | 说明 |
+|----------|-----|------|
+| CI | Lint | Markdown 格式 + Skill 结构检查 |
+| CI | CLI Smoke Test | CLI 功能验证 |
+| CI | Check Links | 外部链接有效性 |
+| Release | Publish to npm | `v*` tag 触发，自动发布到 npm |
 
 ---
 
