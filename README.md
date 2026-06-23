@@ -283,29 +283,62 @@ graph TD
 
 ---
 
-## 📋 每个任务最多产出 18 个结构化文档
+## 📋 结构化文档体系
+
+团队协作过程中产出的所有文档，统一存放在 `docs/` 目录下：
 
 ```
-docs/tasks/{slug}/
-├── 00-design-brief.md      # 设计概要（team-brainstorm 产出，可选）
-├── 01-plan.md              # 任务规划（目标 + 分期 + 预算）
-├── 02-context.md           # 上下文选择（术语 + 引用 + 排除）
-├── 03-sdd.md               # SDD 规格（七部分完整）
-├── 04-boundary.md          # 修改边界（allow + deny）
-├── 05-risk.md              # 风险 + 验证计划
-├── prompt-template.md      # AI 任务提示词模板
-├── 06-tdd-log.md           # TDD 日志（红-绿-重构循环）
-├── 07-prompt-log.md        # Prompt 工程记录（五要素 + 纠偏）
-├── 08-ai-decisions.md      # AI 决策记录（选择 + 拒绝 + 理由）
-├── 09-test-matrix.md       # 四维测试矩阵
-├── 10-test-report.md       # 测试运行报告（证据链）
-├── 11-review.md            # 代码审查报告（五维度 + 合规）
-├── 12-asset-update.md      # 资产更新记录（消费方契约）
-├── 13-retrospective.md     # 个人复盘（新规则沉淀）
-├── task-rules.md           # 任务级规则
-├── 14-team.md              # 团队协作记录
-└── 15-brief.md             # 答辩提纲
+docs/
+├── tasks/                          # 任务文档（核心目录）
+│   ├── progress.md                 # 进度账本 — 所有任务的状态追踪表
+│   │
+│   ├── {NNNN}-{keyword}/           # 单个任务目录（最多产出 18 个结构化文档）
+│   │   ├── 00-design-brief.md      #   设计概要（team-brainstorm 产出，可选）
+│   │   ├── 01-plan.md              #   任务规划（目标 + 分期 + 预算）
+│   │   ├── 02-context.md           #   上下文选择（术语 + 引用 + 排除）
+│   │   ├── 03-sdd.md              #   SDD 规格（七部分完整）
+│   │   ├── 04-boundary.md          #   修改边界（allow + deny）
+│   │   ├── 05-risk.md              #   风险 + 验证计划
+│   │   ├── prompt-template.md      #   AI 任务提示词模板
+│   │   ├── 06-tdd-log.md           #   TDD 日志（红-绿-重构循环）
+│   │   ├── 07-prompt-log.md        #   Prompt 工程记录（五要素 + 纠偏）
+│   │   ├── 08-ai-decisions.md      #   AI 决策记录（选择 + 拒绝 + 理由）
+│   │   ├── 09-test-matrix.md       #   四维测试矩阵
+│   │   ├── 10-test-report.md       #   测试运行报告（证据链）
+│   │   ├── 11-review.md            #   代码审查报告（五维度 + 合规）
+│   │   ├── 12-asset-update.md      #   资产更新记录（消费方契约）
+│   │   ├── 13-retrospective.md     #   个人复盘（新规则沉淀）
+│   │   ├── task-rules.md           #   任务级规则
+│   │   ├── 14-team.md              #   团队协作记录
+│   │   └── 15-brief.md             #   答辩提纲
+│   │
+│   └── ...                         # 更多任务目录
+│
+├── review-checklist.md             # Review 检查清单（项目级，跨任务累积）
+├── delivery-checklist.md           # 交付检查清单（项目级，跨任务累积）
+└── specs/                          # SDD 归档（任务验收通过后存档）
 ```
+
+### 文档职责分层
+
+| 层级 | 目录 | 生命周期 | 说明 |
+|------|------|----------|------|
+| **进度追踪** | `tasks/progress.md` | 持续更新 | 防止跨 session 任务重复派发，记录所有任务状态 |
+| **任务文档** | `tasks/{slug}/` | 随任务创建 | 每个任务独立目录，slug 格式 `{NNNN}-{keyword}` |
+| **项目级清单** | `review-checklist.md` | 跨任务累积 | 每次 Review 发现新检查项后追加，持续积累 |
+| **项目级清单** | `delivery-checklist.md` | 跨任务累积 | 每次交付发现新检查项后追加，持续积累 |
+| **规格归档** | `specs/` | 验收后存档 | SDD 快照归档，供后续任务参考 |
+
+### 任务文档产出阶段
+
+| 阶段 | 产出文件 | 负责 Skill |
+|------|----------|------------|
+| 头脑风暴 | `00-design-brief.md` | `team-brainstorm` |
+| 规格设计 | `01-plan.md` ~ `05-risk.md` + `prompt-template.md` | `team-spec` |
+| TDD 实现 | `06-tdd-log.md` ~ `08-ai-decisions.md` | `team-impl` |
+| 测试审计 | `09-test-matrix.md` ~ `10-test-report.md` | `team-test` |
+| 代码审查 | `11-review.md` ~ `13-retrospective.md` + `task-rules.md` | `team-review` |
+| 团队交付 | `14-team.md` + `15-brief.md` | `team-orchestrator` |
 
 ---
 
