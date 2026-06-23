@@ -12,7 +12,7 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat-square)](CONTRIBUTING.md)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow?style=flat-square)](https://conventionalcommits.org)
 
-**Spec-Driven · 有向图回退 · 质量门禁 · 100 分制评分**
+**Spec-Driven · 有向图回退 · 质量门禁**
 
 </div>
 
@@ -59,14 +59,6 @@ reviewAgent 发现 spec 遗漏 ──→ 自动回退 specAgent
 - **8 条 Constitutional Rules**：不可覆盖的硬约束
 - **反规避条款**：预判 6 种常见借口并逐一反驳
 - **三视角对抗审查**：攻击者/怀疑者/用户视角反向验证
-
-### 📊 100 分制评分，不是凭感觉
-
-```
-7 项硬门槛（任一不通过则整体不通过）
-5 个维度 × 25 子项
-每个子项有可检查的证据要求
-```
 
 ---
 
@@ -324,7 +316,7 @@ Team Skills 融合了业界多个 AI 协作框架的精华：
 | **OpenSpec** (Fission AI) | Delta Spec 增量规格、RFC 2119 + Given/When/Then |
 | **Karpathy Skills** | 过度抽象防御、死代码清理、困惑管理 |
 | **Agent-Style** | 5 条 LLM 输出质量约束 |
-| **独创** | 有向图回退、评分追溯矩阵、消费方契约、H1-H4 人类介入点 |
+| **独创** | 有向图回退、质量追溯矩阵、消费方契约、H1-H4 人类介入点 |
 
 ---
 

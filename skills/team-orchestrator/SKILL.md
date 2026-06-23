@@ -56,7 +56,7 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 - Claude Code：通过 `/team-orchestrator`、`/team-spec`、`/team-impl`、`/team-test`、`/team-review` 调用
 - Cursor：通过 `~/.agents/skills/` 下的 Skill 机制自动发现
 
-<!-- 评分追溯矩阵（内部参考，不产出到文件）
+<!-- 质量检查追溯矩阵（内部参考，不产出到文件）
 硬门槛：
   G1 任务规划    → 01-plan.md
   G2 修改边界    → 04-boundary.md
@@ -65,7 +65,7 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
   G5 资产可执行  → 12-asset-update.md（消费方契约）+ CLAUDE.md
   G6 风险说明    → 05-risk.md + 11-review.md §四
   G7 决策解释    → 08-ai-decisions.md + 15-brief.md
-评分维度：
+质量维度：
   D1.1 分层组织   → CLAUDE.md + {module}/CLAUDE.md + task-rules.md
   D1.2 内容8类    → 02-context.md + CLAUDE.md + review-checklist + delivery-checklist
   D1.3 规则可执行 → 12-asset-update.md（触发条件+可执行指令+示例）
@@ -477,7 +477,7 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 | ---- | ---- | ---- | ----------- | ---- |
 ```
 
-### Step 8：最终质量检查（评分对齐验证）
+### Step 8：最终质量检查
 
 逐条核验，确保每个维度都有明确证据。
 
