@@ -68,3 +68,5 @@
 | 15-brief.md         | ✅   | 答辩准备                      |
 | AI 规范已更新       | ✅   | 分层清晰 + 内容完整 + 可维护  |
 | CHANGELOG.md 已更新 | ✅   | 变更可追溯                    |
+| docs/review-checklist.md | ✅ | Review 标准沉淀              |
+| docs/delivery-checklist.md | ✅ | 交付标准沉淀               |

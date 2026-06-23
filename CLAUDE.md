@@ -3,6 +3,24 @@
 > 本文件是 team-skills 体系的项目级规范。所有 Agent 和 Skill 在执行时自动继承本文件中的规则。
 > 适用工具：Claude Code / Cursor / 任何支持 CLAUDE.md 的 AI 编码工具
 
+## 关于 CLAUDE.md 与 AGENTS.md 的区分
+
+| 文件 | 用途 | 自动加载 | 内容 |
+| ---- | ---- | -------- | ---- |
+| CLAUDE.md | 流程规则 + 编码规范 | Claude Code ✅ 自动加载；Cursor ✅ 支持 | TDD、验证协议、质量标准、文档规范 |
+| .cursor/rules/ | Cursor 原生规则 | Cursor ✅ 自动加载 | 与 CLAUDE.md 等效 |
+| AGENTS.md | 架构文档 | ❌ 不自动加载，按需读取 | 系统架构、模块职责、关键接口、目录结构 |
+
+**MUST NOT** 将 CLAUDE.md 重命名为 AGENTS.md — 会破坏 Claude Code 规则自动继承。
+
+## 第零原则 — 第一性原理
+
+> 完整定义见 `skills/_team-rules/first-principles.md`（单一来源），以下为速览。
+
+本框架所有规则追溯到 4 条第一性原理：**FP-1 人类认知是稀缺资源** | **FP-2 实现偏见污染验证** | **FP-3 复杂度是质量的敌人** | **FP-4 声明不等于事实**
+
+详细说明、推论及使用指南，请参阅 `skills/_team-rules/first-principles.md`。
+
 ## 一、Spec-Driven 开发原则
 
 ### 0. 快速开始：不确定从哪开始？
@@ -122,6 +140,7 @@ COMMIT: git commit（每个功能点一次，不攒多个功能点）
 
 ```
 docs/tasks/{NNNN}-{keyword}/
+├── 00-design-brief.md      # 设计概要（team-brainstorm 产出，可选）
 ├── 01-plan.md              # 任务规划（目标 + 分期 + 预算）
 ├── 02-context.md           # 上下文选择（术语 + 引用 + 排除）
 ├── 03-sdd.md               # SDD 规格（七部分完整）
@@ -251,6 +270,11 @@ H3 触发时，编排器 **MUST** 向用户展示以下结构化信息：
 | 2026-06-19 | Andeya | team-score 校准 + 自评补全   | team-score 校准 |
 | 2026-06-23 | Andeya | 竞品审查 18 项改进：P0 逻辑矛盾修复、P1 门禁强化、P2 完善度补齐 | 竞品对标审查 |
 | 2026-06-23 | Andeya | IDE 对等：所有 Skill 引用扩展为 CLAUDE.md / .cursor/rules/ | IDE 对等改进 |
+| 2026-06-23 | Andeya | 文档布局标准化：brainstorm 纳入 slug 体系（00-design-brief.md）| 文档布局改进 |
+| 2026-06-23 | Andeya | 全量缺陷修复：compact 模式一致性（9 文件）、断点续传增强、回退计数规则、质量检查条件化 | 场景模拟缺陷修复 |
+| 2026-06-23 | Andeya | CLAUDE.md/AGENTS.md 区分说明 + TDD 纪律强制执行 + 交付清单模板与追踪 | 交互细节审查修复 |
+| 2026-06-23 | Andeya | 第一性原理注魂：§第零原则（FP-1~FP-4）+ 12 个 Skill 推理指引升级 + Constitutional Rules WHY 追溯 | 角色专精与第一性原理渗透 |
+| 2026-06-23 | Andeya | 第一性原理下沉：FP 定义迁移到 `_team-rules/first-principles.md`，skills 内所有 `CLAUDE.md §` 引用改为指向共享规则文件 | 分发兼容性修复 |
 
 ### 7.5 内容覆盖索引
 
@@ -273,9 +297,10 @@ H3 触发时，编排器 **MUST** 向用户展示以下结构化信息：
 
 | 文件 | 内容 |
 | ---- | ---- |
-| `skills/_team-rules/constitutional-rules.md` | 8 条 Constitutional Rules + 常见规避借口 |
+| `skills/_team-rules/constitutional-rules.md` | 9 条 Constitutional Rules + 常见规避借口 |
 | `skills/_team-rules/verification-protocol.md` | 5 步验证协议 + Iron Law + 常见失败模式 |
 | `skills/_team-rules/four-state-protocol.md` | 四态完成状态（DONE / DONE_WITH_CONCERNS / NEEDS_CONTEXT / BLOCKED） |
+| `skills/_team-rules/first-principles.md` | 4 条第一性原理（FP-1 ~ FP-4）+ 使用指南 |
 
 ## 八、完成状态协议
 
@@ -292,7 +317,7 @@ H3 触发时，编排器 **MUST** 向用户展示以下结构化信息：
 
 > 完整规则定义见 `skills/_team-rules/constitutional-rules.md`（单一来源），以下为速览。
 
-8 条不可被任何任务覆盖的硬约束：**人类介入是一等公民** | **有向图回退** | **产出必须验证** | **Kill Switch** | **分期交付优先** | **自我约束预算** | **回退次数上限** | **验证先行**
+9 条不可被任何任务覆盖的硬约束：**人类介入是一等公民** | **有向图回退** | **产出必须验证** | **Kill Switch** | **分期交付优先** | **自我约束预算** | **回退次数上限** | **验证先行** | **TDD 顺序不可逆**
 
 详细说明、常见规避借口及应对方式，请参阅 `skills/_team-rules/constitutional-rules.md`。
 
@@ -318,7 +343,7 @@ H3 触发时，编排器 **MUST** 向用户展示以下结构化信息：
 1. task-rules.md 中"可泛化"规则 → 合并到项目级/模块级 CLAUDE.md
 2. SDD 快照 → 归档到 `docs/specs/`（如存在）
 3. 进度账本 → 追加记录
-4. AGENTS.md → 如有架构变更则同步更新
+4. AGENTS.md → 如有架构变更则同步更新（注意：AGENTS.md 是架构文档，不承载流程规则）
 
 ## 十一、Prompt 工程规范
 

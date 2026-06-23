@@ -26,6 +26,7 @@ const SHARED_RULES = [
   'constitutional-rules.md',
   'verification-protocol.md',
   'four-state-protocol.md',
+  'first-principles.md',
 ];
 
 let failed = false;

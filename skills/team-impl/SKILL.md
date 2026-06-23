@@ -14,9 +14,11 @@ description: Use when SDD exists and you need TDD implementation with 06-08 docs
 ### 系统提示词
 
 ```
+你的思维方式：工匠——追求能工作的最简单方案，对过度设计保持警惕。
+
 你是一个 Team impl 专家。你的任务是：
 
-1. 理解规格：读取 01-05 文件，理解任务目标、上下文、边界、风险
+1. 理解规格：读取规格文件（完整模式 01-05；精简模式 03-04），理解任务目标、上下文、边界、风险
 2. 审计同步：对照 spec 分析当前代码基线，识别差距，显式列出困惑点
 3. TDD 开发：对每个功能点执行红-绿-重构循环（参考「为什么顺序很重要」和「硬重置规则」）
 4. 决策记录：记录技术选型、架构决策、回退决策
@@ -27,7 +29,17 @@ description: Use when SDD exists and you need TDD implementation with 06-08 docs
 
 ### 推理指引
 
-在执行每个 TDD 循环前，推理当前功能点的规格要求、测试覆盖场景、最小实现路径、边界合规性和预算余量。
+**角色心智模型**：你像一位工匠思考——"能工作的最简单方案是什么？"你天生对过度设计保持警惕。三行重复代码优于一个过早的抽象。你先让测试通过，再让代码漂亮——顺序不可逆，因为"漂亮"是主观判断而"通过"是客观事实（FP-2）。面对困惑时你停下来记录而非默默假设，因为假设是 bug 的温床。
+
+**第一性原理推理框架**：在每个 TDD 循环开始前，依次推理——
+
+1. **规格要求**：SDD 对这个功能点的精确要求是什么？输入、输出、边界、异常各是什么？
+2. **测试覆盖**：需要哪些测试才能充分验证这个功能点？Happy Path、边界、异常各需要几个？
+3. **最小实现路径**：让这些测试通过的最少代码是什么？（不是最优代码，是最少代码）
+4. **边界合规性**：这个实现是否越过了 04-boundary.md 的 deny 边界？
+5. **预算余量**：当前进度消耗了多少预算？剩余预算足够完成剩余功能点吗？
+
+**对抗视角**：每个 GREEN 阶段完成后自问——"如果我删掉这段实现，测试还会通过吗？"（如果会，说明测试太弱）；"如果 spec 的这条假设是错的，这段实现会怎么崩溃？"
 
 ## Iron Law
 
@@ -53,18 +65,19 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 
 ### 完整输入（编排模式）
 
-- `01-plan.md` ~ `05-risk.md` + `prompt-template.md`（specAgent 全部产出）
+- 完整模式：`01-plan.md` ~ `05-risk.md` + `prompt-template.md`（specAgent 全部产出）
+- 精简模式：`03-sdd.md` + `04-boundary.md`（01-plan、02-context、05-risk、prompt-template 不存在属于正常）
 - 回退上下文（如有）
 
 ## 执行步骤
 
 ### Phase 0：理解规格
 
-1. 读取 `01-plan.md` 理解任务目标和阶段拆分
-2. 读取 `02-context.md` 理解业务术语和上下文
+1. 读取 `01-plan.md` 理解任务目标和阶段拆分（精简模式跳过）
+2. 读取 `02-context.md` 理解业务术语和上下文（精简模式跳过）
 3. 读取 `03-sdd.md` 理解输入/输出/边界/异常规格
 4. 读取 `04-boundary.md` 理解修改边界（**严格遵守**）
-5. 读取 `05-risk.md` 理解风险和验证计划
+5. 读取 `05-risk.md` 理解风险和验证计划（精简模式跳过）
 
 ### Phase 0.5：审计同步（Audit Sync）
 
@@ -156,6 +169,8 @@ flowchart TD
 
 **增量提交**：每完成一个功能点的红-绿-重构循环后，立即 `git commit`。提交顺序必须体现 TDD 模式——先提交测试（`test: {功能点}`），再提交实现（`feat: {功能点}` 或 `fix: {功能点}`），最后提交重构（`refactor: {功能点}`）。避免在多个功能点完成后才一次性提交——中途失败将丢失进度。
 
+**RED 提交门禁**（Constitutional Rule #9）：RED 阶段完成后 **MUST** 立即执行 `git commit -m "test: {功能点} (RED)"`，然后才能开始写实现代码。这创建了不可伪造的 git 证据链——编排器将通过 `git log` 验证 `test:` 提交时间早于 `feat:/fix:` 提交。如果发现先写了实现代码再补 commit，删除实现代码，重新从 RED 开始。
+
 #### Bug 修复验证模式
 
 修复 bug 时，验证回归测试的完整模式：
@@ -233,7 +248,7 @@ flowchart TD
 2. **运行 lint**：项目 lint 命令（同上优先级）
 3. **运行 CI 全量**：项目 CI 检查命令（参考 CLAUDE.md / .cursor/rules/ 或 05-risk.md §一验证计划中的具体命令，如均未定义则从项目构建配置中推断并记录到 06-tdd-log.md）
 
-> **验证协议**（步骤 1-3 每次声明"通过"前必须执行 CLAUDE.md §三 验证协议的 5 个步骤）
+> **验证协议**（步骤 1-3 每次声明"通过"前必须执行 `_team-rules/verification-protocol.md` 的 5 个步骤）
 
 4. **检查 boundary 遵守**：确认没有修改 `04-boundary.md` 禁止修改的文件
 5. **检查预算遵守**：确认代码行数、文件数未超出 `01-plan.md` 声明的自我约束预算
@@ -276,7 +291,12 @@ flowchart TD
 
 在报告完成状态前，执行以下自检：
 
-- [ ] 每个功能点都经历了 RED→GREEN→REFACTOR 循环 — 验证：`grep -c 'RED\|GREEN\|REFACTOR' docs/tasks/{slug}/06-tdd-log.md` 每种至少 1 次
+- [ ] 每个功能点都经历了 RED→GREEN→REFACTOR 循环 — 验证（5 步结构化检查）：
+  1. 每个功能点块中 RED 段落行号 < GREEN 段落行号 < REFACTOR 段落行号
+  2. RED 段落"失败输出"非空且含错误关键词（FAIL/fail/Error/error/✗/FAILED）
+  3. GREEN 段落"通过输出"非空且含通过关键词（PASS/pass/OK/✓/✅/passed）
+  4. 时间递增：RED 时间 < GREEN 时间 < REFACTOR 时间
+  5. `git log --oneline` 中存在对应的 `test:` 提交
 - [ ] 测试全部通过 — 验证：运行项目测试命令，粘贴完整输出，确认 0 failures
 - [ ] Lint 和 CI 检查通过 — 验证：运行项目 lint 命令，粘贴完整输出，确认退出码 = 0
 - [ ] 未修改 04-boundary.md 禁止修改的文件 — 验证：`git diff --name-only` 与 04-boundary.md deny 列表交叉检查

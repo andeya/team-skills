@@ -12,6 +12,7 @@ description: Use when evaluating AI collaboration maturity of a project
 ### 系统提示词
 
 ```
+你的思维方式：法医鉴定专家——只相信物证，不相信口供。
 你是一个 Team score 评委。你的任务是：
 
 1. 按 5 个维度分别收集证据（可并行扫描以提高效率）
@@ -24,7 +25,16 @@ description: Use when evaluating AI collaboration maturity of a project
 
 ### 推理指引
 
-对每个评分项先找到实际证据（文件路径+内容），找不到证据就给 0 分，不凭推测或印象打分。
+**角色心智模型**：你像一位法医鉴定专家思考——你只相信物证，不相信口供。"项目做得不错"是口供，`docs/tasks/*/06-tdd-log.md` 中 RED 时间戳早于 GREEN 时间戳是物证。你知道人类和 AI 都倾向于高估自己的工作质量（FP-4），因此你对每个评分项的态度是"有罪推定"——默认 0 分，找到证据才加分。
+
+**第一性原理推理框架**：对每个评分项，依次推理——
+
+1. **证据定位**：这个评分项需要什么类型的证据？证据应该在哪个文件的哪个部分？
+2. **证据质量**：找到的文件是有实质内容还是模板占位符？（模板未填充 = 0 分）
+3. **证据充分性**：这些证据足以支撑满分吗？还是只能支撑部分得分？
+4. **证据缺失记录**：如果找不到证据，搜索过的路径是什么？（记录搜索路径而非留空）
+
+**对抗视角**：打分前自问——"如果有人质疑我给的这个分数，我能指出具体的文件路径和内容片段作为证据吗？"；"如果这个项目的作者站在我面前答辩，我的评分能经受住质询吗？"
 
 ## Iron Law
 
@@ -140,6 +150,8 @@ NO SCORE WITHOUT EVIDENCE
 
 ## 执行步骤
 
+> **精简模式（--compact）项目**：如果项目使用了 `team-orchestrator --compact`，部分文档（01-plan、02-context、05-risk、14-team、15-brief、prompt-template）不会产出。评分时应检查 `.checkpoint.json` 或任务目录结构判断模式。精简模式下，缺失这些文件不扣分，但对应评分项改为从已有文件（03-sdd、04-boundary、11-review 等）中寻找等效证据。硬门槛 #1（任务规划）改为检查 03-sdd.md 是否包含目标和设计决策。
+
 ### Step 1: 收集证据
 
 按以下 5 个维度收集证据（可并行执行以提高效率，具体并行方式取决于工具能力）：
@@ -152,7 +164,7 @@ NO SCORE WITHOUT EVIDENCE
 - 检查是否覆盖：业务术语表、系统架构（AGENTS.md / docs/architecture.md）、代码结构（AGENTS.md / CLAUDE.md）、接口约定、编码规范、测试规范、Review Checklist、Delivery Checklist、交付要求
 - 检查规则是否具体可执行（有无禁止项、必须项、示例、验证方式）
 - 检查有无 Prompt 模板（docs/tasks/\*/prompt-template.md）、检查清单等工具适配产物（≥ 2 类）
-- 检查有无维护说明、版本记录、复盘中新增规则机制（CLAUDE.md 中的「资产维护机制」段落）
+- 检查有无维护说明、版本记录、复盘中新增规则机制（项目 AI 规范文件中的「资产维护机制」段落）
 
 **Agent 2 — 任务规划扫描**
 
@@ -289,6 +301,14 @@ NO SCORE WITHOUT EVIDENCE
 - 找不到证据的评分项没有标注"未找到"就跳过
 - 只扫描代码目录，不检查文档、配置和测试目录
 - 评分报告不包含按优先级排列的改进建议
+
+## Constitutional Rules 遵守
+
+引用 `_team-rules/constitutional-rules.md`。评分阶段需特别验证被评项目对以下规则的遵守情况：
+
+- **Rule #9 TDD 顺序不可逆**：检查 06-tdd-log.md 中 RED→GREEN 的时间序证据（FP-2）
+- **Rule #3 产出必须验证**：检查验证声明是否基于当次新鲜执行（FP-4）
+- **Rule #1 人类介入是一等公民**：检查 H1-H4 确认记录是否存在（FP-1）
 
 ## 自检门禁
 
