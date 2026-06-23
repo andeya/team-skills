@@ -180,22 +180,26 @@ npx team-skills@latest update
 flowchart TD
     classDef human fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#1565c0;
     classDef agent fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c;
+    classDef git fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20;
     classDef kill fill:#ffebee,stroke:#c62828,stroke-width:2px,stroke-dasharray: 5 5,color:#b71c1c;
 
     START(("用户提出需求"))
     H1["H1: 人类确认目标理解<br/>← 人类介入点 #1"]:::human
+    BRANCH["创建功能分支<br/>{slug} 分支"]:::git
     SPEC["specAgent — 规格制定<br/>产出 01-05 + prompt-template<br/>Socratic 提问 → SDD 规格"]:::agent
     H2["H2: 人类确认规格方案<br/>← 人类介入点 #2"]:::human
     IMPL["implAgent — TDD 实现<br/>红-绿-重构循环<br/>增量提交 + 决策记录"]:::agent
     TEST["testAgent — 四维测试<br/>功能/边界/异常/代码分支"]:::agent
     REVIEW["reviewAgent — 五维审查<br/>资产沉淀 + 复盘"]:::agent
+    FINISH["team-finish — 分支完成<br/>merge / PR / keep"]:::git
     H4["H4: 人类验收交付物<br/>← 人类介入点 #4"]:::human
     H3("H3: 人类介入 #3<br/>阻塞 / 决策 / Kill Switch"):::human
 
     START --> H1
-    H1 -->|确认| SPEC
+    H1 -->|确认| BRANCH
     H1 -->|不确认| START
 
+    BRANCH --> SPEC
     SPEC --> H2
     H2 -->|确认| IMPL
     H2 -->|不确认| SPEC
@@ -208,16 +212,18 @@ flowchart TD
     TEST -->|spec 遗漏| SPEC
     TEST -.->|不可行| H3
 
-    REVIEW -->|无问题| H4
+    REVIEW -->|无问题| FINISH
     REVIEW -->|P0/P1| IMPL
     REVIEW -->|spec 遗漏| SPEC
     REVIEW -.->|不可行| H3
 
+    FINISH --> H4
     H4 -->|验收通过| DONE(("完成 ✅"))
     H4 -->|不通过| IMPL
 ```
 
 > H3 可在**任何阶段**触发，包括：发现任务不可行（Kill Switch）、回退超限、或需要人类决策的复杂问题。
+> 功能分支在 H1 确认后自动创建，在 Review 通过后由 team-finish 处理（merge/PR/keep/discard）。
 
 ---
 
@@ -272,7 +278,7 @@ graph TD
 | `team-impl` | TDD 红-绿-重构循环实现 | "规格有了，开始写代码" |
 | `team-test` | 四维测试矩阵 + 补充测试 | "测试覆盖够吗？" |
 | `team-review` | 五维审查 + 资产沉淀 + 复盘 | "代码质量如何？" |
-| `team-orchestrator` | 有向图流程编排，4 个人类介入点 | "我要完整交付流水线" |
+| `team-orchestrator` | 有向图流程编排 + 分支管理，4 个人类介入点 | "我要完整交付流水线" |
 | `team-verify` | 5 步验证门禁，杜绝虚假通过 | "测试真的过了吗？" |
 | `team-debug` | 四阶段根因分析 + 修复 | "这个 bug 怎么回事？" |
 | `team-feedback` | 先验证再实施，非表演性同意 | "Review 反馈来了" |
