@@ -96,6 +96,8 @@ team-skills setup
 
 ```bash
 npx team-skills@latest init
+# 含评分功能
+npx team-skills@latest init --with-score
 ```
 
 创建 `.team-skills/` 目录，包含 Skills、Hooks 和命令文件。后续更新：
