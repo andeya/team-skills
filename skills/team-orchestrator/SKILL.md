@@ -11,7 +11,8 @@ description: Use when task needs full spec→impl→test→review pipeline with 
 
 ```mermaid
 flowchart TD
-    H1["H1: 人类确认目标"] --> specAgent["specAgent: 规格制定"]
+    H1["H1: 人类确认目标"] --> branch["创建功能分支"]
+    branch --> specAgent["specAgent: 规格制定"]
     specAgent --> H2["H2: 人类确认规格"]
     H2 --> implAgent["implAgent: TDD 实现"]
     implAgent --> testAgent["testAgent: 测试审计"]
@@ -20,7 +21,8 @@ flowchart TD
     testAgent -->|"全部通过"| reviewAgent["reviewAgent: 代码审查"]
     reviewAgent -->|"P0/P1 问题"| implAgent
     reviewAgent -->|"spec 遗漏"| specAgent
-    reviewAgent -->|"无问题"| H4["H4: 人类验收"]
+    reviewAgent -->|"无问题"| finish["team-finish: 分支完成"]
+    finish --> H4["H4: 人类验收"]
     H3["H3: 人类介入（任何阶段）"] -.->|"阻塞/决策"| H3
 ```
 
@@ -123,6 +125,12 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
                      │ 确认  │ 不确认 → 返回修改
                      ▼       └────────┐
               ┌──────────────────┐     │
+              │  创建功能分支     │     │
+              │  {slug} 分支     │     │
+              └──────┬───────────┘     │
+                     │                 │
+                     ▼                 │
+              ┌──────────────────┐     │
               │  specAgent       │     │
               │  产出 01-05 文件  │     │
               │  + 分期建议(P1/P2)│     │
@@ -175,6 +183,13 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
                      ├── 发现不可行 ────────────→ Kill Switch → H3
                      │                           │
                      ├── 发现人类需决策 ─────────→ H3: 人类介入点 #3
+                     │                           │
+                     ▼                           │
+              ┌──────────────────┐               │
+              │  team-finish     │               │
+              │  分支完成处理     │               │
+              │  (merge/PR/keep) │               │
+              └──────┬───────────┘               │
                      │                           │
                      ▼                           │
               ┌──────────────────────────┐       │
@@ -304,10 +319,12 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
    {
      "slug": "0001-add-tooltip",
      "task_description": "实现用户注册功能",
+     "branch": "0001-add-tooltip",
+     "base_branch": "main",
      "current_step": "H2",
      "next_step": "Step 3",
      "phase": "spec",
-     "completed_steps": ["Step 1", "H1", "Step 2"],
+     "completed_steps": ["Step 1", "H1", "Step 1.5", "Step 2"],
      "pending_decision": "用户确认规格方案",
      "completed_at": "2026-01-15T10:30:00Z",
      "rollback_counts": {
@@ -345,9 +362,24 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 6. 记录启动时间
 7. **写入 checkpoint**：`current_step=H1, next_step=Step 2, pending_decision=确认目标理解`
 8. **向用户展示任务理解 + 初步方案 + 风险预判 + 分期建议**，等待确认（设置 30 分钟超时提醒）。如果存在 `00-design-brief.md`，将其摘要纳入展示
-9. 用户确认后，**写入 checkpoint**：`current_step=Step 2, completed_steps 追加 H1`。继续下一步，否则根据反馈调整
+9. 用户确认后，**写入 checkpoint**：`current_step=Step 1.5, completed_steps 追加 H1`。继续下一步，否则根据反馈调整
 
 **Kill Switch 预检查**：如果任务明显不可行（技术不可行、依赖不可用、范围远超预期），在 H1 阶段直接向用户提出终止建议。
+
+### Step 1.5：Git 分支初始化
+
+H1 确认后、specAgent 启动前，创建功能分支隔离本次任务的所有变更：
+
+1. **检测当前分支**：获取当前分支名（`git branch --show-current`），记为 `base_branch`
+2. **创建功能分支**：`git checkout -b {slug}`（分支名直接使用 slug，如 `0012-refactor-auth`）
+3. **写入 checkpoint**：`branch` 字段记录 `{slug}`，`base_branch` 字段记录基准分支名
+
+**跳过条件**（不创建分支）：
+
+- 用户已在功能分支上（当前分支名非 `main`/`master`/`develop`/默认分支）→ 使用当前分支，checkpoint 中 `branch` 记录当前分支名
+- 用户明确指定 `--no-branch` → 直接在当前分支上工作
+
+**恢复场景**：断点续传（`docs/tasks/{slug}/.checkpoint.json` 已有 `branch` 字段）时，检查当前分支是否与 checkpoint 记录一致。不一致则提示用户切换分支（`git checkout {branch}`），不自动切换。
 
 ### Step 2：调度 specAgent
 
@@ -373,7 +405,7 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 
 **完成验证**：完整模式确认 6 个文件已产出（01-plan.md / 02-context.md / 03-sdd.md / 04-boundary.md / 05-risk.md / prompt-template.md）；精简模式确认 2 个文件已产出（03-sdd.md / 04-boundary.md）。
 
-**写入 checkpoint**：`current_step=H2, next_step=Step 3, phase=spec, pending_decision=确认规格方案, completed_steps 追加 Step 2`
+**写入 checkpoint**：`current_step=H2, next_step=Step 3, phase=spec, pending_decision=确认规格方案, completed_steps 追加 Step 1.5 和 Step 2`
 
 ### Step 2.5：H2 人类确认规格 + Kill Switch 检查
 
@@ -545,10 +577,13 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 
 在归档前，检查 reviewAgent 产出的 `12-asset-update.md` 中是否有 CHANGELOG.md 更新。如果 CHANGELOG.md 需要更新但尚未更新，在此处补全。
 
-同时检查 `team-finish` 流程是否已执行：
+调度 `team-finish` 完成分支处理：
 
-- 如果分支尚未合并，推荐使用 `team-finish` 完成分支处理
-- 如果已合并，确认合并 commit 已推送
+- 传递 checkpoint 中的 `branch` 和 `base_branch` 信息
+- `team-finish` 将验证测试 → 展示选项（merge/PR/keep/discard）→ 执行用户选择
+- 如果用户选择 merge，合并后确认合并 commit 已推送
+- 如果用户选择 PR，确认 PR 已创建
+- 如果用户选择 keep/discard，记录用户决策
 
 ### Step 7.5：归档与知识合并
 

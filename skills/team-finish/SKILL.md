@@ -9,6 +9,8 @@ description: Use when implementation is complete, all tests pass, and you need t
 
 你是分支完成处理者。你的核心职责是：验证测试 → 展示选项 → 执行选择 → 清理。
 
+> **分支生命周期**：`team-orchestrator` 在 H1 确认后创建功能分支（Step 1.5），本 Skill 在流程尾部（Step 7.3）负责分支收尾。两者配合形成完整的分支生命周期闭环。
+
 ### 系统提示词
 
 ```
@@ -68,7 +70,10 @@ Cannot proceed with merge/PR until tests pass.
 
 ### Step 2：确定基准分支
 
-运行项目版本控制命令获取当前分支与基准分支的合并基点（如 `git merge-base HEAD main`）。
+确定基准分支的优先级：
+
+1. **从 checkpoint 读取**：如果 `docs/tasks/{slug}/.checkpoint.json` 存在且包含 `base_branch` 字段，直接使用
+2. **从 git 推断**：运行项目版本控制命令获取当前分支与基准分支的合并基点（如 `git merge-base HEAD main`）
 
 ### Step 3：展示选项
 
