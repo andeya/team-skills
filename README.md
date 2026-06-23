@@ -113,8 +113,9 @@ npx team-skills@latest update
 | 内容 | 位置 | 说明 |
 |------|------|------|
 | 11 个 Agent Skills | `~/.agents/skills/` | Cursor 自动发现 |
-| 斜杠命令 | `~/.claude/commands/` | Claude Code `/team-{name}` |
+| 11 个 Skill 斜杠命令 | `~/.claude/commands/` | Claude Code `/team-{name}` |
 | 共享规则 | `~/.agents/skills/_team-rules/` | 被所有 Skill 引用 |
+| CLI 辅助命令 | 两端均安装 | team-setup/uninstall/pull/push |
 | Hooks（可选） | `~/.cursor/hooks/` | session-start 自动加载 |
 
 ### 验证

@@ -5,7 +5,7 @@
 ## 前置条件
 
 - 已安装 Claude Code 或 Cursor
-- 已安装 Team Skills（`/team-setup`）
+- 已安装 Team Skills（`npx team-skills@latest setup`）
 
 ## 第一步：从模糊需求开始
 

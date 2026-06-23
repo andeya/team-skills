@@ -1,5 +1,5 @@
 ---
-description: 卸载 team-skills 的所有 symlink（Skills、Commands、Hooks）
+description: 卸载 team-skills 的所有 symlink（Skills、斜杠命令、Hooks）
 argument-hint: [target-dir]
 ---
 
@@ -7,101 +7,47 @@ argument-hint: [target-dir]
 
 ## 功能
 
-移除 `/team-setup` 创建的所有软链接，不影响本仓库源文件。
+移除 `team-skills setup` 创建的所有软链接，不影响源文件。
 
-## 参数
+## 移除内容
 
-- `$1`（可选）：目标目录，默认为 `~/.agents/skills`
+| 组件 | 位置 |
+|------|------|
+| Cursor Skills | `~/.agents/skills/team-*` |
+| Claude Code Skill 斜杠命令 | `~/.claude/commands/team-*.md` |
+| 共享规则 | `~/.agents/skills/_team-rules/` |
+| CLI 辅助命令 | 两端均移除 |
+| Hooks | `~/.cursor/hooks/`、`~/.claude/hooks/` |
 
-## 执行步骤
-
-### 1. 确定目标目录
-
-```bash
-set -euo pipefail
-TARGET="${1:-$HOME/.agents/skills}"
-REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || echo "$(cd "$(dirname "$0")/../.." && pwd)")"
-echo "卸载来源: $REPO_ROOT"
-echo "目标目录: $TARGET"
-removed=0
-```
-
-### 2. 移除 Agent Skills
+## 使用方式
 
 ```bash
-for dir in "$REPO_ROOT/skills"/*/; do
-  name="$(basename "$dir")"
-  [ "$name" = "_team-rules" ] && continue
-  if [ -L "$TARGET/$name" ]; then
-    rm "$TARGET/$name"
-    echo "  🗑️ Skill: $name"
-    removed=$((removed + 1))
-  fi
-done
+# 完整卸载
+team-skills uninstall
+
+# 保留 Hooks
+team-skills uninstall --no-hooks
+
+# 保留 CLI 辅助命令
+team-skills uninstall --no-commands
+
+# 预览不执行
+team-skills uninstall --dry-run
+
+# 指定目标目录
+team-skills uninstall /path/to/target
 ```
 
-### 3. 移除共享规则
+## 选项
 
-```bash
-for f in "$REPO_ROOT/skills/_team-rules"/*; do
-  [ -f "$f" ] || continue
-  name="$(basename "$f")"
-  if [ -L "$TARGET/_team-rules/$name" ]; then
-    rm "$TARGET/_team-rules/$name"
-    echo "  🗑️ Rule: $name"
-    removed=$((removed + 1))
-  fi
-done
-rmdir "$TARGET/_team-rules" 2>/dev/null || true
-```
+| 选项 | 说明 |
+|------|------|
+| `--no-hooks` | 跳过移除 Hooks |
+| `--no-commands` | 跳过移除 CLI 辅助命令 |
+| `--dry-run` | 只显示操作，不实际执行 |
 
-### 4. 移除 Command Skills
+## 安全机制
 
-```bash
-for cmd in "$REPO_ROOT/.claude/commands"/*.md; do
-  [ -f "$cmd" ] || continue
-  name="$(basename "$cmd" .md)"
-  if [ -L "$TARGET/$name/SKILL.md" ]; then
-    rm "$TARGET/$name/SKILL.md"
-    rmdir "$TARGET/$name" 2>/dev/null || true
-    echo "  🗑️ Command Skill: $name"
-    removed=$((removed + 1))
-  fi
-done
-```
-
-### 5. 移除 Claude Code 命令
-
-```bash
-for cmd in "$REPO_ROOT/.claude/commands"/*.md; do
-  [ -f "$cmd" ] || continue
-  name="$(basename "$cmd")"
-  if [ -L "$HOME/.claude/commands/$name" ]; then
-    rm "$HOME/.claude/commands/$name"
-    echo "  🗑️ Claude Command: $name"
-    removed=$((removed + 1))
-  fi
-done
-```
-
-### 6. 移除 Hooks
-
-```bash
-for hook_dir in "$HOME/.cursor/hooks" "$HOME/.claude/hooks"; do
-  for f in hooks.json session-start; do
-    if [ -L "$hook_dir/$f" ]; then
-      rm "$hook_dir/$f"
-      echo "  🗑️ Hook: $hook_dir/$f"
-      removed=$((removed + 1))
-    fi
-  done
-done
-```
-
-### 7. 汇报
-
-```bash
-echo ""
-echo "✅ 卸载完成，共移除 $removed 个软链接。"
-echo "本仓库源文件未受影响。"
-```
+- 只移除指向 team-skills 源文件的 symlink
+- 指向其他来源的同名 symlink 会跳过（标记为 `foreign`）
+- 非 symlink 文件不会被删除
