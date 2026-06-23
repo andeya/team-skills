@@ -2,7 +2,7 @@
 #
 # Usage:
 #   make deps      安装依赖 (npm install)
-#   make lint      检查 Markdown 格式
+#   make lint      检查 Markdown 格式 + Skill 结构
 #   make format    自动修复 Markdown 格式
 #   make setup     安装 git hooks
 #   make help      查看帮助
