@@ -43,7 +43,7 @@ NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE
 ## 输入
 
 - 需要验证的声明描述
-- 验证命令（从 CLAUDE.md 或 05-risk.md 获取）
+- 验证命令（从 CLAUDE.md / .cursor/rules/ 或 05-risk.md 获取）
 - 项目测试/构建命令
 
 ## 执行步骤
@@ -53,7 +53,7 @@ NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE
 从以下来源获取验证命令（优先级从高到低）：
 
 1. `05-risk.md` §一 验证计划
-2. `CLAUDE.md` 中的测试命令
+2. `CLAUDE.md` / `.cursor/rules/` 中的测试命令
 3. `package.json` / `Makefile` / `Cargo.toml` 中的测试脚本
 
 ### Step 2：执行 5 步验证
@@ -112,7 +112,7 @@ NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE
 
 在报告完成状态前，执行以下自检：
 
-- [ ] 验证命令已确定（从 05-risk.md / CLAUDE.md / package.json 获取）
+- [ ] 验证命令已确定（从 05-risk.md / CLAUDE.md / .cursor/rules/ / package.json 获取）
 - [ ] 命令已新鲜执行（不使用缓存）
 - [ ] 完整输出已阅读（不截断、不跳过 warning）
 - [ ] 退出码 = 0 且失败数 = 0

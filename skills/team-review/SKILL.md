@@ -14,7 +14,7 @@ description: Use when code + tests exist and you need structured review + asset 
 1. **五维度代码 Review** — 从正确性、可维护性、性能、安全、测试覆盖五个维度审查代码
 2. **Constitutional 合规检查** — 验证所有 Agent 是否遵守了 Constitutional Rules
 3. **问题路由** — 根据问题类型路由到正确的 Agent 或人类
-4. **AI 协作资产维护** — 确保团队协作资产（CLAUDE.md、CHANGELOG.md 等）得到更新，且具备**消费方契约**（下游 Agent 能直接使用）
+4. **AI 协作资产维护** — 确保团队协作资产（CLAUDE.md / .cursor/rules/、CHANGELOG.md 等）得到更新，且具备**消费方契约**（下游 Agent 能直接使用）
 5. **复盘与改进** — 记录本次任务的复盘经验
 
 ### 系统提示词
@@ -25,7 +25,7 @@ description: Use when code + tests exist and you need structured review + asset 
 1. 五维度 Review：对每个修改文件审查正确性、可维护性、性能、安全、测试覆盖
 2. Constitutional 合规检查：验证所有 Agent 是否遵守了 8 条 Constitutional Rules
 3. 问题路由：根据问题严重级别（P0/P1/P2/P3）决定修复方式
-4. 资产维护：更新 CLAUDE.md、CHANGELOG.md、Review Checklist、Delivery Checklist
+4. 资产维护：更新 CLAUDE.md / .cursor/rules/、CHANGELOG.md、Review Checklist、Delivery Checklist
 5. 复盘：记录本次任务的经验和改进承诺
 
 关键区别：你不是简单地挑错。你必须验证 Constitutional Rules 是否被遵守，确保更新的资产可消费（下游 Agent 能直接执行），并在修复方案需要人类确认时暂停等待。
@@ -189,20 +189,20 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK
 
 #### 4.0.5 内容覆盖度检查
 
-逐项确认以下 8 个内容类别在项目资产中有明确对应文件或章节。对「需补充」项，在 CLAUDE.md 对应章节新增内容；如果 `docs/review-checklist.md` 或 `docs/delivery-checklist.md` 不存在，创建之。
+逐项确认以下 8 个内容类别在项目资产中有明确对应文件或章节。对「需补充」项，在项目 AI 规范文件（CLAUDE.md / .cursor/rules/）对应章节新增内容；如果 `docs/review-checklist.md` 或 `docs/delivery-checklist.md` 不存在，创建之。
 
-| 类别        | 典型位置                              | 状态      |
-| ----------- | ------------------------------------- | --------- |
-| 业务术语    | 02-context.md 术语表 / CLAUDE.md      | ✅/需补充 |
-| 系统架构    | AGENTS.md / docs/architecture.md      | ✅/需补充 |
-| 代码结构    | AGENTS.md / CLAUDE.md                 | ✅/需补充 |
-| 接口约定    | AGENTS.md / CLAUDE.md / 02-context.md | ✅/需补充 |
-| 编码规范    | CLAUDE.md                             | ✅/需补充 |
-| 测试要求    | CLAUDE.md / docs/review-checklist.md  | ✅/需补充 |
-| Review 标准 | docs/review-checklist.md              | ✅/需补充 |
-| 交付要求    | docs/delivery-checklist.md            | ✅/需补充 |
+| 类别        | 典型位置                                            | 状态      |
+| ----------- | --------------------------------------------------- | --------- |
+| 业务术语    | 02-context.md 术语表 / CLAUDE.md / .cursor/rules/     | ✅/需补充 |
+| 系统架构    | AGENTS.md / docs/architecture.md                    | ✅/需补充 |
+| 代码结构    | AGENTS.md / CLAUDE.md / .cursor/rules/                | ✅/需补充 |
+| 接口约定    | AGENTS.md / CLAUDE.md / .cursor/rules/ / 02-context.md | ✅/需补充 |
+| 编码规范    | CLAUDE.md / .cursor/rules/                            | ✅/需补充 |
+| 测试要求    | CLAUDE.md / .cursor/rules/ / docs/review-checklist.md | ✅/需补充 |
+| Review 标准 | docs/review-checklist.md                            | ✅/需补充 |
+| 交付要求    | docs/delivery-checklist.md                          | ✅/需补充 |
 
-#### 4.1 项目级 CLAUDE.md
+#### 4.1 项目级 AI 规范（CLAUDE.md / .cursor/rules/）
 
 检查是否需要新增规则：
 
@@ -210,7 +210,7 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK
 - 本次任务发现的常见错误模式
 - 本次任务涉及的特殊技术约束
 
-更新方式：追加到 `CLAUDE.md` 的对应章节，保持原有结构。
+更新方式：追加到项目 AI 规范文件（CLAUDE.md 或 .cursor/rules/，取项目中已存在的文件）的对应章节，保持原有结构。
 
 #### 4.1.5 项目级 AGENTS.md
 
@@ -223,9 +223,9 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK
 
 更新方式：在 `AGENTS.md` 对应章节追加或修改，保持与代码实际结构一致。AGENTS.md 应包含：系统架构概览、模块职责清单、关键接口定义、目录结构说明。
 
-#### 4.2 模块级 CLAUDE.md
+#### 4.2 模块级 AI 规范
 
-如果本次任务修改了特定模块（如 `frontend/`、`backend/`），检查该模块的 `CLAUDE.md` 是否需要更新：
+如果本次任务修改了特定模块（如 `frontend/`、`backend/`），检查该模块的 AI 规范文件（`CLAUDE.md` / `.cursor/rules/`）是否需要更新：
 
 - 新增的 API 或接口规范
 - 新增的测试约定
@@ -271,16 +271,16 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK
 
 确认项目至少有 2 类工具适配产物。如不足，从以下列表中选择并创建缺失类型（创建时必须填充实际内容，不可创建空文件）：
 
-| 类型                  | 文件路径                             | 创建内容来源 | 状态  |
-| --------------------- | ------------------------------------ | ------------ | ----- |
-| CLAUDE.md / AGENTS.md | 根目录                               | 本次 Review 发现的规则 | ✅/❌ |
+| 类型                                    | 文件路径                             | 创建内容来源 | 状态  |
+| --------------------------------------- | ------------------------------------ | ------------ | ----- |
+| CLAUDE.md / .cursor/rules/ / AGENTS.md    | 根目录                               | 本次 Review 发现的规则 | ✅/❌ |
 | Review Checklist      | docs/review-checklist.md             | Phase 1 审查维度 + 本次 P0-P2 问题 | ✅/❌ |
 | Delivery Checklist    | docs/delivery-checklist.md           | Phase 4 资产清单 + 验证步骤 | ✅/❌ |
 | Prompt 模板           | docs/tasks/{slug}/prompt-template.md | specAgent 产出 | ✅/❌ |
 
 #### 4.7 资产可维护性保障
 
-在 CLAUDE.md 确认存在以下维护机制段落（如不存在则新增）：
+在项目 AI 规范文件（CLAUDE.md 或 .cursor/rules/）中确认存在以下维护机制段落（如不存在则新增）：
 
 ```markdown
 
@@ -299,14 +299,14 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK
 
 ### 规则管理层级
 
-- 项目级规则集中在根目录 CLAUDE.md
-- 模块级规则在各模块 CLAUDE.md
+- 项目级规则集中在根目录 CLAUDE.md / .cursor/rules/
+- 模块级规则在各模块 CLAUDE.md / .cursor/rules/
 - 任务级规则在 docs/tasks/{slug}/task-rules.md
 - 冲突时优先级：项目级 > 模块级 > 任务级
 
 ```
 
-每次更新 CLAUDE.md 后，向"版本记录"表追加一行。
+每次更新项目 AI 规范文件后，向"版本记录"表追加一行。
 
 ### Phase 5：个人复盘
 
@@ -314,7 +314,7 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK
 
 1. **本次任务回顾**：做得好的 + 可以改进的 + 意外发现（具体事例，不是泛泛而谈）
 2. **AI 协作经验**：提示词优化经验 + 团队协作改进建议
-3. **新规则沉淀**（§二.5）：列出本次发现的可固化规则，注明写入位置和理由。对每条新规则，必须同时执行写入——追加到目标文件（CLAUDE.md / 模块 CLAUDE.md / task-rules.md），并在 12-asset-update.md 中记录变更
+3. **新规则沉淀**（§二.5）：列出本次发现的可固化规则，注明写入位置和理由。对每条新规则，必须同时执行写入——追加到目标文件（项目 AI 规范 / 模块 AI 规范 / task-rules.md），并在 12-asset-update.md 中记录变更
 4. **改进承诺**（§三）：具体行动 + 预期效果
 
 > 重点：§二.5 的新规则沉淀是质量检查 D4.4 的关键证据，不可省略。"发现规则但未写入目标文件"视为未完成。
@@ -347,8 +347,8 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK
 - [ ] P0/P1 问题已路由（→ implAgent / → specAgent / → H3），未自行修复
 - [ ] 资产更新满足消费方契约 — 验证：`grep -cE '触发条件|可执行指令|示例' docs/tasks/{slug}/12-asset-update.md` 每条规则均有三要素
 - [ ] 复盘文档包含新规则段落 — 验证：`grep -c '新规则\|本次沉淀' docs/tasks/{slug}/13-retrospective.md` 输出 > 0
-- [ ] 8 类内容覆盖已检查 — 验证：逐条确认业务术语/架构/代码结构/接口/编码规范/测试/Review/交付在 CLAUDE.md 或子文件中有定义
-- [ ] 工具适配产物 ≥ 2 类 — 验证：统计以下文件存在数量 ≥ 2：CLAUDE.md、review-checklist、delivery-checklist、prompt-template.md
+- [ ] 8 类内容覆盖已检查 — 验证：逐条确认业务术语/架构/代码结构/接口/编码规范/测试/Review/交付在项目 AI 规范（CLAUDE.md / .cursor/rules/）或子文件中有定义
+- [ ] 工具适配产物 ≥ 2 类 — 验证：统计以下文件存在数量 ≥ 2：CLAUDE.md / .cursor/rules/、review-checklist、delivery-checklist、prompt-template.md
 
 ## 完成标志
 

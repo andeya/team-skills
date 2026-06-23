@@ -100,7 +100,7 @@ NO COVERAGE CLAIMS WITHOUT SDD TRACEABILITY
 
 ### Phase 4：运行全量测试
 
-1. 运行项目测试命令（参考 CLAUDE.md 或 05-risk.md §一验证计划）
+1. 运行项目测试命令（参考 CLAUDE.md / .cursor/rules/ 或 05-risk.md §一验证计划）
 2. **测试隔离验证**：如果测试涉及外部状态（数据库、文件系统、网络），确认测试间无顺序依赖——随机化运行顺序或单独运行新增测试验证
 3. **输出证据记录**：将测试命令的最后 20 行输出粘贴到 `10-test-report.md` §三测试输出证据（含 pass/fail 统计行），同时记录退出码
 4. 记录测试结果到 `10-test-report.md`（按模板填写所有章节）

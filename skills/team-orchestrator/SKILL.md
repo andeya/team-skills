@@ -62,15 +62,15 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
   G2 修改边界    → 04-boundary.md
   G3 测试补充    → 09-test-matrix.md + 10-test-report.md
   G4 测试通过    → 06-tdd-log.md + 10-test-report.md
-  G5 资产可执行  → 12-asset-update.md（消费方契约）+ CLAUDE.md
+  G5 资产可执行  → 12-asset-update.md（消费方契约）+ 项目 AI 规范
   G6 风险说明    → 05-risk.md + 11-review.md §四
   G7 决策解释    → 08-ai-decisions.md + 15-brief.md
 质量维度：
-  D1.1 分层组织   → CLAUDE.md + {module}/CLAUDE.md + task-rules.md
-  D1.2 内容8类    → 02-context.md + CLAUDE.md + review-checklist + delivery-checklist
+  D1.1 分层组织   → 项目 AI 规范 + 模块 AI 规范 + task-rules.md
+  D1.2 内容8类    → 02-context.md + 项目 AI 规范 + review-checklist + delivery-checklist
   D1.3 规则可执行 → 12-asset-update.md（触发条件+可执行指令+示例）
-  D1.4 工具≥2类   → CLAUDE.md + review-checklist/delivery-checklist/prompt-template.md
-  D1.5 可维护性   → CLAUDE.md §资产维护机制 + 12-asset-update.md §版本记录
+  D1.4 工具≥2类   → 项目 AI 规范 + review-checklist/delivery-checklist/prompt-template.md
+  D1.5 可维护性   → 项目 AI 规范 §资产维护机制 + 12-asset-update.md §版本记录
   D2.1 目标澄清   → 01-plan.md §一
   D2.2 上下文选择 → 02-context.md
   D2.3 任务拆分   → 01-plan.md §二
@@ -390,7 +390,7 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 执行 team-review skill。
 
 任务 slug：{slug}
-输入：docs/tasks/{slug}/ 全部文件（01-10）+ 代码 diff + 项目规范（CLAUDE.md、AGENTS.md（如存在）、CONTRIBUTING.md）
+输入：docs/tasks/{slug}/ 全部文件（01-10）+ 代码 diff + 项目规范（CLAUDE.md / .cursor/rules/、AGENTS.md（如存在）、CONTRIBUTING.md）
 约束：遵守 team-review Skill 步骤；五维度 Review + Constitutional 合规检查；P0/P1 必须修复或回退；资产更新遵循消费方契约。
 回退上下文：{如有 testAgent 报告的问题则附上，否则写"无"}
 
@@ -418,8 +418,8 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 1. **术语一致性**：从 `02-context.md` 提取术语表，grep 检查任务目录下所有文件中是否使用了不一致的别名
 2. **文档格式**：检查任务目录下所有文件是否遵循统一的 Markdown 标题层级（# > ## > ###）
 3. **commit message 规范**：`git log --oneline` 检查本次任务所有 commit 是否遵循 `type: description`
-4. **CLAUDE.md 同步**：检查 reviewAgent 新增的规则是否与已有规则矛盾
-5. **模块 CLAUDE.md 风格**：对比多个模块级 CLAUDE.md 是否结构一致
+4. **AI 规范同步**：检查 reviewAgent 新增的规则是否与已有规则矛盾
+5. **模块 AI 规范风格**：对比多个模块级 AI 规范文件是否结构一致
 
 对发现的不一致立即修复。
 
@@ -456,7 +456,7 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 
 用户验收通过后，执行以下知识沉淀：
 
-1. **规则合并**：将 `docs/tasks/{slug}/task-rules.md` 中标记为"可泛化"的规则，合并到项目级 CLAUDE.md 或模块级 CLAUDE.md
+1. **规则合并**：将 `docs/tasks/{slug}/task-rules.md` 中标记为"可泛化"的规则，合并到项目级或模块级 AI 规范文件（CLAUDE.md / .cursor/rules/）
 2. **SDD 快照归档**：如果项目维护了 `docs/specs/` 目录，将本次 `03-sdd.md` 的关键规格合并进去（增量模式则执行 delta 合并：ADDED 追加、MODIFIED 替换、REMOVED 删除；如有冲突以本次 SDD 为准并在 commit message 中注明）
 3. **进度账本更新**：在 `docs/tasks/progress.md` 追加本次任务记录
 
@@ -487,17 +487,17 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 - [ ] G2: 04-boundary.md 有 allow/deny 两个方向
 - [ ] G3: 测试存在且有补充（09-test-matrix.md + 10-test-report.md + 测试代码）
 - [ ] G4: 代码通过项目 CI 全量检查，测试全部通过
-- [ ] G5: CLAUDE.md 中每条规则包含「触发条件 + 可执行指令」，不是空话
+- [ ] G5: 项目 AI 规范中每条规则包含「触发条件 + 可执行指令」，不是空话
 - [ ] G6: 05-risk.md 有风险识别 + 11-review.md §四 有剩余风险说明
 - [ ] G7: 08-ai-decisions.md 能解释关键决策 + 15-brief.md 有决策解释表
 
 **D1 AI 协作资产沉淀（25 分）：**
 
-- [ ] D1.1 分层组织：CLAUDE.md（项目级）+ 模块 CLAUDE.md（模块级）+ task-rules.md（任务级）三层齐全
+- [ ] D1.1 分层组织：项目 AI 规范（项目级）+ 模块 AI 规范（模块级）+ task-rules.md（任务级）三层齐全
 - [ ] D1.2 内容覆盖：业务术语、架构、代码结构、接口约定、编码规范、测试要求、Review 标准、交付要求 8 类有对应文件
 - [ ] D1.3 规则可执行：12-asset-update.md 中每条规则有「触发条件 + 可执行指令 + 示例」
-- [ ] D1.4 工具适配 ≥ 2 类：CLAUDE.md + (review-checklist / delivery-checklist / prompt-template.md) 至少 2 种
-- [ ] D1.5 可维护性：CLAUDE.md 有「资产维护机制」段落（更新触发条件 + 版本记录 + 复盘中新增规则）
+- [ ] D1.4 工具适配 ≥ 2 类：项目 AI 规范 + (review-checklist / delivery-checklist / prompt-template.md) 至少 2 种
+- [ ] D1.5 可维护性：项目 AI 规范有「资产维护机制」段落（更新触发条件 + 版本记录 + 复盘中新增规则）
 
 **D2 AI 协作任务规划（25 分）：**
 

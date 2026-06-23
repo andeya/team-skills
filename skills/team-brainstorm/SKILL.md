@@ -52,7 +52,7 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 ### Phase 1：探索
 
 1. 精读用户需求
-2. 读取项目规范：CLAUDE.md、README.md
+2. 读取项目规范：CLAUDE.md（或 .cursor/rules/）、README.md
 3. 扫描相关源码模块
 4. 评估范围：如果需求包含多个独立子系统，先帮助用户分解
 

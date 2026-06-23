@@ -83,7 +83,7 @@ NO SKILL RECOMMENDATION WITHOUT SCENE ANALYSIS FIRST
 
 ## 指令优先级
 
-1. **用户显式指令**（CLAUDE.md、直接请求）— 最高优先级
+1. **用户显式指令**（CLAUDE.md / .cursor/rules/、直接请求）— 最高优先级
 2. **Team Skills** — 覆盖默认系统行为
 3. **默认系统提示** — 最低优先级
 

@@ -19,8 +19,8 @@
 | 术语一致性              | grep 02-context 术语 vs 全部文件       | ✅/⚠️ | {不一致处已修复} |
 | 文档标题层级            | 检查任务目录下所有文件的 Markdown 结构 | ✅/⚠️ | ...              |
 | commit message 类型前缀 | git log 检查每条 commit 含 type: 前缀（feat/fix/test/refactor/docs/chore） | ✅/⚠️ | ...              |
-| CLAUDE.md 规则无矛盾    | diff 新增 vs 已有规则                  | ✅/⚠️ | ...              |
-| 模块 CLAUDE.md 结构统一 | 对比各模块 CLAUDE.md 章节              | ✅/⚠️ | ...              |
+| AI 规范规则无矛盾       | diff 新增 vs 已有规则                  | ✅/⚠️ | ...              |
+| 模块 AI 规范结构统一    | 对比各模块 AI 规范章节                 | ✅/⚠️ | ...              |
 | 各 Agent 产出无遗漏     | 检查全部文档文件完整性（§五清单逐项）  | ✅/⚠️ | ...              |
 
 > commit type 清单：`feat` / `fix` / `test` / `refactor` / `docs` / `chore` / `style` / `perf`
@@ -66,5 +66,5 @@
 | task-rules.md       | ✅   | 任务级规则（三层体系）        |
 | 14-team.md          | ✅   | 团队分工 + 一致性 + 贡献      |
 | 15-brief.md         | ✅   | 答辩准备                      |
-| CLAUDE.md 已更新    | ✅   | 分层清晰 + 内容完整 + 可维护  |
+| AI 规范已更新       | ✅   | 分层清晰 + 内容完整 + 可维护  |
 | CHANGELOG.md 已更新 | ✅   | 变更可追溯                    |

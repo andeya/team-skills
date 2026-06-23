@@ -64,7 +64,7 @@ NO CODE WITHOUT SPEC FIRST
 ### Phase 1：探索（不写文件）
 
 1. 精读用户需求，提取核心问题
-2. 读取项目规范：`CLAUDE.md`、`AGENTS.md`、`CONTRIBUTING.md`、`docs/architecture.md`（如文件不存在则跳过）
+2. 读取项目规范：`CLAUDE.md`、`.cursor/rules/`、`AGENTS.md`、`CONTRIBUTING.md`、`docs/architecture.md`（如文件不存在则跳过）
 3. 读取已有验证体系：`docs/pm-truth-ledger.yaml`（如存在则读取，理解项目的声明式验证格式）
 4. 扫描相关源码模块（使用 grep / find / Read），理解现状与约束
 5. 识别与任务相关的文件、接口、数据结构、已有测试

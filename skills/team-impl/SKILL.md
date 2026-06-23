@@ -229,9 +229,9 @@ flowchart TD
 
 产出前执行：
 
-1. **运行测试**：项目测试命令（优先从 CLAUDE.md 获取，其次从 package.json scripts / Makefile / CI 配置中推断）
+1. **运行测试**：项目测试命令（优先从 CLAUDE.md / .cursor/rules/ 获取，其次从 package.json scripts / Makefile / CI 配置中推断）
 2. **运行 lint**：项目 lint 命令（同上优先级）
-3. **运行 CI 全量**：项目 CI 检查命令（参考 CLAUDE.md 或 05-risk.md §一验证计划中的具体命令，如均未定义则从项目构建配置中推断并记录到 06-tdd-log.md）
+3. **运行 CI 全量**：项目 CI 检查命令（参考 CLAUDE.md / .cursor/rules/ 或 05-risk.md §一验证计划中的具体命令，如均未定义则从项目构建配置中推断并记录到 06-tdd-log.md）
 
 > **验证协议**（步骤 1-3 每次声明"通过"前必须执行 CLAUDE.md §三 验证协议的 5 个步骤）
 
