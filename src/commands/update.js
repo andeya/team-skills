@@ -1,118 +1,172 @@
 import { join } from 'node:path';
-import { existsSync, readdirSync, statSync, copyFileSync as fsCopyFile } from 'node:fs';
-import { LOCAL_INSTALL_DIR, PACKAGE_ROOT, SKILLS_DIR, HOOKS_DIR, COMMANDS_DIR } from '../lib/constants.js';
-import { computeDirectoryHashes, computeFileHash, ensureDir } from '../lib/fs-utils.js';
-import { readManifest, writeManifest, createManifest, getPackageVersion } from '../lib/manifest.js';
+import { existsSync, copyFileSync as fsCopyFile, rmSync } from 'node:fs';
+import { execSync } from 'node:child_process';
+import { PACKAGE_ROOT } from '../lib/constants.js';
+import { discoverSkills, discoverSharedRules, discoverCommands, discoverHooks, discoverSkillsModuleClaude } from '../lib/inventory.js';
+import { copyRecursive, ensureDir } from '../lib/fs-utils.js';
 import * as log from '../lib/logger.js';
-import { dirname } from 'node:path';
 
 export function registerUpdate(program) {
   program
     .command('update')
-    .description('Update previously init\'d skills to latest version')
+    .description('Upgrade team-skills package and update project installations')
     .argument('[dir]', 'Project directory', '.')
-    .option('--force', 'Overwrite locally modified files (creates .bak backup)', false)
+    .option('--ide <type>', 'Force IDE type: claude, cursor, or both')
+    .option('--no-hooks', 'Skip hooks')
+    .option('--no-commands', 'Skip command files')
+    .option('--with-score', 'Include team-score skill (hidden by default)', false)
+    .option('--skip-self', 'Skip self-upgrade, only update project', false)
     .option('--dry-run', 'Show what would change', false)
     .action(runUpdate);
 }
 
-function runUpdate(dir, opts) {
-  const { force, dryRun } = opts;
-  const installDir = join(dir, LOCAL_INSTALL_DIR);
-  const manifest = readManifest(installDir);
+function upgradeSelf(dryRun) {
+  log.heading('升级 team-skills 包');
+  try {
+    const current = JSON.parse(
+      execSync('npm view team-skills version --registry https://registry.npmjs.org 2>/dev/null', { encoding: 'utf8' }).trim()
+    );
+    const local = JSON.parse(
+      execSync(`node -e "console.log(require('${join(PACKAGE_ROOT, 'package.json')}').version)"`, { encoding: 'utf8' }).trim()
+    );
+    if (current === local) {
+      log.skip(`已是最新版本 (${local})`);
+      return;
+    }
+    log.info(`${local} → ${current}`);
+    if (!dryRun) {
+      execSync('npm install -g team-skills@latest --registry https://registry.npmjs.org', { stdio: 'inherit' });
+      log.success(`已升级到 ${current}`);
+    } else {
+      log.success(`[dry-run] 将升级到 ${current}`);
+    }
+  } catch {
+    log.warn('自升级跳过（无法访问 npm registry 或非全局安装）');
+  }
+}
 
-  if (!manifest) {
-    log.error(`未找到 ${installDir}/manifest.json。请先运行 team-skills init。`);
-    process.exit(1);
+function detectIDE(projectDir, forceIDE) {
+  if (forceIDE) {
+    if (!['claude', 'cursor', 'both'].includes(forceIDE)) {
+      log.error(`不支持的 IDE 类型: ${forceIDE}。可选: claude, cursor, both`);
+      process.exit(1);
+    }
+    return forceIDE === 'both' ? ['claude', 'cursor'] : [forceIDE];
   }
 
-  const currentVersion = getPackageVersion();
-  log.info(`已安装版本: ${manifest.version} | 最新版本: ${currentVersion}`);
+  const detected = [];
+  if (existsSync(join(projectDir, '.claude'))) detected.push('claude');
+  if (existsSync(join(projectDir, '.cursor'))) detected.push('cursor');
+  return detected;
+}
+
+function runUpdate(dir, opts) {
+  const { ide, hooks, commands, withScore, skipSelf, dryRun } = opts;
+
+  // Step 1: self-upgrade
+  if (!skipSelf) upgradeSelf(dryRun);
+
+  // Step 2: update project if IDE detected
+  const exclude = withScore ? [] : ['team-score'];
+  const ides = detectIDE(dir, ide);
+
+  if (ides.length === 0) {
+    log.info('当前项目未检测到 IDE 配置（.claude/ 或 .cursor/），跳过项目更新。');
+    return;
+  }
 
   const tag = dryRun ? '[dry-run] ' : '';
-  const sourceMap = buildSourceMap();
+  let count = 0;
 
-  let updated = 0;
-  let skipped = 0;
-  let added = 0;
+  log.heading('更新项目中的 team-skills');
+  log.info(`项目目录: ${dir}`);
+  log.info(`目标 IDE: ${ides.join(', ')}`);
 
-  log.heading('检查文件更新');
+  // Cursor skills → .cursor/skills/
+  if (ides.includes('cursor')) {
+    const skillsDst = join(dir, '.cursor', 'skills');
+    log.heading(`更新 Skills → ${skillsDst}`);
 
-  for (const [relPath, sourceFullPath] of Object.entries(sourceMap)) {
-    const installedPath = join(installDir, relPath);
-    const sourceHash = computeFileHash(sourceFullPath);
-
-    if (!existsSync(installedPath)) {
+    const skills = discoverSkills(PACKAGE_ROOT, { exclude });
+    if (!dryRun) ensureDir(skillsDst);
+    for (const skill of skills) {
+      const dest = join(skillsDst, skill.name);
       if (!dryRun) {
-        ensureDir(dirname(installedPath));
-        fsCopyFile(sourceFullPath, installedPath);
+        if (existsSync(dest)) rmSync(dest, { recursive: true });
+        copyRecursive(skill.path, dest);
       }
-      log.success(`${tag}新增: ${relPath}`);
-      added++;
-      continue;
+      log.success(`${tag}Skill: ${skill.name}`);
+      count++;
     }
 
-    const installedHash = computeFileHash(installedPath);
-    if (installedHash === sourceHash) continue;
-
-    const manifestHash = manifest.files[relPath];
-    if (manifestHash && installedHash !== manifestHash && !force) {
-      log.warn(`跳过: ${relPath}（本地已修改，使用 --force 覆盖）`);
-      skipped++;
-      continue;
+    const rules = discoverSharedRules();
+    const rulesDst = join(skillsDst, '_team-rules');
+    if (!dryRun) ensureDir(rulesDst);
+    for (const r of rules) {
+      if (!dryRun) fsCopyFile(r.path, join(rulesDst, r.name));
+      log.success(`${tag}Rule: ${r.name}`);
+      count++;
     }
 
-    if (!dryRun) {
-      if (force && manifestHash && installedHash !== manifestHash) {
-        fsCopyFile(installedPath, installedPath + '.bak');
-        log.info(`备份: ${relPath}.bak`);
+    const skillsClaude = discoverSkillsModuleClaude();
+    if (skillsClaude) {
+      if (!dryRun) fsCopyFile(skillsClaude, join(skillsDst, 'CLAUDE.md'));
+      log.success(`${tag}skills/CLAUDE.md`);
+      count++;
+    }
+
+    if (hooks !== false) {
+      const hookFiles = discoverHooks();
+      const hooksDst = join(dir, '.cursor', 'hooks');
+      if (hookFiles.length > 0) {
+        if (!dryRun) ensureDir(hooksDst);
+        for (const h of hookFiles) {
+          if (!dryRun) fsCopyFile(h.path, join(hooksDst, h.name));
+          log.success(`${tag}Cursor Hook: ${h.name}`);
+          count++;
+        }
       }
-      fsCopyFile(sourceFullPath, installedPath);
-    }
-    log.success(`${tag}更新: ${relPath}`);
-    updated++;
-  }
-
-  for (const relPath of Object.keys(manifest.files)) {
-    if (!sourceMap[relPath]) {
-      log.warn(`源文件已删除: ${relPath}（如不再需要请手动删除）`);
     }
   }
 
-  if (!dryRun) {
-    const newHashes = computeDirectoryHashes(installDir);
-    delete newHashes['manifest.json'];
-    const newManifest = createManifest(currentVersion, newHashes);
-    writeManifest(installDir, newManifest);
-  }
+  // Claude Code commands → .claude/commands/
+  if (commands !== false && ides.includes('claude')) {
+    const cmdsDst = join(dir, '.claude', 'commands');
+    log.heading(`更新 Commands → ${cmdsDst}`);
 
-  log.done(`更新完成${dryRun ? ' (dry-run)' : ''}！更新 ${updated}，新增 ${added}，跳过 ${skipped}。`);
-}
+    const cmds = discoverCommands();
+    if (!dryRun) ensureDir(cmdsDst);
+    for (const c of cmds) {
+      if (!dryRun) fsCopyFile(c.path, join(cmdsDst, c.filename));
+      log.success(`${tag}Command: ${c.filename}`);
+      count++;
+    }
 
-function buildSourceMap() {
-  const map = {};
+    if (ides.includes('cursor')) {
+      const skillsDst = join(dir, '.cursor', 'skills');
+      for (const c of cmds) {
+        const skillDir = join(skillsDst, c.name);
+        if (!existsSync(skillDir) || dryRun) {
+          if (!dryRun) { ensureDir(skillDir); fsCopyFile(c.path, join(skillDir, 'SKILL.md')); }
+          log.success(`${tag}Command → Skill: ${c.name}`);
+          count++;
+        }
+      }
+    }
 
-  const skillsDir = join(PACKAGE_ROOT, SKILLS_DIR);
-  if (existsSync(skillsDir)) scanRecursive(skillsDir, 'skills', map);
-
-  const hooksDir = join(PACKAGE_ROOT, HOOKS_DIR);
-  if (existsSync(hooksDir)) scanRecursive(hooksDir, 'hooks', map);
-
-  const cmdsDir = join(PACKAGE_ROOT, COMMANDS_DIR);
-  if (existsSync(cmdsDir)) scanRecursive(cmdsDir, 'commands', map);
-
-  return map;
-}
-
-function scanRecursive(baseDir, prefix, map) {
-  const entries = readdirSync(baseDir, { withFileTypes: true });
-  for (const entry of entries) {
-    const fullPath = join(baseDir, entry.name);
-    const relPath = `${prefix}/${entry.name}`;
-    if (entry.isDirectory()) {
-      scanRecursive(fullPath, relPath, map);
-    } else {
-      map[relPath] = fullPath;
+    if (hooks !== false) {
+      const hookFiles = discoverHooks();
+      const hooksDst = join(dir, '.claude', 'hooks');
+      if (hookFiles.length > 0) {
+        if (!dryRun) ensureDir(hooksDst);
+        for (const h of hookFiles) {
+          if (!dryRun) fsCopyFile(h.path, join(hooksDst, h.name));
+          log.success(`${tag}Claude Hook: ${h.name}`);
+          count++;
+        }
+      }
     }
   }
+
+  log.done(`更新完成${dryRun ? ' (dry-run)' : ''}！共 ${count} 个组件。`);
 }

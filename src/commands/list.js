@@ -2,11 +2,10 @@ import { join } from 'node:path';
 import { existsSync, readlinkSync } from 'node:fs';
 import {
   DEFAULT_SKILLS_TARGET, DEFAULT_COMMANDS_TARGET,
-  CURSOR_HOOKS_DIR, CLAUDE_HOOKS_DIR, LOCAL_INSTALL_DIR,
+  CURSOR_HOOKS_DIR, CLAUDE_HOOKS_DIR,
 } from '../lib/constants.js';
 import { discoverSkills, discoverSharedRules, discoverCommands, discoverHooks } from '../lib/inventory.js';
 import { isSymlink } from '../lib/fs-utils.js';
-import { readManifest } from '../lib/manifest.js';
 import * as log from '../lib/logger.js';
 
 export function registerList(program) {
@@ -20,7 +19,7 @@ export function registerList(program) {
 
 function runList(opts) {
   const { target, json } = opts;
-  const results = { skills: [], rules: [], commands: [], hooks: [], localInit: null };
+  const results = { skills: [], rules: [], commands: [], hooks: [] };
 
   // Check symlink-based install
   const skills = discoverSkills();
@@ -28,7 +27,6 @@ function runList(opts) {
     const dest = join(target, skill.name);
     results.skills.push({
       name: skill.name,
-      type: 'symlink',
       status: getStatus(dest, skill.path),
       path: dest,
     });
@@ -67,17 +65,6 @@ function runList(opts) {
     }
   }
 
-  // Check for local init
-  const localManifest = readManifest(LOCAL_INSTALL_DIR);
-  if (localManifest) {
-    results.localInit = {
-      version: localManifest.version,
-      installedAt: localManifest.installedAt,
-      sourceCommit: localManifest.sourceCommit,
-      fileCount: Object.keys(localManifest.files).length,
-    };
-  }
-
   if (json) {
     console.log(JSON.stringify(results, null, 2));
     return;
@@ -96,16 +83,8 @@ function runList(opts) {
   log.heading('Hooks');
   printTable(results.hooks);
 
-  if (results.localInit) {
-    log.heading('项目内安装 (.team-skills/)');
-    log.info(`版本: ${results.localInit.version}`);
-    log.info(`安装时间: ${results.localInit.installedAt}`);
-    log.info(`来源 commit: ${results.localInit.sourceCommit}`);
-    log.info(`文件数: ${results.localInit.fileCount}`);
-  }
-
   // Summary
-  const installed = results.skills.filter(s => s.status === 'ok').length;
+  const installed = results.skills.filter(s => s.status === 'ok' || s.status === 'file').length;
   const total = results.skills.length;
   console.log(`\nSkills: ${installed}/${total} 已安装`);
 }
