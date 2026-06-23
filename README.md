@@ -74,18 +74,39 @@ reviewAgent 发现 spec 遗漏 ──→ 自动回退 specAgent
 
 ### 前置条件
 
-- **Claude Code**：已安装并可用（`/` 斜杠命令模式）
-- **Cursor**：已安装，Skill 自动发现机制就绪
+- **Node.js** >= 18
+- **Claude Code** 或 **Cursor**：至少安装其中之一
 
-### 一键安装
+### 方式一：npx 安装（推荐）
 
-在 Claude Code 或 Cursor 的聊天框中执行：
+无需 clone 仓库，直接全局安装 Skills：
 
 ```bash
-/team-setup
+npx team-skills setup
 ```
 
-这条命令会自动完成：
+### 方式二：clone 后安装
+
+```bash
+git clone https://github.com/andeya/team-skills.git
+cd team-skills
+npm install
+npm run setup
+```
+
+### 方式三：初始化到项目（版本控制）
+
+将 Skills 复制到你的项目中，可以版本控制和自定义：
+
+```bash
+npx team-skills init
+# 或在已 clone 的仓库中
+node bin/team-skills.js init /path/to/your-project
+```
+
+这会在项目中创建 `.team-skills/` 目录，包含所有 Skills、Hooks 和命令文件。
+
+### 安装内容
 
 | 安装内容 | 说明 |
 |----------|------|
@@ -94,12 +115,27 @@ reviewAgent 发现 spec 遗漏 ──→ 自动回退 specAgent
 | 共享规则 | `_team-rules/` 被所有 Skill 引用 |
 | Hooks（可选） | session-start 钩子，每次新 session 自动加载 |
 
+### CLI 命令
+
+| 命令 | 说明 |
+|------|------|
+| `team-skills setup [target]` | symlink 安装到全局目录（开发者模式） |
+| `team-skills init [dir]` | 复制到用户项目（消费者模式） |
+| `team-skills update [dir]` | 增量更新 init 的副本 |
+| `team-skills uninstall [target]` | 移除所有 symlink |
+| `team-skills list` | 列出已安装 Skills 及状态 |
+| `team-skills --version` | 显示版本 |
+
+所有命令支持 `--dry-run` 查看将执行的操作。
+
 ### 验证安装
 
-安装后，在聊天框中输入 `/` 查看是否出现 `team-` 开头的命令列表。或直接尝试：
+安装后，在聊天框中输入 `/` 查看是否出现 `team-` 开头的命令列表。或使用 CLI 检查：
 
 ```bash
-# 查看所有可用 Skill
+team-skills list
+
+# 或在 Claude Code / Cursor 中
 /using-team-skills
 
 # 评估项目协作成熟度
@@ -108,30 +144,15 @@ reviewAgent 发现 spec 遗漏 ──→ 自动回退 specAgent
 
 ### 更新 Skills
 
-项目有更新时，在仓库目录下执行：
-
 ```bash
-git pull
-/team-setup
-```
+# npx 安装用户
+npx team-skills setup
 
-或直接使用内置命令：
+# 项目内 init 用户
+npx team-skills update
 
-```bash
-/team-pull
-```
-
-### 分步安装（手动）
-
-如果 `/team-setup` 不可用，可以手动创建软链接：
-
-```bash
-# 假设项目克隆在 ~/team-skills
-# Cursor
-ln -sf ~/team-skills/skills/* ~/.cursor/agents/skills/
-
-# Claude Code
-ln -sf ~/team-skills/.claude/commands/* ~/.claude/commands/
+# clone 安装用户
+git pull && npm run setup
 ```
 
 ### 使用方式
@@ -358,15 +379,16 @@ Team Skills 融合了业界多个 AI 协作框架的精华：
 ### 安装依赖
 
 ```bash
-make deps     # 或: npm install
+npm install
 ```
 
 ### 开发命令
 
 ```bash
-make lint     # 检查 Markdown 格式（CI 同款）
-make format   # 自动修复 Markdown 格式
-make setup    # 安装 git hooks（提交前自动 format）
+npm run lint       # 检查 Markdown 格式 + Skill 结构完整性（CI 同款）
+npm run format     # 自动修复 Markdown 格式
+npm run cli-test   # CLI 冒烟测试
+npm run setup      # 安装 Skills 到全局目录
 ```
 
 ### CI 流程
@@ -375,10 +397,10 @@ make setup    # 安装 git hooks（提交前自动 format）
 
 | Job | 命令 | 说明 |
 |-----|------|------|
-| Markdown Lint | `npm run lint` | 与本地 `make lint` 完全一致 |
+| Lint | `npm run lint` | Markdown 格式 + Skill 结构检查 |
+| CLI Smoke Test | `npm run cli-test` | CLI 功能验证 |
 | Check Links | lychee | 外部链接有效性 |
-| Verify Skill Structure | bash | SKILL.md 结构完整性 |
-| Verify Shared Rules | bash | 共享规则文件完整性 |
+| Publish | `npm publish` | tag 触发，发布到 npm |
 
 ---
 

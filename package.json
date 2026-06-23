@@ -1,8 +1,56 @@
 {
-  "private": true,
+  "name": "team-skills",
+  "version": "1.0.0",
+  "description": "AI Agent Skills framework — Spec-Driven development with directed-graph rollback, quality gates, and 100-point scoring",
+  "type": "module",
+  "bin": {
+    "team-skills": "./bin/team-skills.js"
+  },
+  "files": [
+    "bin/",
+    "src/",
+    "skills/",
+    "hooks/",
+    ".claude/commands/",
+    "scripts/",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
   "scripts": {
-    "lint": "markdownlint-cli2 '**/*.md' '#node_modules' --config .markdownlint.json && bash scripts/check-skill-structure.sh",
-    "format": "markdownlint-cli2 '**/*.md' '#node_modules' --config .markdownlint.json --fix"
+    "lint": "markdownlint-cli2 '**/*.md' '#node_modules' --config .markdownlint.json && node scripts/check-skill-structure.js",
+    "format": "markdownlint-cli2 '**/*.md' '#node_modules' --config .markdownlint.json --fix",
+    "cli-test": "node bin/team-skills.js --version && node bin/team-skills.js list && node bin/team-skills.js setup --dry-run",
+    "prepare": "git config core.hooksPath .githooks 2>/dev/null || true",
+    "setup": "node bin/team-skills.js setup",
+    "uninstall": "node bin/team-skills.js uninstall"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "ai",
+    "agent",
+    "skills",
+    "spec-driven",
+    "tdd",
+    "claude",
+    "cursor",
+    "code-review",
+    "ai-collaboration"
+  ],
+  "author": "Andeya <andeyalee@outlook.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/andeya/team-skills.git"
+  },
+  "homepage": "https://github.com/andeya/team-skills#readme",
+  "bugs": {
+    "url": "https://github.com/andeya/team-skills/issues"
+  },
+  "dependencies": {
+    "commander": "^13.0.0"
   },
   "devDependencies": {
     "markdownlint-cli2": "^0.17.2"

@@ -24,6 +24,9 @@ dist/
 build/
 *.tgz
 
+# Init output (when testing locally)
+.team-skills/
+
 # Logs
 *.log
 npm-debug.log*
