@@ -231,8 +231,6 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 
 判断标准：预计修改文件数 ≤ 3 且无跨模块影响 → Small；修改文件 4-15 → Medium；修改文件 > 15 或跨 2+ 模块 → Large。
 
-> **评分注意**：精简模式跳过 01-plan、02-context、05-risk、14-team、15-brief，无法通过 team-score 满分评估。如需满分评估，使用完整模式。
-
 **精简模式 vs 完整模式对比**：
 
 | 环节 | 完整模式 | 精简模式 |
@@ -481,7 +479,7 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 
 ### Step 8：最终质量检查（评分对齐验证）
 
-逐条核验，确保每个评分维度都有明确证据。以下清单对齐 team-score 全部评分子项。
+逐条核验，确保每个维度都有明确证据。
 
 **硬门槛（7 项全部必须通过）：**
 
@@ -560,7 +558,7 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 Team 全流程完成 ✅
 产出目录：docs/tasks/{slug}/
 文件总数：17 个文档（01-15 + prompt-template + task-rules）+ 代码 + 测试 + 资产更新
-全部质量检查通过（对齐 team-score 全部评分子项）
+全部质量检查通过
 ```
 
 ## 集成关系
@@ -576,9 +574,7 @@ Team 全流程完成 ✅
 - `team-test` — REQUIRED：编排流程中必须调度测试审计
 - `team-review` — REQUIRED：编排流程中必须调度代码审查
 - `team-finish` — 分支完成处理
-- `team-score` — 评估项目协作成熟度
 
 ## 下一步
 
-- 交付完成后，推荐使用 `team-score` 评估项目协作成熟度
 - 如果发现流程问题，更新 `CLAUDE.md` 和 `skills/_team-rules/` 中的规则

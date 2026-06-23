@@ -56,7 +56,6 @@ NO SKILL RECOMMENDATION WITHOUT SCENE ANALYSIS FIRST
 | 声明完成，需验证门禁 | team-verify |
 | 实现完成，需处理分支 | team-finish |
 | 需完整交付流水线 | team-orchestrator |
-| 评估项目协作成熟度 | team-score |
 
 ## 执行步骤
 
@@ -73,7 +72,6 @@ NO SKILL RECOMMENDATION WITHOUT SCENE ANALYSIS FIRST
 - 收到审查反馈 → 推荐 `team-feedback`
 - 实现完成 → 推荐 `team-finish`
 - 需要完整流水线 → 推荐 `team-orchestrator`
-- 评估成熟度 → 推荐 `team-score`
 
 ### Step 2：推荐并说明理由
 

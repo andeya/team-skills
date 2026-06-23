@@ -264,7 +264,7 @@ H3 触发时，编排器 **MUST** 向用户展示以下结构化信息：
 | 编码规范    | CLAUDE.md §二 TDD + §十一.3 输出质量约束 + implAgent 各阶段禁止项 |
 | 测试要求    | CLAUDE.md §三 验证协议 + testAgent 四维测试矩阵                   |
 | Review 标准 | reviewAgent 五维度审查 + 严重级别校准（P0-P3 实例）               |
-| 交付要求    | orchestrator Step 8 完整性检查 + team-score 交付物清单            |
+| 交付要求    | orchestrator Step 8 完整性检查                                    |
 
 ### 7.6 共享规则文件
 

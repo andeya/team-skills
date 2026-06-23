@@ -16,13 +16,15 @@ export function registerInit(program) {
     .argument('[dir]', 'Project directory', '.')
     .option('--no-hooks', 'Skip hooks')
     .option('--no-commands', 'Skip command files')
+    .option('--with-score', 'Include team-score skill (hidden by default)', false)
     .option('--dry-run', 'Show what would be copied', false)
     .action(runInit);
 }
 
 function runInit(dir, opts) {
-  const { hooks, commands, dryRun } = opts;
+  const { hooks, commands, withScore, dryRun } = opts;
   const installDir = join(dir, LOCAL_INSTALL_DIR);
+  const exclude = withScore ? [] : ['team-score'];
 
   const existing = readManifest(installDir);
   if (existing) {
@@ -38,15 +40,16 @@ function runInit(dir, opts) {
 
   // Copy skills/
   log.heading('复制 Skills');
-  const skillsSrc = join(PACKAGE_ROOT, SKILLS_DIR);
   const skillsDst = join(installDir, 'skills');
-  if (dryRun) {
-    log.info(`${tag}${skillsSrc} → ${skillsDst}`);
-  } else {
-    copyRecursive(skillsSrc, skillsDst);
-  }
-  const skills = discoverSkills();
+  const skills = discoverSkills(PACKAGE_ROOT, { exclude });
   const rules = discoverSharedRules();
+  if (!dryRun) {
+    ensureDir(skillsDst);
+    for (const s of skills) copyRecursive(s.path, join(skillsDst, s.name));
+    const rulesDst = join(skillsDst, '_team-rules');
+    ensureDir(rulesDst);
+    for (const r of rules) fsCopyFile(r.path, join(rulesDst, r.name));
+  }
   fileCount += skills.length + rules.length;
   for (const s of skills) log.success(`${tag}Skill: ${s.name}`);
   for (const r of rules) log.success(`${tag}Rule: ${r.name}`);

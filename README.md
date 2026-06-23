@@ -169,13 +169,6 @@ npx team-skills@latest update
 | 代码写完了 | `/team-finish` |
 | 不知道用哪个 | `/using-team-skills` |
 
-### 评估项目成熟度
-
-```bash
-/team-score
-# 输出 100 分制评分报告 + 改进建议
-```
-
 ---
 
 ## 🏗️ 核心架构
@@ -247,7 +240,6 @@ graph TD
     Q -->|"遇到 Bug"| DEBUG[🐛 team-debug<br/>→ 根因分析 + 修复]:::skill
     Q -->|"实现完成，准备合并"| FINISH[🏁 team-finish<br/>→ 合并/PR/清理]:::skill
     Q -->|"声称完成"| VERIFY[✅ team-verify<br/>→ 验证证据链]:::skill
-    Q -->|"评估项目成熟度"| SCORE[📊 team-score<br/>→ 100 分制评分]:::skill
     Q -->|"不知道用哪个"| USING[🧭 using-team-skills<br/>→ Skill 推荐]:::skill
     Q -->|"需要完整交付流水线"| ORCH[⚙️ team-orchestrator<br/>→ 全自动编排]:::orch
 
@@ -268,7 +260,7 @@ graph TD
 
 ---
 
-## 📦 包含 12 个可独立使用的 Skill
+## 📦 包含 11 个可独立使用的 Skill
 
 | Skill | 一句话说明 | 使用场景 |
 |-------|-----------|----------|
@@ -282,7 +274,6 @@ graph TD
 | `team-debug` | 四阶段根因分析 + 修复 | "这个 bug 怎么回事？" |
 | `team-feedback` | 先验证再实施，非表演性同意 | "Review 反馈来了" |
 | `team-finish` | 分支完成处理（合并/PR/保留/丢弃） | "代码写完了" |
-| `team-score` | 100 分制扫描评估 | "项目协作成熟度如何？" |
 | `using-team-skills` | Meta-skill，自动引导你选正确的 Skill | "我该用哪个？" |
 
 > 每个 Skill 可独立使用，也可通过 `team-orchestrator` 串联成完整流水线。

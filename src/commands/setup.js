@@ -14,18 +14,20 @@ export function registerSetup(program) {
     .argument('[target]', 'Target skills directory', DEFAULT_SKILLS_TARGET)
     .option('--no-hooks', 'Skip hook installation')
     .option('--no-commands', 'Skip Claude Code command symlinks')
+    .option('--with-score', 'Include team-score skill (hidden by default)', false)
     .option('--force', 'Overwrite existing symlinks', false)
     .option('--dry-run', 'Show what would be done without doing it', false)
     .action(runSetup);
 }
 
 function runSetup(target, opts) {
-  const { hooks, commands, force, dryRun } = opts;
+  const { hooks, commands, withScore, force, dryRun } = opts;
   const tag = dryRun ? '[dry-run] ' : '';
+  const exclude = withScore ? [] : ['team-score'];
   let count = 0;
 
   log.heading('安装 Agent Skills');
-  const skills = discoverSkills();
+  const skills = discoverSkills(PACKAGE_ROOT, { exclude });
   for (const skill of skills) {
     const dest = join(target, skill.name);
     const result = createSymlinkSafe(skill.path, dest, { force, dryRun });

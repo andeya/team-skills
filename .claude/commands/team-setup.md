@@ -11,7 +11,7 @@ argument-hint: [target-dir]
 
 安装内容：
 
-- `skills/*` → `{target-dir}/`（Agent Skills，含 team-score 评分 Skill 和 using-team-skills meta-skill）
+- `skills/*` → `{target-dir}/`（Agent Skills，含 using-team-skills meta-skill）
 - `skills/_team-rules/*` → `{target-dir}/_team-rules/`（共享规则文件，被所有 Skill 引用）
 - `.claude/commands/*` → `{target-dir}/{name}/SKILL.md`（Commands 也作为 Skill 安装，Cursor 可发现）
 - `.claude/commands/*` → `~/.claude/commands/`（兼容 Claude Code 斜杠命令）
