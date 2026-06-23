@@ -45,15 +45,21 @@ jobs:
                   done
             - name: Check required sections in SKILL.md
               run: |
-                  REQUIRED=("角色定位" "系统提示词" "思维链" "Iron Law" "执行步骤" "自检门禁" "完成标志" "Red Flags")
+                  REQUIRED=("角色定位" "系统提示词" "推理指引|路由推理" "Iron Law" "执行步骤" "自检门禁" "完成标志" "STOP Signals")
                   for dir in skills/team-*/ skills/using-team-skills/; do
                     name=$(basename "$dir")
                     for section in "${REQUIRED[@]}"; do
-                      if ! grep -q "^## $section" "$dir/SKILL.md" 2>/dev/null; then
-                        if ! grep -q "^### $section" "$dir/SKILL.md" 2>/dev/null; then
-                          echo "❌ $name: missing section '$section'"
-                          exit 1
+                      found=false
+                      IFS='|' read -ra ALTS <<< "$section"
+                      for alt in "${ALTS[@]}"; do
+                        if grep -qE "^#{2,3} $alt" "$dir/SKILL.md" 2>/dev/null; then
+                          found=true
+                          break
                         fi
+                      done
+                      if [ "$found" = false ]; then
+                        echo "❌ $name: missing section '$section'"
+                        exit 1
                       fi
                     done
                     echo "✅ $name: all required sections present"
