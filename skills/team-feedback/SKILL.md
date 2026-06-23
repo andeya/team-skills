@@ -58,55 +58,48 @@ NO IMPLEMENTATION WITHOUT TECHNICAL VERIFICATION FIRST
 
 ### Phase 1：理解反馈
 
-```
-WHEN receiving code review feedback:
+收到代码审查反馈后，按以下顺序处理：
 
-1. READ: Complete feedback without reacting
-2. UNDERSTAND: Restate requirement in own words (or ask)
-3. VERIFY: Check against codebase reality
-4. EVALUATE: Technically sound for THIS codebase?
-5. RESPOND: Technical acknowledgment or reasoned pushback
-6. IMPLEMENT: One item at a time, test each
-
-```
+1. **完整阅读**：读完所有反馈，不立即反应
+2. **重述需求**：用自己的话重述审查者的要求（如果不确定，先提问澄清）
+3. **代码验证**：对照代码库验证每条建议的技术正确性（grep/Read 实际代码，不凭印象）
+4. **适用性评估**：这条建议在**当前**代码库中技术上是否正确？
+5. **技术性回应**：对每条反馈给出技术性确认或基于推理的推回（参考「推回指南」）
+6. **逐项实施**：一次实施一项，每项单独测试
 
 ### Phase 2：YAGNI 检查
 
-如果审查者建议"实现得更完善"：
+当审查者建议"实现得更完善"或添加新功能时：
 
-```
-grep codebase for actual usage
-
-IF unused: "这个功能没被调用。删掉（YAGNI）？"
-IF used: 按建议实现
-```
+1. grep 代码库查找该功能/接口的实际使用
+2. 如果是 exported/public API → 即使当前项目未直接调用也不应删除（可能有外部消费方）
+3. 如果是 internal 且无引用 → 建议删除，向审查者回应："该功能当前未被调用，建议删除（YAGNI）"
+4. 如果有引用 → 按建议实现
+5. 如果不确定 → 标注 {ambiguous} 并询问用户
 
 ### Phase 3：外部反馈处理
 
-```
-BEFORE implementing external feedback:
+实施外部反馈前，按 Phase 1 步骤 3-4 的方法逐条验证（grep 实际代码，不凭印象），并额外检查以下 2 个条件：
 
-1. 技术上对当前代码库正确吗？
-2. 会破坏现有功能吗？
-3. 审查者理解完整上下文吗？
-4. 与用户之前的决策冲突吗？
+1. **上下文完整性**：审查者是否了解完整上下文？（检查 08-ai-decisions.md 中的已有决策）
+2. **决策一致性**：建议与用户之前做出的设计决策冲突吗？
 
-IF 建议看起来不对 → 用技术理由推回
-IF 无法验证 → 说"我需要 {X} 才能验证"
-IF 冲突 → 暂停与用户讨论
-```
+根据检查结果路由：
+
+- 建议技术上不正确 → 用技术理由推回（参考「推回指南」）
+- 无法验证 → 明确回应"我需要 {具体信息} 才能验证这条建议"
+- 与已有决策冲突 → 暂停，展示冲突点，等待用户决策
+- 反馈揭示 spec 遗漏 → 路由到 team-spec
+- 反馈揭示架构问题 → 触发 H3
 
 ### Phase 4：实施
 
-```
-FOR multi-item feedback:
+多项反馈的实施顺序：
 
-1. 先澄清所有不明确项
-2. 按顺序实施：阻塞问题 → 简单修复 → 复杂修复
-3. 每项单独测试
-4. 验证无回归
-
-```
+1. 先澄清所有不明确项（Phase 1 步骤 2 已完成）
+2. 按优先级排序实施：阻塞问题 → 简单修复 → 复杂修复
+3. 每项修改单独测试（运行项目测试命令）
+4. 全部实施后运行全量测试，确认无回归
 
 ## 禁止回应
 
@@ -166,8 +159,6 @@ FOR multi-item feedback:
 
 ## STOP Signals
 
-如果你发现自己即将做以下任何一件事——立即停止，重新审视：
-
 - 没有验证技术正确性就开始实施反馈建议
 - 使用"你说得太对了""好主意"等表演性同意回应
 - 多项反馈批量实施而不逐项测试
@@ -185,10 +176,3 @@ FOR multi-item feedback:
 - `team-impl` — 修复实现
 - `team-spec` — 反馈揭示 spec 遗漏时
 - `team-finish` — 分支完成处理
-
-## 下一步
-
-- 反馈处理完成后，继续当前开发流程
-- 如果需要合并分支，使用 `team-finish`
-- **如果反馈揭示 spec 遗漏**（审查者指出未定义的行为或缺失的边界条件）→ 使用 `team-spec` 更新规格，然后回退到 implAgent 重新实现
-- **如果反馈揭示架构问题**（审查者指出设计决策有根本性缺陷）→ 触发 H3 人类介入，由人类决定是否重新设计

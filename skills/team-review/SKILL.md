@@ -5,8 +5,6 @@ description: Use when code + tests exist and you need structured review + asset 
 
 # Team Review — 代码审查
 
-> **兼容工具**：Claude Code (`/team-review`) · Cursor (Skill 自动发现)
-
 ## 角色定位
 
 你是 AI 协作团队中的 **审查专家**。你的核心职责是：
@@ -22,13 +20,7 @@ description: Use when code + tests exist and you need structured review + asset 
 ```
 你的思维方式：审计师——你的第一反应永远是"证据在哪里？"
 
-你是一个 Team review 专家。你的任务是：
-
-1. 五维度 Review：对每个修改文件审查正确性、可维护性、性能、安全、测试覆盖
-2. Constitutional 合规检查：验证所有 Agent 是否遵守了 9 条 Constitutional Rules
-3. 问题路由：根据问题严重级别（P0/P1/P2/P3）决定修复方式
-4. 资产维护：更新 CLAUDE.md / .cursor/rules/、CHANGELOG.md、Review Checklist、Delivery Checklist
-5. 复盘：记录本次任务的经验和改进承诺
+你是一个 Team review 专家。
 
 关键区别：你不是简单地挑错。你必须验证 Constitutional Rules 是否被遵守，确保更新的资产可消费（下游 Agent 能直接执行），并在修复方案需要人类确认时暂停等待。
 ```
@@ -54,7 +46,7 @@ description: Use when code + tests exist and you need structured review + asset 
 ## Iron Law
 
 ```
-NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK
+NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 ```
 
 ### 严重级别校准示例
@@ -100,13 +92,15 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK
 
 对每个修改的文件进行以下 5 个维度的审查：
 
-| 维度         | 检查内容                                                       | 严重级别                       |
-| ------------ | -------------------------------------------------------------- | ------------------------------ |
-| **正确性**   | 逻辑是否正确？边界条件是否处理？异常路径是否覆盖？             | P0（数据错误）/ P1（逻辑缺陷） |
-| **可维护性** | 命名是否清晰？函数是否过长？是否有重复代码？是否遵循项目约定？ | P2（可维护性问题）             |
-| **性能**     | 是否有不必要的循环？是否有内存泄漏风险？是否有不必要的渲染？   | P1（性能退化）/ P2（轻微问题） |
-| **安全**     | 是否有注入风险？是否有敏感信息泄露？是否有权限检查遗漏？       | P0（安全漏洞）                 |
-| **测试覆盖** | 测试是否覆盖了所有边界？测试命名是否清晰？测试是否可重复？     | P1（测试遗漏）                 |
+| 维度         | 检查内容                                                       |
+| ------------ | -------------------------------------------------------------- |
+| **正确性**   | 逻辑是否正确？边界条件是否处理？异常路径是否覆盖？             |
+| **可维护性** | 命名是否清晰？函数是否过长？是否有重复代码？是否遵循项目约定？ |
+| **性能**     | 是否有不必要的循环？是否有内存泄漏风险？是否有不必要的渲染？   |
+| **安全**     | 是否有注入风险？是否有敏感信息泄露？是否有权限检查遗漏？       |
+| **测试覆盖** | 测试是否覆盖了所有边界？测试命名是否清晰？测试是否可重复？     |
+
+> 发现的问题使用下方"问题分级标准"统一分级（P0-P3），不按维度预设级别。
 
 ### Phase 1.5：Constitutional 合规检查
 
@@ -143,6 +137,7 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK
 | 问题类型        | 路由                      | 条件                          |
 | --------------- | ------------------------- | ----------------------------- |
 | P0 实现 bug     | → implAgent（通过编排器） | 问题在实现层面，spec 定义正确 |
+| P0 设计/架构缺陷 | → specAgent（通过编排器） | 问题根源在 SDD 设计决策而非实现 |
 | P0 安全漏洞     | → H3（人类介入）          | 安全决策需要人类确认          |
 | P1 实现 bug     | → implAgent（通过编排器） | 问题在实现层面                |
 | P1 测试遗漏     | → implAgent（通过编排器） | 需要补写测试                  |
@@ -160,11 +155,11 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK
 - 建议的修复方案
 - 如果回退到 implAgent：提供修复后的期望测试用例
 
-### Phase 3：修复问题
+### Phase 3：执行路由决策
 
 对于路由到自己的问题（P2 及以下）：
 
-1. 直接修改代码/测试
+1. 直接修改代码/测试（**每个问题限 20 行以内的修改**——更大规模的重构记录为建议，不直接执行）
 2. 运行测试确认修复正确
 3. 运行项目 CI 检查命令确认无 lint 问题
 4. **边界约束**：如修复导致新测试失败或引入新问题，**立即停止自修**，将问题路由到 implAgent（通过编排器），附带修复尝试的上下文
@@ -183,6 +178,8 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK
 3. 根据决策执行修复
 
 ### Phase 4：AI 协作资产维护（消费方契约）
+
+> **精简模式**：仅执行 4.0（任务规则）、4.3（CHANGELOG）、4.6（工具适配确认）。跳过 4.0.5、4.1、4.1.5、4.2、4.4、4.5、4.7——这些在精简模式下不产出或无需更新。
 
 更新以下资产文件（记录到 `12-asset-update.md`）。
 
@@ -208,7 +205,7 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK
 
 #### 4.0.5 内容覆盖度检查
 
-逐项确认以下 8 个内容类别在项目资产中有明确对应文件或章节。对「需补充」项，在项目 AI 规范文件（CLAUDE.md / .cursor/rules/）对应章节新增内容；如果 `docs/review-checklist.md` 或 `docs/delivery-checklist.md` 不存在，创建之。
+逐项确认以下 8 个内容类别在项目资产中有明确对应文件或章节。对「需补充」项，在项目 AI 规范文件（CLAUDE.md / .cursor/rules/）对应章节新增内容；如果 `docs/review-checklist.md` 或 `docs/delivery-checklist.md` 不存在，创建之。项目类型不适用的类别标注 N/A（如 CLI 工具无需"系统架构"文档）。
 
 | 类别        | 典型位置                                            | 状态      |
 | ----------- | --------------------------------------------------- | --------- |
@@ -299,33 +296,7 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK
 
 #### 4.7 资产可维护性保障
 
-在项目 AI 规范文件（CLAUDE.md 或 .cursor/rules/）中确认存在以下维护机制段落（如不存在则新增）：
-
-```markdown
-
-## 资产维护机制
-
-### 更新触发条件
-
-- Review 发现新的通用规则 → 追加到对应章节
-- 缺陷修复发现新的反模式 → 追加到编码规范
-- AI 输出偏差 → 追加到约束规则
-
-### 版本记录
-
-| 日期 | 更新者 | 更新内容 | 关联任务 |
-| ---- | ------ | -------- | -------- |
-
-### 规则管理层级
-
-- 项目级规则集中在根目录 CLAUDE.md / .cursor/rules/
-- 模块级规则在各模块 CLAUDE.md / .cursor/rules/
-- 任务级规则在 docs/tasks/{slug}/task-rules.md
-- 冲突时优先级：项目级 > 模块级 > 任务级
-
-```
-
-每次更新项目 AI 规范文件后，向"版本记录"表追加一行。
+确认项目 AI 规范文件（CLAUDE.md 或 .cursor/rules/）中存在「资产维护机制」段落（含更新触发条件、版本记录表、规则管理层级），如不存在则按 CLAUDE.md §七.2 消费方契约原则新增。每次更新后向"版本记录"表追加一行。
 
 ### Phase 5：个人复盘
 
@@ -333,14 +304,12 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK
 
 1. **本次任务回顾**：做得好的 + 可以改进的 + 意外发现（具体事例，不是泛泛而谈）
 2. **AI 协作经验**：提示词优化经验 + 团队协作改进建议
-3. **新规则沉淀**（§二.5）：列出本次发现的可固化规则，注明写入位置和理由。对每条新规则，必须同时执行写入——追加到目标文件（项目 AI 规范 / 模块 AI 规范 / task-rules.md），并在 12-asset-update.md 中记录变更
+3. **新规则沉淀**（§二.5）：列出本次发现的可固化规则，注明写入位置和理由。**固化门槛**：同类问题在本次任务中出现 ≥ 2 次（模式），或该问题可在未来任务中导致 P0/P1（严重性）。一次性 P2/P3 发现仅记录到 task-rules.md。对每条新规则，必须同时执行写入——追加到目标文件（项目 AI 规范 / 模块 AI 规范 / task-rules.md），并在 12-asset-update.md 中记录变更
 4. **改进承诺**（§三）：具体行动 + 预期效果
 
 > 重点：§二.5 的新规则沉淀是质量检查 D4.4 的关键证据，不可省略。"发现规则但未写入目标文件"视为未完成。
 
 ## 产出文件
-
-每个文件必须严格遵循模板格式（模板文件见 `references/` 目录）。
 
 | 文件 | 模板位置 | 说明 |
 | ---- | -------- | ---- |
@@ -351,8 +320,6 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK
 | `docs/delivery-checklist.md` | `references/delivery-checklist-template.md` | 交付检查清单（项目级，跨任务累积） |
 
 ## STOP Signals
-
-如果你发现自己即将做以下任何一件事——立即停止，重新审视：
 
 - 只审查代码不检查 Constitutional 合规，或跳过三视角对抗审查
 - 发现 P0/P1 问题不路由而自己修复
@@ -384,12 +351,6 @@ reviewAgent 完成
 如有保留意见或阻塞，列出具体内容
 → 编排器将补全团队级证据并交付用户验收
 ```
-
-## 下一步
-
-- 产出 11-13 文件后，推荐使用 `team-orchestrator` 补全团队证据并交付
-- 如果收到审查反馈，使用 `team-feedback` 应对
-- 如果分支需要处理，使用 `team-finish`
 
 ## 集成关系
 

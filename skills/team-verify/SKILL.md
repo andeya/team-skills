@@ -42,7 +42,7 @@ description: Use when about to claim work is complete, fixed, or passing - requi
 ## Iron Law
 
 ```
-NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE
+NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE FIRST
 ```
 
 ## 质量职责
@@ -74,8 +74,8 @@ NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE
 
 1. 确定验证命令
 2. 执行命令——不使用缓存结果，不引用上一轮输出
-3. 完整阅读输出——不截断，不跳过 warning，确认输出干净（无错误、无 warning）
-4. 检查退出码 = 0 且失败数 = 0
+3. 完整阅读输出——不截断，不跳过 warning
+4. 检查退出码 = 0 且失败数 = 0。Warning 处理：退出码 = 0 时 warning 不阻塞通过声明，但必须在验证报告中列出 warning 内容供人类判断
 5. 只有全部通过才可声明通过，否则记录失败详情
 
 ```
@@ -119,6 +119,9 @@ NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE
 | 回归测试通过 | 红-绿循环验证通过 | 测试通过一次 |
 | Agent 完成 | VCS diff 显示变更 | Agent 报告"成功了" |
 | 需求满足 | 逐条对照 checklist | 测试通过了 |
+| 性能达标 | 性能基准测试通过 + 与 baseline 对比 | "看起来快了"、仅 CI 通过 |
+| 向后兼容 | 回归测试全通过 + 无 breaking API 变更 | "没改公共接口"但未运行旧版测试 |
+| 文档已更新 | git diff 显示文档变更 + 链接检查通过 | "代码改了，文档应该也对" |
 
 ## Constitutional Rules 遵守
 
@@ -146,8 +149,6 @@ NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE
 
 ## STOP Signals
 
-如果你发现自己即将做以下任何一件事——立即停止，重新审视：
-
 - 使用"应该""可能""看起来"等推测性语言来声明通过
 - 引用上一轮运行结果而不是当次新鲜执行的输出
 - 只检查部分输出或跳过 warning 就声明通过
@@ -163,8 +164,3 @@ NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE
 **配对使用：**
 
 - `team-debug` — 验证失败时定位根因
-
-## 下一步
-
-- 验证通过后，继续当前流程
-- 验证失败，使用 `team-debug` 定位根因

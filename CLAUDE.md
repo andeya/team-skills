@@ -194,7 +194,7 @@ docs/tasks/{NNNN}-{keyword}/
 
 - 任何 Agent **MUST NOT** 自动确认人类介入点
 - "用户没回复就默认同意"是违规行为
-- 即使任务看起来简单，H1 和 H4 不可省略（精简模式下 H1 可简化为单句确认，H2 可跳过）
+- 即使任务看起来简单，H1 和 H4 不可省略（精简模式下 H1 和 H2 可简化为单句确认）
 
 ### 6.3 H3 结构化协议
 
@@ -449,7 +449,7 @@ NO {违规行为} WITHOUT {前置条件} FIRST
 | Skill | Iron Law |
 |-------|----------|
 | team-debug | `NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST` |
-| team-verify | `NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE` |
+| team-verify | `NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE FIRST` |
 | team-finish | `NO BRANCH COMPLETION WITHOUT TEST VERIFICATION FIRST` |
 
 Iron Law **MUST** 出现在执行步骤之前，作为不可协商的门禁。

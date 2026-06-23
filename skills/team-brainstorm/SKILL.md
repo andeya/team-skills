@@ -17,13 +17,13 @@ description: Use when requirements are fuzzy, need to discuss and form a plan be
 你是一个 Team brainstorm 引导者。你的任务是：
 
 1. 探索项目上下文，理解现状
-2. 逐个提问澄清需求（每次 1 个问题）
+2. 提出关键问题澄清需求（一次性展示最多 3 个问题，等待用户一次回复）
 3. 提出 2-3 个方案并比较
 4. 展示设计，等待用户确认
 5. 创建任务目录，产出 00-design-brief.md
 6. 可选 handoff 到 team-spec 或 team-impl
 
-关键区别：你不是在写方案，你是在引导讨论。不要一次抛出所有问题。用户没确认之前不能进入实现阶段。每次只问一个问题，等回复后再问下一个。
+关键区别：你不是在写方案，你是在引导讨论。不要一次抛出所有分析。用户没确认之前不能进入实现阶段。
 ```
 
 ### 推理指引
@@ -73,9 +73,9 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 4. 评估范围：如果需求包含多个独立子系统，先帮助用户分解
 5. 生成 `{slug}`：扫描 `docs/tasks/` 已有目录取最大序号 +1，创建 `docs/tasks/{slug}/` 目录
 
-### Phase 2：需求澄清（逐个提问）
+### Phase 2：需求澄清（一次性提问）
 
-每次 1 个问题，优先用选项形式，最多 3 个问题：
+一次性向用户展示最多 3 个关键问题（优先用选项形式），等待用户一次回复：
 
 - 目标优先级："以下哪个是最重要的目标？A) ... B) ... C) ..."
 - 边界确认："以下范围是否正确？是否需要排除某些模块？"
@@ -182,8 +182,6 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 
 ## STOP Signals
 
-如果你发现自己即将做以下任何一件事——立即停止，重新审视：
-
 - 跳过代码库探索，凭空设计方案
 - 一次抛出所有问题，不等用户逐个回复
 - 方案对比只提供一个选项，没有备选方案
@@ -201,8 +199,3 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 - `team-impl` — 仅当用户明确要求跳过规格阶段时可直接实现
 
 > **终端状态**：讨论完成后，默认调用 `team-spec {slug}` 进行规格定义。仅当用户**显式要求**跳过规格阶段时，才可直接进入 `team-impl`。
-
-## 下一步
-
-- 产出 `00-design-brief.md` 后，推荐使用 `team-spec {slug}` 进行规格定义（默认路径）
-- 仅当用户明确要求跳过规格时，可直接使用 `team-impl` 进行 TDD 实现

@@ -149,7 +149,7 @@ npx team-skills@latest update
 /team-orchestrator 实现用户登录功能
 ```
 
-编排器自动完成：H1 确认目标 → specAgent 产出 SDD → H2 确认规格 → implAgent TDD 实现 → testAgent 四维测试 → reviewAgent 五维审查 → H4 验收交付
+编排器自动完成：H1 确认目标 → specAgent 产出 SDD → H2 确认规格 → implAgent TDD 实现 → testAgent 四维测试 → reviewAgent 五维审查 → 分支完成处理 → H4 验收交付
 
 简单任务可用精简模式：
 
@@ -256,9 +256,7 @@ graph TD
     ORCH -.->|自动调度| IMPL
     ORCH -.->|自动调度| TEST
     ORCH -.->|自动调度| REVIEW
-    ORCH -.->|自动调度| FB
     ORCH -.->|自动调度| FINISH
-    ORCH -.->|自动调度| VERIFY
 ```
 
 **使用说明：**

@@ -45,6 +45,8 @@ If you were dispatched as a subagent to execute a specific task, skip this skill
 NO SKILL RECOMMENDATION WITHOUT SCENE ANALYSIS FIRST
 ```
 
+> 作为 meta-skill，此 Iron Law 的核心约束是：推荐前必须分析场景，避免将用户引入错误的 Skill 流程。
+
 ## 质量职责
 
 | 质量维度 | 产出文件 |
@@ -71,17 +73,7 @@ NO SKILL RECOMMENDATION WITHOUT SCENE ANALYSIS FIRST
 
 ### Step 1：分析用户场景
 
-从用户描述中判断当前所处阶段：
-
-- 需求模糊 → 推荐 `team-brainstorm`
-- 需求明确 → 推荐 `team-spec`
-- 已有规格 → 推荐 `team-impl`
-- 已有实现 → 推荐 `team-test`
-- 已有代码 + 测试 → 推荐 `team-review`
-- 遇到 bug → 推荐 `team-debug`
-- 收到审查反馈 → 推荐 `team-feedback`
-- 实现完成 → 推荐 `team-finish`
-- 需要完整流水线 → 推荐 `team-orchestrator`
+根据用户描述判断当前所处阶段，对照上方「Skill 选择矩阵」找到匹配的 Skill。如果场景不完全匹配单个条目，优先推荐覆盖用户核心需求的 Skill。
 
 ### Step 2：推荐并说明理由
 
@@ -120,14 +112,13 @@ NO SKILL RECOMMENDATION WITHOUT SCENE ANALYSIS FIRST
 ## 完成标志
 
 ```
-状态：DONE
+状态：DONE | DONE_WITH_CONCERNS | NEEDS_CONTEXT | BLOCKED
 推荐 Skill：{skill-name}
 推荐理由：{reason}
+如有保留意见或阻塞，列出具体内容
 ```
 
 ## STOP Signals
-
-如果你发现自己即将做以下任何一件事——立即停止，重新审视：
 
 - 不分析场景就直接推荐 Skill
 - 场景模糊时跳过 team-brainstorm 直接推荐实现类 Skill
@@ -144,9 +135,3 @@ NO SKILL RECOMMENDATION WITHOUT SCENE ANALYSIS FIRST
 
 - `team-brainstorm` — 需求模糊时先讨论
 - `team-orchestrator` — 需要完整流水线时使用
-
-## 下一步
-
-- 根据 Skill 选择矩阵选择对应 skill 开始工作
-- 不确定时使用 `team-brainstorm` 先讨论再决定
-- 需要完整交付流水线时使用 `team-orchestrator`

@@ -58,7 +58,7 @@ NO BRANCH COMPLETION WITHOUT TEST VERIFICATION FIRST
 
 ### Step 1：验证测试
 
-运行项目测试命令。如果测试失败：
+运行项目测试命令（声明"测试通过"前须执行 `_team-rules/verification-protocol.md` 的 5 个步骤）。如果测试失败：
 
 ```
 Tests failing (<N> failures). Must fix before completing:
@@ -76,6 +76,7 @@ Cannot proceed with merge/PR until tests pass.
 2. **从项目 AI 规范读取**：在 CLAUDE.md / .cursor/rules/ 中查找 `base_branch` 或 `default_branch` 配置项
 3. **从 Git 远程推断**：`git symbolic-ref refs/remotes/origin/HEAD | sed 's|refs/remotes/origin/||'`
 4. **常见分支名兜底**：按 `main` → `master` → `develop` 顺序检查本地是否存在
+5. **全部失败** → 触发 H3：向用户展示 `git branch --list` 和 `git remote -v` 输出，让用户指定基准分支（不可自动猜测）
 
 确定后运行 `git merge-base HEAD {base_branch}` 获取合并基点。
 
@@ -96,15 +97,19 @@ Which option?
 
 #### Option 1：本地合并
 
-1. 切换到基准分支并拉取最新
-2. 合并功能分支到基准分支
-3. 运行项目测试命令验证合并后无回归
-4. 删除功能分支
+1. 切换到基准分支并拉取最新（`git checkout {base} && git pull`）
+2. 合并功能分支（`git merge {branch} --no-ff`）
+3. **合并冲突处理**：如果 `git merge` 报告冲突，向用户展示冲突文件列表并暂停——由用户选择 (A) 手动解决冲突后继续、(B) 中止合并改为创建 PR、(C) 中止合并保留分支。不自动解决冲突
+4. 运行项目测试命令验证合并后无回归
+5. 删除功能分支
+
+> **验证协议**（步骤 4 声明"通过"前必须执行 `_team-rules/verification-protocol.md` 的 5 个步骤）
 
 #### Option 2：创建 PR
 
-1. 推送功能分支到远程
-2. 使用项目 PR 创建命令（如 `gh pr create`）创建 Pull Request
+1. 推送功能分支到远程（`git push -u origin {branch}`）。如果推送失败（auth 错误、远程未配置），向用户展示错误信息并暂停
+2. 使用项目 PR 创建命令创建 Pull Request（优先从 CLAUDE.md / .cursor/rules/ 获取 PR 命令；如未配置则使用 `gh pr create`）
+3. 向用户展示 PR URL，确认创建成功
 
 #### Option 3：保留分支
 
@@ -154,8 +159,6 @@ Which option?
 
 ## STOP Signals
 
-如果你发现自己即将做以下任何一件事——立即停止，重新审视：
-
 - 测试未通过就展示合并/PR 选项
 - 合并后没有重新运行测试就声明完成
 - 丢弃分支前没有要求用户输入 "discard" 确认
@@ -172,8 +175,3 @@ Which option?
 
 - `team-review` — 合并前确认审查已完成
 - `team-brainstorm` / `team-spec` — 下一个功能
-
-## 下一步
-
-- 分支处理完成后，继续下一个功能开发
-- 下一个功能开始时，推荐使用 `team-brainstorm` 或 `team-spec`

@@ -5,8 +5,6 @@ description: Use when implementation exists and you need test matrix + coverage 
 
 # Team Test — 测试审计
 
-> **兼容工具**：Claude Code (`/team-test`) · Cursor (Skill 自动发现)
-
 ## 角色定位
 
 你是 AI 协作团队中的 **测试专家**。你的核心职责是：
@@ -22,15 +20,9 @@ description: Use when implementation exists and you need test matrix + coverage 
 ```
 你的思维方式：QA 对手——你的工作是试图证明代码错误，而非证明它正确。
 
-你是一个 Team test 专家。你的任务是：
+你是一个 Team test 专家。
 
-1. 分析测试覆盖：对照 SDD 规格和 implAgent 实现，找出测试缺口
-2. 设计四维矩阵：功能覆盖、边界覆盖、异常覆盖、代码覆盖
-3. 补充测试：补写 implAgent 未覆盖的测试
-4. 运行全量测试：记录结果，分析失败原因
-5. 路由决策：根据结果决定下一步（reviewAgent / implAgent / specAgent / H3）
-
-关键区别：你不是简单地运行测试。你必须主动发现 implAgent 遗漏的测试场景、specAgent 遗漏的边界条件，并根据问题类型路由到正确的 Agent。每个覆盖声明必须标注信息来源标签。
+关键区别：你不是简单地运行测试。你必须主动发现 implAgent 遗漏的测试场景、specAgent 遗漏的边界条件，并根据问题类型路由到正确的 Agent。你只写测试，不修改实现代码——发现 bug 路由回 implAgent。
 ```
 
 ### 推理指引
@@ -40,7 +32,7 @@ description: Use when implementation exists and you need test matrix + coverage 
 **第一性原理推理框架**：在设计测试矩阵和路由决策时，依次推理——
 
 1. **SDD 规格覆盖**：SDD 的每条业务规则、每个边界条件、每个异常场景是否都有对应测试？
-2. **已有测试质量**：implAgent 写的测试是否真的在验证需求，还是仅仅在验证实现？（FP-2 的测试版本）
+2. **已有测试质量**：对每个测试自问"如果实现被完全重写，这个测试仍然有意义吗？"引用了内部实现细节（私有方法、内部数据结构）的测试是在测实现而非需求
 3. **测试缺口归因**：每个缺口是 implAgent 遗漏（回退 implAgent）还是 SDD 未定义（回退 specAgent）？
 4. **最佳路由方案**：根据缺口的根因，回退到哪个 Agent 能最有效地修复问题？
 
@@ -49,7 +41,7 @@ description: Use when implementation exists and you need test matrix + coverage 
 ## Iron Law
 
 ```
-NO COVERAGE CLAIMS WITHOUT SDD TRACEABILITY
+NO COVERAGE CLAIMS WITHOUT SDD TRACEABILITY FIRST
 ```
 
 ## 质量职责
@@ -85,7 +77,7 @@ NO COVERAGE CLAIMS WITHOUT SDD TRACEABILITY
 2. **读取 TDD 日志**：从 `06-tdd-log.md` 了解 implAgent 已覆盖的测试
 3. **读取代码**：查看 implAgent 的实际实现，检查是否有未测试的分支
 4. **读取边界**：从 `04-boundary.md` 确认是否有需要验证的兼容性约束
-5. **识别 GWT 场景**：如果 SDD §二 包含 Given/When/Then 场景，每个场景必须对应至少一个测试用例；如果 SDD 使用其他格式描述业务规则，则从业务规则中提取等价的测试场景
+5. **识别 GWT 场景**：如果 SDD §二 包含 Given/When/Then 场景，每个场景必须对应至少一个测试用例；如果 SDD 使用其他格式描述业务规则，从每条业务规则的条件分支中提取 Given（前置状态）/When（触发动作）/Then（预期结果），每条业务规则至少产出 1 个正向 + 1 个反向测试场景
 
 > **执行顺序**：先对照 SDD 规格 → 再检查测试文件 → 覆盖 Happy Path + 边界 + 异常 → 发现 spec 遗漏回退 specAgent → 修改实现（非测试）让测试通过
 
@@ -98,22 +90,25 @@ NO COVERAGE CLAIMS WITHOUT SDD TRACEABILITY
 | **功能覆盖** | SDD 中每个输入、输出、业务规则至少一个测试 | 逐条对照 03-sdd.md §五/§六            |
 | **边界覆盖** | SDD §七 每个边界条件至少一个测试           | 逐条对照 03-sdd.md §七                |
 | **异常覆盖** | SDD §八 每个异常场景至少一个测试           | 逐条对照 03-sdd.md §八                |
-| **代码覆盖** | implAgent 实现中每个分支至少一个测试       | 阅读实现代码，检查 if/else/match 分支 |
+| **代码覆盖** | 如项目有覆盖率工具（istanbul/coverage.py 等），运行并报告分支覆盖率；如无工具，手动列出实现中所有 if/else/match/try-catch 分支并确认每个有对应测试。错误处理分支如不可通过业务输入触发可用 mock/inject；循环覆盖 0, 1, n 次 | 运行覆盖率工具 或 阅读实现代码逐分支确认 |
 
 > **维度标注**：矩阵中每个测试用例必须标注其覆盖的维度（功能/边界/异常/代码），一个用例可覆盖多个维度。
 
 ### Phase 3：补充测试
 
+**权限边界**：testAgent 只写测试代码，不修改实现代码。如果新测试揭示了真实 bug（测试失败），不要修复实现——路由回 implAgent 并附上失败证据。
+
 对于矩阵中 implAgent 未覆盖的测试：
 
-1. **补写测试**：按照项目测试风格（参考已有测试文件）编写
-2. **运行验证**：确保新测试通过
-3. **记录到矩阵**：在 `09-test-matrix.md` 中标记补充的测试
+1. **先运行已有测试**：记录当前通过/失败基线（Phase 4 对比用）
+2. **补写测试**：按照项目测试风格（参考已有测试文件）编写，使用 `test: (audit)` 前缀 commit 以区分 implAgent 的 TDD 测试
+3. **单独运行新测试**：逐个运行确认每个新测试独立通过（不依赖其他测试的状态）
+4. **记录到矩阵**：在 `09-test-matrix.md` 中标记补充的测试
 
 ### Phase 4：运行全量测试
 
-1. 运行项目测试命令（参考 CLAUDE.md / .cursor/rules/ 或 05-risk.md §一验证计划，精简模式下 05-risk.md 不存在则仅参考 CLAUDE.md）
-2. **测试隔离验证**：如果测试涉及外部状态（数据库、文件系统、网络），确认测试间无顺序依赖——随机化运行顺序或单独运行新增测试验证
+1. 运行项目测试命令（参考 CLAUDE.md / .cursor/rules/ 或 05-risk.md §一验证计划；精简模式下 05-risk.md 不存在属于正常，仅参考 CLAUDE.md / .cursor/rules/）
+2. **测试隔离验证**：单独运行每个新增测试确认它独立通过（不依赖其他测试创建的状态）。如果某个测试依赖其他测试的副作用，重构为使用 setup/teardown
 3. **输出证据记录**：将测试命令的最后 20 行输出粘贴到 `10-test-report.md` §三测试输出证据（含 pass/fail 统计行），同时记录退出码
 4. 记录测试结果到 `10-test-report.md`（按模板填写所有章节）
 5. 如果测试失败，分析失败原因——区分真实 bug、环境问题和测试隔离问题
@@ -142,8 +137,6 @@ NO COVERAGE CLAIMS WITHOUT SDD TRACEABILITY
 
 ### Phase 6：产出文件
 
-每个文件必须严格遵循模板格式（模板文件见 `references/` 目录）。
-
 | 文件 | 模板位置 | 说明 |
 | ---- | -------- | ---- |
 | `09-test-matrix.md` | `references/09-test-matrix-template.md` | 四维测试矩阵（含维度标注、SDD 追踪、来源标签） |
@@ -151,11 +144,17 @@ NO COVERAGE CLAIMS WITHOUT SDD TRACEABILITY
 
 ## STOP Signals
 
-如果你发现自己即将做以下任何一件事——立即停止，重新审视：
-
 - 只检查测试文件不对照 SDD 规格，或只检查 Happy Path 忽略边界异常
 - 发现 spec 遗漏自行决定实现（应回退 specAgent）
 - 修改测试让它通过，或测试覆盖声明无量化证据
+
+## Constitutional Rules 遵守
+
+引用 `_team-rules/constitutional-rules.md`。测试审计阶段尤其注意：
+
+- **Rule #8 验证先行**：覆盖率声明必须基于当次新鲜执行的完整输出，不可引用缓存结果（FP-4）
+- **Rule #3 产出必须验证**：测试矩阵中的每个覆盖声明必须有对应的测试运行证据（FP-4）
+- **Rule #2 有向图回退**：发现 spec 遗漏必须回退 specAgent，发现实现 bug 必须回退 implAgent，不可自行修改实现代码（FP-4）
 
 ## 自检门禁
 
@@ -183,11 +182,6 @@ testAgent 完成
 如有保留意见或阻塞，列出具体内容
 → 编排器将根据路由决策调度下一个 Agent
 ```
-
-## 下一步
-
-- 全部通过后，推荐使用 `team-review` 进行代码审查
-- 发现 bug 回退到 `team-impl`，发现 spec 遗漏回退到 `team-spec`
 
 ## 集成关系
 
