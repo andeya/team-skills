@@ -77,6 +77,12 @@ npx team-skills@latest setup
 
 自动将 Skills、斜杠命令和 Hooks 以 symlink 方式安装到全局目录。
 
+启用可选的项目评分功能（`team-score`）：
+
+```bash
+npx team-skills@latest setup --with-score
+```
+
 如需频繁使用 CLI，可全局安装：
 
 ```bash
@@ -102,7 +108,7 @@ npx team-skills@latest update
 
 | 内容 | 位置 | 说明 |
 |------|------|------|
-| 12 个 Agent Skills | `~/.agents/skills/` | Cursor 自动发现 |
+| 11 个 Agent Skills | `~/.agents/skills/` | Cursor 自动发现 |
 | 斜杠命令 | `~/.claude/commands/` | Claude Code `/team-{name}` |
 | 共享规则 | `~/.agents/skills/_team-rules/` | 被所有 Skill 引用 |
 | Hooks（可选） | `~/.cursor/hooks/` | session-start 自动加载 |
