@@ -70,94 +70,75 @@ reviewAgent 发现 spec 遗漏 ──→ 自动回退 specAgent
 
 ---
 
-## 🚀 安装与使用
+## 🚀 安装
 
 ### 前置条件
 
 - **Node.js** >= 18
 - **Claude Code** 或 **Cursor**：至少安装其中之一
 
-### 方式一：npx 安装（推荐）
-
-无需 clone 仓库，直接全局安装 Skills：
+### 一键安装（推荐）
 
 ```bash
-npx team-skills setup
+npx team-skills@latest setup
 ```
 
-### 方式二：clone 后安装
+自动将 Skills、斜杠命令和 Hooks 以 symlink 方式安装到全局目录。
+
+如需频繁使用 CLI，可全局安装：
 
 ```bash
-git clone https://github.com/andeya/team-skills.git
-cd team-skills
-npm install
-npm run setup
+npm i -g team-skills
+team-skills setup
 ```
 
-### 方式三：初始化到项目（版本控制）
+### 初始化到项目（可选）
 
-将 Skills 复制到你的项目中，可以版本控制和自定义：
+将 Skills 复制到项目中，支持版本控制和自定义：
 
 ```bash
-npx team-skills init
-# 或在已 clone 的仓库中
-node bin/team-skills.js init /path/to/your-project
+npx team-skills@latest init
 ```
 
-这会在项目中创建 `.team-skills/` 目录，包含所有 Skills、Hooks 和命令文件。
+创建 `.team-skills/` 目录，包含 Skills、Hooks 和命令文件。后续更新：
+
+```bash
+npx team-skills@latest update
+```
 
 ### 安装内容
 
-| 安装内容 | 说明 |
-|----------|------|
-| 12 个 Agent Skills | 安装到 `~/.agents/skills/`，Cursor 自动发现 |
-| 斜杠命令 | 安装到 `~/.claude/commands/`，Claude Code 可用 `/team-{name}` |
-| 共享规则 | `_team-rules/` 被所有 Skill 引用 |
-| Hooks（可选） | session-start 钩子，每次新 session 自动加载 |
+| 内容 | 位置 | 说明 |
+|------|------|------|
+| 12 个 Agent Skills | `~/.agents/skills/` | Cursor 自动发现 |
+| 斜杠命令 | `~/.claude/commands/` | Claude Code `/team-{name}` |
+| 共享规则 | `~/.agents/skills/_team-rules/` | 被所有 Skill 引用 |
+| Hooks（可选） | `~/.cursor/hooks/` | session-start 自动加载 |
 
-### CLI 命令
+### 验证
+
+```bash
+# 在 Claude Code / Cursor 中输入 / 查看 team- 开头的命令
+/using-team-skills
+```
+
+### CLI 参考
 
 | 命令 | 说明 |
 |------|------|
-| `team-skills setup [target]` | symlink 安装到全局目录（开发者模式） |
-| `team-skills init [dir]` | 复制到用户项目（消费者模式） |
-| `team-skills update [dir]` | 增量更新 init 的副本 |
-| `team-skills uninstall [target]` | 移除所有 symlink |
-| `team-skills list` | 列出已安装 Skills 及状态 |
-| `team-skills --version` | 显示版本 |
+| `team-skills setup` | symlink 安装到全局目录 |
+| `team-skills init [dir]` | 复制到项目目录 |
+| `team-skills update [dir]` | 增量更新项目副本 |
+| `team-skills uninstall` | 移除所有 symlink |
+| `team-skills list` | 查看安装状态 |
 
-所有命令支持 `--dry-run` 查看将执行的操作。
+所有命令支持 `--dry-run`。
 
-### 验证安装
+---
 
-安装后，在聊天框中输入 `/` 查看是否出现 `team-` 开头的命令列表。或使用 CLI 检查：
+## 📖 使用方式
 
-```bash
-team-skills list
-
-# 或在 Claude Code / Cursor 中
-/using-team-skills
-
-# 评估项目协作成熟度
-/team-score
-```
-
-### 更新 Skills
-
-```bash
-# npx 安装用户
-npx team-skills setup
-
-# 项目内 init 用户
-npx team-skills update
-
-# clone 安装用户
-git pull && npm run setup
-```
-
-### 使用方式
-
-#### 方式一：全自动编排（推荐）
+### 全自动编排（推荐）
 
 一条命令启动完整流水线，适合从零开始的功能开发：
 
@@ -165,29 +146,15 @@ git pull && npm run setup
 /team-orchestrator 实现用户登录功能
 ```
 
-编排器会自动完成 7 个步骤：
+编排器自动完成：H1 确认目标 → specAgent 产出 SDD → H2 确认规格 → implAgent TDD 实现 → testAgent 四维测试 → reviewAgent 五维审查 → H4 验收交付
 
-```
-
-1. H1: 向你确认目标理解
-2. specAgent: 产出 SDD 规格
-3. H2: 向你确认规格方案
-4. implAgent: TDD 实现
-5. testAgent: 四维测试
-6. reviewAgent: 五维审查
-7. H4: 向你交付验收
-
-```
-
-简单任务可用精简模式（H1 简化为单句确认，跳过 H2，H4 保留）：
+简单任务可用精简模式：
 
 ```bash
 /team-orchestrator --compact 修复登录页按钮样式
 ```
 
-#### 方式二：按需调用单个 Skill
-
-你可以在任意阶段单独调用某个 Skill，适合只想做其中一步的场景：
+### 按需调用单个 Skill
 
 | 场景 | 命令 |
 |------|------|
@@ -202,7 +169,7 @@ git pull && npm run setup
 | 代码写完了 | `/team-finish` |
 | 不知道用哪个 | `/using-team-skills` |
 
-#### 方式三：评估项目成熟度
+### 评估项目成熟度
 
 ```bash
 /team-score
@@ -372,13 +339,9 @@ Team Skills 融合了业界多个 AI 协作框架的精华：
 
 ## 🔧 本地开发
 
-### 前置要求
-
-- Node.js >= 18
-
-### 安装依赖
-
 ```bash
+git clone https://github.com/andeya/team-skills.git
+cd team-skills
 npm install
 ```
 
