@@ -66,7 +66,12 @@ Tests failing (<N> failures). Must fix before completing:
 Cannot proceed with merge/PR until tests pass.
 ```
 
-停止，不进入 Step 2。
+**失败处理**：停止，不进入 Step 2。根据失败类型采取行动：
+
+- **编排模式**：回退编排器，由编排器路由回 implAgent 修复（附上失败输出）
+- **独立使用**：向用户展示失败详情，推荐使用 `team-debug` 定位根因，修复后重新执行 Step 1
+
+不可忽略失败继续展示选项——测试失败意味着代码不可交付（FP-4）。
 
 ### Step 2：确定基准分支
 

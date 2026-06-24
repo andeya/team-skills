@@ -230,7 +230,14 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 5. **检查预算遵守**：确认代码行数、文件数未超出 `01-plan.md` 声明的自我约束预算
 6. **检查 Constitutional 合规**：对照本文件「Constitutional Rules 遵守」章节逐条检查，确认 TDD 顺序正确、未自行假设 spec 正确行为、预算未超支
 
-如果 CI 全量检查失败，修复后再继续。如果预算超支，砍范围而不是放宽预算。
+如果测试、lint 或 CI 检查失败：
+
+1. **定位失败原因**：完整阅读输出，不跳过 warning
+2. **修复问题**：对修复仍须遵循 TDD——先写（或确认已有）覆盖该失败场景的测试（RED），再修复代码（GREEN），记录到 `06-tdd-log.md`
+3. **重新执行完整验证**：修复后从步骤 1 重新运行所有检查，不可只运行"刚才失败的那个"
+4. **更新文档**：将修复过程（问题描述 + 修复内容 + 重新验证结果）追加到 `06-tdd-log.md`，修复决策记录到 `08-ai-decisions.md`
+
+不可跳过失败继续后续步骤——未通过的检查是事实，不会因为忽略而消失（FP-4）。如果预算超支，砍范围而不是放宽预算。
 
 ### 回退路由
 
@@ -244,6 +251,8 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 | 遇到需要人类判断的技术决策                            | H3（人类介入） | 通过编排器 | 选项 + 各选项的 trade-off  |
 | 发现 testAgent 报告的 bug 是 impl 问题                | 自己修复       | 直接       | testAgent 的 bug 报告      |
 | 发现 reviewAgent 报告的 P0/P1 bug                     | 自己修复       | 直接       | reviewAgent 的 review 报告 |
+
+**回退修复要求**：自己修复时仍须遵循 TDD 循环——先写回归测试复现问题（RED），再修复代码（GREEN），将修复循环追加到 `06-tdd-log.md`，修复决策记录到 `08-ai-decisions.md`。修复完成后重新运行全量测试，确认无回归。
 
 ## 产出文件
 
@@ -272,6 +281,7 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 
 在报告完成状态前，执行以下自检：
 
+- [ ] 产出文件存在且非空 — 验证：确认 `docs/tasks/{slug}/` 下 06-tdd-log.md、07-prompt-log.md、08-ai-decisions.md 三个文件均存在且有效行数 ≥ 5 行
 - [ ] 每个功能点都经历了 RED→GREEN→REFACTOR 循环 — 验证（5 步结构化检查）：
   1. 每个功能点块中 RED 段落行号 < GREEN 段落行号 < REFACTOR 段落行号
   2. RED 段落"失败输出"非空且含错误关键词（FAIL/fail/Error/error/✗/FAILED）

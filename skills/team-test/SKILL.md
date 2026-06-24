@@ -102,7 +102,9 @@ NO COVERAGE CLAIMS WITHOUT SDD TRACEABILITY FIRST
 
 1. **先运行已有测试**：记录当前通过/失败基线（Phase 4 对比用）
 2. **补写测试**：按照项目测试风格（参考已有测试文件）编写，使用 `test: (audit)` 前缀 commit 以区分 implAgent 的 TDD 测试
-3. **单独运行新测试**：逐个运行确认每个新测试独立通过（不依赖其他测试的状态）
+3. **单独运行新测试**：逐个运行确认每个新测试独立通过（不依赖其他测试的状态）。如果新测试失败：
+   - **测试本身有 bug**（语法错误、setup 不正确）→ 修复测试，重新运行
+   - **揭示了实现 bug**（测试正确但实现不满足 SDD 规格）→ 不修改实现代码，将此测试标记为"发现 bug"，在 Phase 5 路由回 implAgent，附上失败测试和 SDD 规格引用
 4. **记录到矩阵**：在 `09-test-matrix.md` 中标记补充的测试
 
 ### Phase 4：运行全量测试
@@ -111,7 +113,12 @@ NO COVERAGE CLAIMS WITHOUT SDD TRACEABILITY FIRST
 2. **测试隔离验证**：单独运行每个新增测试确认它独立通过（不依赖其他测试创建的状态）。如果某个测试依赖其他测试的副作用，重构为使用 setup/teardown
 3. **输出证据记录**：将测试命令的最后 20 行输出粘贴到 `10-test-report.md` §三测试输出证据（含 pass/fail 统计行），同时记录退出码
 4. 记录测试结果到 `10-test-report.md`（按模板填写所有章节）
-5. 如果测试失败，分析失败原因——区分真实 bug、环境问题和测试隔离问题
+5. 如果测试失败，分析失败原因并执行对应动作：
+   - **真实 bug**（实现不满足 SDD 规格）→ 记录到 `10-test-report.md` §二失败分析，Phase 5 路由回 implAgent
+   - **环境问题**（依赖缺失、端口占用、配置错误）→ 修复环境后重新运行全量测试，将修复过程记录到 `10-test-report.md` §二
+   - **测试隔离问题**（测试依赖其他测试的副作用）→ 重构为使用 setup/teardown，重新运行确认通过
+
+不可跳过失败继续产出文档——测试失败是事实，必须在 `10-test-report.md` 中如实记录并给出路由决策（FP-4）。
 
 > **验证协议**（声明"测试通过"前必须执行 `_team-rules/verification-protocol.md` 的 5 个步骤）
 
@@ -160,6 +167,7 @@ NO COVERAGE CLAIMS WITHOUT SDD TRACEABILITY FIRST
 
 在报告完成状态前，执行以下自检：
 
+- [ ] 产出文件存在且非空 — 验证：确认 `docs/tasks/{slug}/` 下 09-test-matrix.md、10-test-report.md 两个文件均存在且有效行数 ≥ 5 行
 - [ ] 测试矩阵覆盖了 SDD 中所有业务规则 — 验证：逐条对照 03-sdd.md §二业务规则，每条在 09-test-matrix.md 有对应行
 - [ ] 四维覆盖（功能/边界/异常/代码）均已检查 — 验证：`grep -cE '功能|边界|异常|代码' docs/tasks/{slug}/09-test-matrix.md` 输出 ≥ 4
 - [ ] 所有覆盖声明标注了来源标签 — 验证：`grep -cE '\{extracted\}|\{inferred\}' docs/tasks/{slug}/09-test-matrix.md` 输出 > 0
