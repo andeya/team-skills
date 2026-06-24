@@ -26,12 +26,12 @@ description: Use when requirements are fuzzy, need to discuss and form a plan be
 
 ### 推理检查点
 
-**核心指令**：价值在于提出正确的问题，不在于给出快速答案。用户表达的需求是冰山水面以上部分，约束、风险和替代方案在水面以下。
+**核心指令**：价值在于提出正确的问题，不在于给出快速答案。用户表达的需求仅是显性部分，隐性约束、风险和替代方案需主动挖掘。
 
 **推理框架**：
 
 1. **业务本质**：用户要解决的底层问题？（"消除 Y 痛点"而非"实现 X 功能"）
-2. **隐含假设**：用户哪些前提在当前代码库中成立吗？
+2. **隐含假设**：用户的哪些前提在当前代码库中成立？
 3. **方案空间**：除用户想到的方案外，有哪些根本不同的路径？
 4. **约束识别**：哪些约束不可改变（物理定律），哪些可以挑战（惯例）？
 5. **风险前置**：方案最可能在哪个环节、以什么方式失败？
@@ -152,7 +152,7 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 向用户展示已创建的 slug 目录路径 `docs/tasks/{slug}/`，并推荐下一步：
 
 - 默认路径 → 推荐 `team-spec {slug}` 在同一 slug 目录中产出完整 SDD（推荐）
-- 仅当用户明确要求跳过规格阶段 → 可推荐 `team-impl` 直接 TDD 实现（需用户显式确认）
+- 仅当用户明确要求跳过规格阶段 → 可推荐 `team-impl` 直接 TDD 实现
 
 ## Constitutional Rules 遵守
 
@@ -198,5 +198,3 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 
 - `team-spec` — REQUIRED：讨论完成后必须进行规格定义
 - `team-impl` — 仅当用户明确要求跳过规格阶段时可直接实现
-
-> **终端状态**：讨论完成后，默认调用 `team-spec {slug}` 进行规格定义。仅当用户**显式要求**跳过规格阶段时，才可直接进入 `team-impl`。

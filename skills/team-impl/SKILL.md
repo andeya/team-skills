@@ -90,7 +90,7 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 
 ### Phase 1：TDD 红-绿-重构循环
 
-对每个功能点执行以下循环：RED（写测试，确认失败）→ GREEN（最小实现，确认通过）→ REFACTOR（优化，确认仍通过）→ COMMIT。
+对每个功能点执行循环：RED → GREEN → REFACTOR → COMMIT。
 
 #### 循环 1：红（Red）— 写测试
 
@@ -145,7 +145,7 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
    - 时间：{记录当前时间，格式 YYYY-MM-DD HH:MM，必须晚于 GREEN 时间}
    ```
 
-> **每步必须**：确认测试仍通过后再提交 → 保持接口签名不变 → 只重构有测试覆盖的代码 → 清理本次引入的死代码和未使用导入 → 确认重构后代码比之前更简洁
+> **每步必须**：确认测试仍通过后再提交 → 保持接口签名不变 → 只重构有测试覆盖的代码 → 清理本次引入的死代码和未使用导入
 
 **增量提交**：每完成一个功能点的红-绿-重构循环后立即 `git commit`。提交顺序体现 TDD 模式：先 `test: {功能点}`，再 `feat: {功能点}` / `fix: {功能点}`，最后 `refactor: {功能点}`。不可多个功能点攒一次提交——中途失败将丢失进度。
 

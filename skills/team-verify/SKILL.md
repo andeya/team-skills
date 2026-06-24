@@ -108,7 +108,7 @@ NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE FIRST
 
 ## 常见失败模式
 
-以下每种声明类型都有对应的验证要求和不足的证据：
+每种声明类型的验证要求：
 
 | 声明 | 需要什么证据 | 什么不够 |
 | ---- | ------------ | -------- |

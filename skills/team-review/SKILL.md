@@ -178,7 +178,7 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 
 ### Phase 4：AI 协作资产维护（消费方契约）
 
-> **精简模式**：仅执行 4.0（任务规则）、4.3（CHANGELOG）、4.6（工具适配确认）。跳过 4.0.5、4.1、4.1.5、4.2、4.4、4.5、4.7——这些在精简模式下不产出或无需更新。
+> **精简模式**：仅执行 4.0（任务规则）、4.3（CHANGELOG）、4.6（工具适配确认）。跳过 4.0.5、4.1、4.1.5、4.2、4.4、4.5、4.7。
 
 更新以下资产文件（记录到 `12-asset-update.md`）。
 

@@ -36,7 +36,7 @@ description: Use when encountering any bug, test failure, or unexpected behavior
 4. **单一假设**：基于证据确定一个最可能根因，不是多个可能
 5. **最小验证**：验证假设的最小变更，一次只改一个变量
 
-**对抗检查清单**：
+**对抗自检**：
 
 - [ ] 假设若错误，还有什么证据能解释所有已知症状？
 - [ ] 当前修复是在修根因还是症状？根因仍在时修复能撑多久？

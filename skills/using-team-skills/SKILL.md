@@ -45,8 +45,6 @@ If you were dispatched as a subagent to execute a specific task, skip this skill
 NO SKILL RECOMMENDATION WITHOUT SCENE ANALYSIS FIRST
 ```
 
-> 作为 meta-skill，此 Iron Law 的核心约束是：推荐前必须分析场景，避免将用户引入错误的 Skill 流程。
-
 ## 质量职责
 
 | 质量维度 | 产出文件 |
@@ -73,11 +71,11 @@ NO SKILL RECOMMENDATION WITHOUT SCENE ANALYSIS FIRST
 
 ### Step 1：分析用户场景
 
-根据用户描述判断当前所处阶段，对照上方「Skill 选择矩阵」找到匹配的 Skill。如果场景不完全匹配单个条目，优先推荐覆盖用户核心需求的 Skill。
+对照 Skill 选择矩阵匹配用户当前阶段。不完全匹配时优先覆盖核心需求。
 
 ### Step 2：推荐并说明理由
 
-给出推荐 Skill 的同时，说明为什么适合当前场景。
+推荐 Skill 并说明理由。
 
 ### Step 3：可选 — 展示流程图
 

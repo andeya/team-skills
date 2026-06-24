@@ -180,7 +180,7 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 
 ## 流程状态持久化
 
-> H 节点多轮对话后，LLM 上下文可能被压缩导致编排器丢失流程位置。以下规则确保流程状态持久化到磁盘，即使上下文丢失也能恢复。
+> 防止 LLM 上下文压缩导致流程位置丢失。以下规则将状态持久化到磁盘。
 
 ### 规则 1：进入 H 节点前写 checkpoint
 
@@ -262,7 +262,7 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 
 ### 执行模型
 
-默认执行模型是**单会话顺序执行**：编排器在同一个 AI 会话中依次调用各 sub-skill（`/team-spec` → `/team-impl` → `/team-test` → `/team-review` → `/team-finish`）。每个 sub-skill 的产出（文件）作为下一个 sub-skill 的输入。
+默认执行模型是**单会话顺序执行**：编排器在同一个 AI 会话中依次调用各 sub-skill（`/team-spec` → `/team-impl` → `/team-test` → `/team-review` → `/team-finish`）。
 
 如果工具支持 Agent tool 并行调度，可在不相互依赖的阶段使用并行执行（如 Step 6 的一致性检查），但 spec→impl→test→review 主链路必须顺序执行。
 
@@ -550,7 +550,7 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 
 ### Step 7：finish-review 集成
 
-> 在人类验收（Step 7.3）之前完成分支处理，确保用户验收时所有技术工作已就绪。如果 `team-finish` 报告测试不通过，回退 implAgent 修复（附上失败详情），修复完成后重新执行 Step 7——不让用户审批一个测试不通过的交付物。
+> 在人类验收（Step 7.3）之前完成分支处理，确保用户验收时所有技术工作已就绪。如果 `team-finish` 报告测试不通过，回退 implAgent 修复（附上失败详情），修复完成后重新执行 Step 7。
 
 检查 reviewAgent 产出的 `12-asset-update.md` 中是否有 CHANGELOG.md 更新。如果 CHANGELOG.md 需要更新但尚未更新，在此处补全。
 

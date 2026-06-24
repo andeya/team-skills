@@ -80,8 +80,6 @@ NO COVERAGE CLAIMS WITHOUT SDD TRACEABILITY FIRST
 4. **读取边界**：从 `04-boundary.md` 确认是否有需要验证的兼容性约束
 5. **识别 GWT 场景**：如果 SDD §二 包含 Given/When/Then 场景，每个场景必须对应至少一个测试用例；如果 SDD 使用其他格式描述业务规则，从每条业务规则的条件分支中提取 Given（前置状态）/When（触发动作）/Then（预期结果），每条业务规则至少产出 1 个正向 + 1 个反向测试场景
 
-> **执行顺序**：先对照 SDD 规格 → 再检查测试文件 → 覆盖 Happy Path + 边界 + 异常 → 发现 spec 遗漏回退 specAgent → 修改实现（非测试）让测试通过
-
 ### Phase 2：设计四维测试矩阵
 
 设计一个 4 维覆盖矩阵（模板见 `references/09-test-matrix-template.md`）：
@@ -120,7 +118,7 @@ NO COVERAGE CLAIMS WITHOUT SDD TRACEABILITY FIRST
    - **环境问题**（依赖缺失、端口占用、配置错误）→ 修复环境后重新运行全量测试，将修复过程记录到 `10-test-report.md` §二
    - **测试隔离问题**（测试依赖其他测试的副作用）→ 重构为使用 setup/teardown，重新运行确认通过
 
-不可跳过失败继续产出文档——测试失败是事实，必须在 `10-test-report.md` 中如实记录并给出路由决策（FP-4）。
+不可跳过失败继续产出文档。测试失败须在 `10-test-report.md` 中如实记录并给出路由决策（FP-4）。
 
 > **验证协议**（声明"测试通过"前必须执行 `_team-rules/verification-protocol.md` 的 5 个步骤）
 
