@@ -14,7 +14,7 @@ const root = execSync('git rev-parse --show-toplevel', { encoding: 'utf8' }).tri
 const REQUIRED_SECTIONS = [
   ['角色定位'],
   ['系统提示词'],
-  ['推理指引', '路由推理'],
+  ['推理检查点', '路由推理检查点', '推理指引', '路由推理'],
   ['Iron Law'],
   ['执行步骤'],
   ['自检门禁'],
