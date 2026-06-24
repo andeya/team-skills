@@ -158,7 +158,7 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 引用 `_team-rules/constitutional-rules.md`。brainstorm 阶段尤其注意：
 
 - **Rule #1 人类介入是一等公民**：每个方案设计决策必须等待用户确认，不可自行决定（FP-1）
-- **Rule #5 分期交付优先**：方案设计时主动考虑 P1/P2 分期（FP-3）
+- **Rule #5 分期交付优先**：方案设计时主动考虑分期交付（FP-3）
 - **Rule #4 Kill Switch**：如果探索阶段发现需求不可行，立即暂停而非继续设计（FP-1 + FP-3）
 
 ## 自检门禁

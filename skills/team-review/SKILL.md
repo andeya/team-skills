@@ -114,7 +114,7 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 | 有向图回退       | 检查 08-ai-decisions.md 和 11-review.md 中是否有回退记录                                 | 发现问题但未回退             | P1       |
 | TDD Iron Law     | 检查 06-tdd-log.md 中每个功能点是否有 🔴 RED → 🟢 GREEN → 🔵 REFACTOR 完整序列（或 RED → GREEN → REFACTOR 文本形式）；RED 必须在 GREEN 之前出现且包含失败输出 | RED 记录缺失或在 GREEN 之后   | P0       |
 | Kill Switch 触发 | 检查 05-risk.md 中 Kill Switch 条件是否被触发（精简模式：检查 03-sdd.md 或 .checkpoint.json 中是否有 Kill Switch 记录） | 条件满足但未触发 Kill Switch | P0       |
-| 分期交付         | 检查 01-plan.md 中是否有 P1/P2 划分（精简模式豁免：简单任务无需分期）                    | 复杂任务无分期               | P2       |
+| 分期交付         | 检查 01-plan.md 中是否有分期划分（精简模式豁免：简单任务无需分期）                       | 复杂任务无分期               | P2       |
 | 自我约束预算     | 检查 06-tdd-log.md 中预算 vs 实际                                                        | 预算超支未砍范围             | P1       |
 | 来源标签         | 检查 03-sdd.md 和 09-test-matrix.md 中是否有 {extracted}/{inferred}/{ambiguous} 标签（精简模式：02-context.md 不检查） | 缺少来源标签                 | P2       |
 | 产出必须验证     | 检查各 Agent 产出是否经过下游验证才进入下一步，而非仅依赖自我声明                        | 未经验证直接流转             | P1       |

@@ -168,6 +168,7 @@ docs/tasks/{NNNN}-{keyword}/
 - 关键词：从任务描述提取，kebab-case
 - 整体 ≤ 50 字符
 - 示例：`0001-add-tooltip`、`0012-refactor-auth`
+- 分期继承任务：在上期关键词后追加 `-p{N}`（N 从 2 起），使用新序号。如 `0001-add-tooltip`（P1）→ `0002-add-tooltip-p2`（P2）→ `0005-add-tooltip-p3`（P3）
 
 ### 5.3 信息来源标签
 
