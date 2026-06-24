@@ -228,7 +228,7 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 
 用户已分步执行了各 Agent，现在执行 `/team-orchestrator {slug}` 仅补全团队级证据。
 
-**方式 B 流程**：跳过 Step 1-5，从 Step 6 开始。验证 `docs/tasks/{slug}/` 下 01-13 + task-rules.md 已存在，缺失文件触发 H3 由用户决定是否补全。
+**方式 B 流程**：跳过 Step 1-5，从 Step 6 开始。验证 `docs/tasks/{slug}/` 下文件已存在：完整模式检查 01-13 + task-rules.md；精简模式检查 03-04 + 06-13 + task-rules.md（模式判定：`.checkpoint.json` 有 mode 字段则取其值，否则有 01-plan.md = 完整模式，仅有 03-sdd.md + 04-boundary.md = 精简模式）。缺失文件触发 H3 由用户决定是否补全。
 
 ### 方式 C：精简模式（简单任务）
 
@@ -433,7 +433,7 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 1. **顺序验证**：RED 段落出现在 GREEN 段落之前（按文档中的出现位置）
 2. **失败输出验证**：RED 段落的"失败输出"字段非空，且包含错误关键词（FAIL / fail / Error / error / ✗ / FAILED）
 3. **通过输出验证**：GREEN 段落的"通过输出"字段非空，且包含通过关键词（PASS / pass / OK / ✓ / ✅ / passed）
-4. **时间递增验证**：RED 时间 < GREEN 时间 < REFACTOR 时间（如有）
+4. **时间递增验证**：RED 时间 ≤ GREEN 时间 ≤ REFACTOR 时间（如有）（使用 ≤ 因为分钟级时间戳可能在快速循环中相同，配合内容验证和 git 提交顺序确认真实顺序）
 5. **git 提交验证**：`git log --oneline` 中同一功能点存在 `test:` 提交
 
 任一项不通过 → 回退 implAgent，附上具体不合格项及期望修正行为（如"功能点 X 的 RED 段落缺失失败输出，请删除实现代码从 RED 重新开始"）。

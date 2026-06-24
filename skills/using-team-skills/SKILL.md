@@ -65,6 +65,7 @@ NO SKILL RECOMMENDATION WITHOUT SCENE ANALYSIS FIRST
 | 遇到 bug，需根因分析 | team-debug |
 | 声明完成，需验证门禁 | team-verify |
 | 实现完成，需处理分支 | team-finish |
+| 评估项目 AI 协作成熟度 | team-score |
 | 需完整交付流水线 | team-orchestrator |
 
 ## 执行步骤

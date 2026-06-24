@@ -67,6 +67,8 @@ NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE FIRST
 1. `05-risk.md` §一 验证计划
 2. `CLAUDE.md` / `.cursor/rules/` 中的测试命令
 3. `package.json` / `Makefile` / `Cargo.toml` 中的测试脚本
+4. 以上均无 → 状态 NEEDS_CONTEXT，请求用户提供验证命令
+5. 项目无自动化验证 → 改用手动验证（截图/curl/日志对比），在报告中标注验证方式
 
 ### Step 2：执行 5 步验证
 

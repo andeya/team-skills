@@ -62,7 +62,7 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 
 ## 产出目录
 
-`docs/tasks/{slug}/`，其中 `{slug}` 格式为 `{NNNN}-{关键词}`：扫描 `docs/tasks/` 已有目录取最大序号 +1（从 `0001` 起），关键词从任务描述提取，kebab-case，整体 ≤ 50 字符。例如 `0001-add-tooltip`、`0012-refactor-auth`。
+`docs/tasks/{slug}/`，其中 `{slug}` 格式为 `{NNNN}-{关键词}`：扫描 `docs/tasks/` 已有目录（如不存在则创建）取最大序号 +1（从 `0001` 起），关键词从任务描述提取，kebab-case，整体 ≤ 50 字符。例如 `0001-add-tooltip`、`0012-refactor-auth`。
 
 ## 执行步骤
 
@@ -72,7 +72,7 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 2. 读取项目规范：CLAUDE.md（或 .cursor/rules/）、README.md
 3. 扫描相关源码模块
 4. 评估范围：如果需求包含多个独立子系统，先帮助用户分解
-5. 生成 `{slug}`：扫描 `docs/tasks/` 已有目录取最大序号 +1，创建 `docs/tasks/{slug}/` 目录
+5. 生成 `{slug}`：扫描 `docs/tasks/` 已有目录（如不存在则创建）取最大序号 +1，创建 `docs/tasks/{slug}/` 目录
 
 ### Phase 2：需求澄清（一次性提问）
 

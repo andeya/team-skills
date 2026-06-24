@@ -125,7 +125,7 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
    - 实现文件：{path}
    - 测试命令：{command}
    - 通过输出：{粘贴关键输出，含 PASS/OK 标识}
-   - 时间：{记录当前时间，格式 YYYY-MM-DD HH:MM，必须晚于 RED 时间}
+   - 时间：{记录当前时间，格式 YYYY-MM-DD HH:MM，不早于 RED 时间}
    ```
 
 > **每步必须**：只写让测试通过的最少代码 → 严格遵循规格范围 → 修改实现（非测试）让测试通过 → 优先简单直接方案（三行重复代码优于过早抽象）
@@ -142,7 +142,7 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
    - 重构内容：{简述改动}
    - 测试命令：{command}
    - 通过输出：{粘贴关键输出}
-   - 时间：{记录当前时间，格式 YYYY-MM-DD HH:MM，必须晚于 GREEN 时间}
+   - 时间：{记录当前时间，格式 YYYY-MM-DD HH:MM，不早于 GREEN 时间}
    ```
 
 > **每步必须**：确认测试仍通过后再提交 → 保持接口签名不变 → 只重构有测试覆盖的代码 → 清理本次引入的死代码和未使用导入
@@ -290,7 +290,7 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
   1. 每个功能点块中 RED 段落行号 < GREEN 段落行号 < REFACTOR 段落行号
   2. RED 段落"失败输出"非空且含错误关键词（FAIL/fail/Error/error/✗/FAILED）
   3. GREEN 段落"通过输出"非空且含通过关键词（PASS/pass/OK/✓/✅/passed）
-  4. 时间递增：RED 时间 < GREEN 时间 < REFACTOR 时间
+  4. 时间递增：RED 时间 ≤ GREEN 时间 ≤ REFACTOR 时间（分钟级时间戳可能相同，配合内容和 git 顺序验证）
   5. `git log --oneline` 中存在对应的 `test:` 提交
 - [ ] 测试全部通过 — 验证：运行项目测试命令，粘贴完整输出，确认 0 failures
 - [ ] Lint 和 CI 检查通过 — 验证：运行项目 lint 命令，粘贴完整输出，确认退出码 = 0

@@ -70,7 +70,7 @@ NO CODE WITHOUT SPEC FIRST
 
 ## 产出目录
 
-`docs/tasks/{slug}/`，其中 `{slug}` 格式为 `{NNNN}-{关键词}`：扫描 `docs/tasks/` 已有目录取最大序号 +1（从 `0001` 起），关键词从任务描述提取，kebab-case，整体 ≤ 50 字符。例如 `0001-add-tooltip`、`0012-refactor-auth`。
+`docs/tasks/{slug}/`，其中 `{slug}` 格式为 `{NNNN}-{关键词}`：扫描 `docs/tasks/` 已有目录（如不存在则创建）取最大序号 +1（从 `0001` 起），关键词从任务描述提取，kebab-case，整体 ≤ 50 字符。例如 `0001-add-tooltip`、`0012-refactor-auth`。
 
 如果从 `team-brainstorm` 接手，`docs/tasks/{slug}/` 已存在且含 `00-design-brief.md`，则复用该 slug 目录，不重新生成序号。将 `00-design-brief.md` 作为背景输入参考。
 

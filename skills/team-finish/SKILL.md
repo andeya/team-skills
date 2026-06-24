@@ -64,9 +64,9 @@ NO BRANCH COMPLETION WITHOUT TEST VERIFICATION FIRST
 运行项目测试命令（声明"测试通过"前须执行 `_team-rules/verification-protocol.md` 的 5 个步骤）。如果测试失败：
 
 ```
-Tests failing (<N> failures). Must fix before completing:
-[Show failures]
-Cannot proceed with merge/PR until tests pass.
+测试失败（{N} 个失败）。完成前须修复：
+[展示失败详情]
+测试通过前不可执行 merge/PR。
 ```
 
 **失败处理**：停止，不进入 Step 2。根据失败类型采取行动：
@@ -91,14 +91,14 @@ Cannot proceed with merge/PR until tests pass.
 ### Step 3：展示选项
 
 ```
-Implementation complete. What would you like to do?
+实现完成。请选择后续操作：
 
-1. Merge back to <base-branch> locally
-2. Push and create a Pull Request
-3. Keep the branch as-is (I'll handle it later)
-4. Discard this work
+1. 本地合并到 <base-branch>
+2. 推送并创建 Pull Request
+3. 保留当前分支（稍后处理）
+4. 丢弃本次工作
 
-Which option?
+请选择：
 ```
 
 ### Step 4：执行选择
@@ -121,7 +121,7 @@ Which option?
 
 #### Option 3：保留分支
 
-报告：`Keeping branch <name>.`
+报告：`保留分支 <name>。`
 
 #### Option 4：丢弃
 
