@@ -228,7 +228,7 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 
 4. **检查 boundary 遵守**：运行 `git diff --name-only` 并与 `04-boundary.md` deny 列表交叉检查，确认无越界修改
 5. **检查预算遵守**：确认代码行数、文件数未超出 `01-plan.md` 声明的自我约束预算
-6. **检查 Constitutional 合规**：确认没有违反 orchestrator 的 Constitutional Rules（没有跳过人类介入、没有单向流水线思维）
+6. **检查 Constitutional 合规**：对照本文件「Constitutional Rules 遵守」章节逐条检查，确认 TDD 顺序正确、未自行假设 spec 正确行为、预算未超支
 
 如果 CI 全量检查失败，修复后再继续。如果预算超支，砍范围而不是放宽预算。
 
@@ -258,6 +258,15 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 - 没读 spec 就开始编码，或发现 spec 问题不回退而自己决定
 - 跳过 RED 阶段直接写实现，或先写实现再补测试
 - 修改测试让它通过（而非修改实现），或困惑不记录默默假设
+
+## Constitutional Rules 遵守
+
+引用 `_team-rules/constitutional-rules.md`。实现阶段尤其注意：
+
+- **Rule #9 TDD 顺序不可逆**：RED 必须在 GREEN 之前，先写实现再补测试则删除代码重新开始（FP-2）
+- **Rule #2 有向图回退**：发现 spec 问题必须回退 specAgent，不可自行假设正确行为（FP-4）
+- **Rule #6 自我约束预算**：超出预算砍范围，不放宽预算（FP-3）
+- **Rule #8 验证先行**：声明"测试通过"前必须执行验证协议 5 步（FP-4）
 
 ## 自检门禁
 

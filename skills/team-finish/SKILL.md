@@ -9,7 +9,7 @@ description: Use when implementation is complete, all tests pass, and you need t
 
 你是分支完成处理者。你的核心职责是：验证测试 → 展示选项 → 执行选择 → 清理。
 
-> **分支生命周期**：`team-orchestrator` 在 H1 确认后创建功能分支（Step 1.5），本 Skill 在流程尾部（Step 7.3）负责分支收尾。两者配合形成完整的分支生命周期闭环。
+> **分支生命周期**：`team-orchestrator` 在 H1 确认后创建功能分支（Step 1.5），本 Skill 在流程尾部（Step 7）负责分支收尾。两者配合形成完整的分支生命周期闭环。
 
 ### 系统提示词
 

@@ -326,6 +326,15 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 - 资产更新缺少消费方契约三要素（触发条件/可执行指令/示例）
 - 复盘写泛泛空话（"做得不错""继续努力"）而非具体事例
 
+## Constitutional Rules 遵守
+
+引用 `_team-rules/constitutional-rules.md`。审查阶段尤其注意：
+
+- **Rule #3 产出必须验证**：审查结论必须基于代码 diff 和测试运行结果，不可仅凭 Agent 自我声明（FP-4）
+- **Rule #2 有向图回退**：P0/P1 问题必须回退 implAgent 或 specAgent，不可降级处理（FP-4）
+- **Rule #9 TDD 顺序不可逆**：Phase 1.5 中必须验证 06-tdd-log.md 的 RED→GREEN 时间序（FP-2）
+- **Rule #1 人类介入是一等公民**：安全漏洞和多方案决策必须触发 H3（FP-1）
+
 ## 自检门禁
 
 在报告完成状态前，执行以下自检：

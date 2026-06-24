@@ -101,6 +101,8 @@ NO IMPLEMENTATION WITHOUT TECHNICAL VERIFICATION FIRST
 3. 每项修改单独测试（运行项目测试命令）
 4. 全部实施后运行全量测试，确认无回归
 
+> **验证协议**（步骤 3-4 声明"通过"前必须执行 `_team-rules/verification-protocol.md` 的 5 个步骤）
+
 ## 禁止回应
 
 以下回应是**表演性同意**——禁止使用：

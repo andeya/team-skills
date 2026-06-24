@@ -164,5 +164,5 @@ NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST
 
 **配对使用：**
 
-- `team-verify` — REQUIRED：修复后必须验证
+- `team-verify` — 推荐：修复后验证确认
 - `team-test` — 确认无回归
