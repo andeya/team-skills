@@ -394,6 +394,7 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
 - `权限变更` → **ASSERT** `安全负责人确认记录 EXISTS`
 - `对外发布` → **ASSERT** `业务负责人审核确认记录 EXISTS`
 - `资金操作` → **ASSERT** `财务授权人员双人确认记录 EXISTS`
+- *default* → 记录操作类型，无特定确认要求
 
 **IF** 确认记录存在 → **ASSERT** `确认为实质性审核` — 非形式审查
 **ELSE** → 标记 `HITL_MISSING:{operation_type}`

@@ -152,6 +152,7 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 - [ ] 数据流已展示并确认
 - [ ] 关键接口已展示并确认
 - [ ] 测试策略已展示并确认
+- [ ] 我是否因为流程进度压力而对某个维度草草确认？
 
 **MATCH** `user_decision`：
 

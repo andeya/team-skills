@@ -184,7 +184,7 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
   - 需要人类决策 → **H3**（有多个可行方案需要选择）
 - `P2` → 自行修复（**GOTO** Phase 3）
 - `P3` → 记录但不处理
-- *none* → **GOTO** Phase 4
+- *default* → **GOTO** Phase 4
 
 **回退时必须提供**：
 

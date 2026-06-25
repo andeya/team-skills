@@ -7,6 +7,13 @@
 
 ## [Unreleased]
 
+## [1.3.5] - 2026-06-26
+
+### 变更
+
+- `team-refine` 每轮新增 Step 4：team-score 满分校验（硬门槛覆盖 + 评分维度覆盖 + 缺口修复），收敛条件同步强化
+- 6 个 SKILL.md 质量修复：移除 bare `>` 空行（brainstorm）、`*none*` → `*default*` 兜底修正（review/security）、GATE 自检补充对抗性自问（brainstorm/orchestrator/score）
+
 ## [1.3.4] - 2026-06-26
 
 ### 变更

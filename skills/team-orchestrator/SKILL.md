@@ -887,6 +887,7 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 - [ ] D5.2 **ASSERT** `14-team.md §二 一致性检查全部通过或已修复`
 - [ ] D5.3 **ASSERT** `14-team.md §四 真实问题占比 > 0`
 - [ ] D5.4 **ASSERT** `14-team.md §三 每位贡献者有明确产出物和提交数`
+- [ ] 我是否因为检查项太多而对某些项草草通过了？
 
 **IF** `unchecked_items > 0` → 回退对应 Step 补全（D1/D3 缺失 → **GOTO** Step 5；D2 缺失 → **GOTO** Step 2；D4 缺失 → **GOTO** Step 3；D5 缺失 → **GOTO** Step 6）。
 
