@@ -7,6 +7,21 @@
 
 ## [Unreleased]
 
+## [1.3.3] - 2026-06-26
+
+### 变更
+
+- `update` 命令新增全局安装阶段：同步更新 `~/.agents/skills/` 和 `~/.claude/skills/`（含 team-score）
+- `setup` 全局安装始终包含 team-score，移除 `--with-score` 参数
+- `setup`、`init`、`update` 统一为默认覆盖模式，移除 `--force` 参数
+- `init` 覆盖行为与 `update` 对齐：先清理再复制（`rmSync` + `copyRecursive`）
+
+### 修复
+
+- `update` 不再误删项目中已安装的 team-score（`cleanStaleSkills` 跳过被排除的 skill）
+- `setup` 验证阶段补全 Claude Code 共享规则检查（之前仅验证 Cursor 路径）
+- `update` 全局安装新增 symlink 验证阶段
+
 ## [1.3.2] - 2026-06-26
 
 ### 新增

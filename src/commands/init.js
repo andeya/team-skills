@@ -1,5 +1,5 @@
 import { join, resolve } from 'node:path';
-import { copyFileSync as fsCopyFile } from 'node:fs';
+import { copyFileSync as fsCopyFile, existsSync, rmSync } from 'node:fs';
 import { PACKAGE_ROOT } from '../lib/constants.js';
 import { discoverSkills, discoverSharedRules } from '../lib/inventory.js';
 import { copyRecursive, ensureDir } from '../lib/fs-utils.js';
@@ -41,7 +41,10 @@ function runInit(dir, opts) {
     if (!dryRun) ensureDir(skillsDst);
     for (const skill of skills) {
       const dest = join(skillsDst, skill.name);
-      if (!dryRun) copyRecursive(skill.path, dest);
+      if (!dryRun) {
+        if (existsSync(dest)) rmSync(dest, { recursive: true });
+        copyRecursive(skill.path, dest);
+      }
       log.success(`${tag}Skill: ${skill.name}`);
       count++;
     }
@@ -63,7 +66,10 @@ function runInit(dir, opts) {
     if (!dryRun) ensureDir(skillsDst);
     for (const skill of skills) {
       const dest = join(skillsDst, skill.name);
-      if (!dryRun) copyRecursive(skill.path, dest);
+      if (!dryRun) {
+        if (existsSync(dest)) rmSync(dest, { recursive: true });
+        copyRecursive(skill.path, dest);
+      }
       log.success(`${tag}Skill: ${skill.name}`);
       count++;
     }
