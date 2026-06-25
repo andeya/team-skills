@@ -1,8 +1,14 @@
 import { join } from 'node:path';
 import { existsSync, readdirSync, rmSync, copyFileSync } from 'node:fs';
 import { createSymlinkSafe, ensureDir, isSymlink, copyRecursive } from './fs-utils.js';
-import { PROJECT_IDE_DIRS } from './constants.js';
+import { GLOBAL_TARGETS, PROJECT_IDE_DIRS } from './constants.js';
 import * as log from './logger.js';
+
+const globalDirSet = new Set(GLOBAL_TARGETS.map(t => t.dir));
+
+export function isGlobalTarget(dir) {
+  return globalDirSet.has(dir);
+}
 
 export function logInstallResult(label, result) {
   switch (result) {
@@ -80,6 +86,12 @@ export function installSkillsProject(projectDir, ides, skills, rules, { dryRun, 
     if (!ideSubdir) continue;
 
     const skillsDst = join(projectDir, ideSubdir, 'skills');
+
+    if (globalDirSet.has(skillsDst)) {
+      log.skip(`${skillsDst} 与全局路径重叠，保留 symlinks，跳过复制`);
+      continue;
+    }
+
     log.heading(`${verb} → ${skillsDst}`);
 
     if (!dryRun) ensureDir(skillsDst);

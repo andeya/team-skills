@@ -6,7 +6,7 @@ import { discoverSkills, discoverSharedRules } from '../lib/inventory.js';
 import { detectIDE } from '../lib/detect-ide.js';
 import {
   installSkillsGlobal, verifyGlobalSymlinks,
-  installSkillsProject, cleanStaleSkills,
+  installSkillsProject, cleanStaleSkills, isGlobalTarget,
 } from '../lib/installers.js';
 import * as log from '../lib/logger.js';
 
@@ -88,7 +88,9 @@ function runUpdate(dir, opts) {
 
   for (const ideName of ides) {
     const skillsDst = join(dir, PROJECT_IDE_DIRS[ideName], 'skills');
-    cleanStaleSkills(skillsDst, projectSkillNames, { dryRun, exclude });
+    if (!isGlobalTarget(skillsDst)) {
+      cleanStaleSkills(skillsDst, projectSkillNames, { dryRun, exclude });
+    }
   }
 
   count += installSkillsProject(dir, ides, projectSkills, rules, { dryRun, verb: '更新' });
