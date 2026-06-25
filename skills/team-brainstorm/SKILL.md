@@ -62,29 +62,42 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 
 ## 产出目录
 
-`docs/tasks/{slug}/`，其中 `{slug}` 格式为 `{NNNN}-{关键词}`：扫描 `docs/tasks/` 已有目录（如不存在则创建）取最大序号 +1（从 `0001` 起），关键词从任务描述提取，kebab-case，整体 ≤ 50 字符。例如 `0001-add-tooltip`、`0012-refactor-auth`。
+`docs/tasks/{slug}/`（slug 由 Phase 1 RESOLVE）
 
 ## 执行步骤
 
 ### Phase 1：探索
 
-1. 精读用户需求
-2. 读取项目规范：CLAUDE.md（或 .cursor/rules/）、README.md
-3. 扫描相关源码模块
-4. 评估范围：如果需求包含多个独立子系统，先帮助用户分解
-5. 生成 `{slug}`：扫描 `docs/tasks/` 已有目录（如不存在则创建）取最大序号 +1，创建 `docs/tasks/{slug}/` 目录
+1. **READ** 用户需求，提取核心目标和关键词
+2. **READ** 项目规范：`CLAUDE.md`（或 `.cursor/rules/`）、`README.md`
+3. **READ** 相关源码模块，理解现有实现
+4. **IF** 需求包含多个独立子系统：
+   - 先帮助用户分解为独立任务，逐个处理
+5. **RESOLVE** `slug`：
+   1. **READ** `docs/tasks/` 已有目录列表
+   2. **IF** `docs/tasks/` 不存在 → 创建 `docs/tasks/`
+   3. 取最大序号 +1（从 `0001` 起），拼接任务关键词（kebab-case，整体 ≤ 50 字符）
+   4. 创建 `docs/tasks/{slug}/` 目录
 
 ### Phase 2：需求澄清（一次性提问）
 
-一次性向用户展示最多 3 个关键问题（优先用选项形式），等待用户一次回复：
+> 一次最多 3 个问题，优先用选项形式降低用户认知负担（FP-1）。
+
+向用户展示最多 3 个关键问题，等待用户一次回复：
 
 - 目标优先级："以下哪个是最重要的目标？A) ... B) ... C) ..."
 - 边界确认："以下范围是否正确？是否需要排除某些模块？"
 - 风险偏好："如果遇到 {具体风险}，你倾向于 A) 保守处理 B) 激进优化？"
 
+**IF** 用户回复揭示需求不可行：
+
+- → **H3**：暂停设计，展示不可行原因，请用户决策（Kill Switch / 调整需求）
+
 ### Phase 3：方案设计
 
 提出 2-3 个不同方案，含优缺点对比和推荐理由：
+
+**ASSERT** `方案数 >= 2`（不可只提供单一方案）
 
 ```
 
@@ -99,6 +112,8 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 
 ### Phase 4：展示设计
 
+> 逐段展示而非一次倾倒，降低用户认知负荷（FP-1）。
+
 逐段展示设计，每段后等待用户确认：
 
 - 架构/组件
@@ -106,9 +121,14 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 - 关键接口
 - 测试策略
 
+**GATE** 用户已确认设计方案 → 继续 Phase 5
+
+- 用户要求修改 → **GOTO** Phase 3（仅重新展示修改后的方案，无需重新生成全部选项）
+- 用户决定放弃 → **BLOCKED**，记录原因
+
 ### Phase 5：产出 00-design-brief.md
 
-将以下内容写入 `docs/tasks/{slug}/00-design-brief.md`：
+**WRITE** `docs/tasks/{slug}/00-design-brief.md`：
 
 ```markdown
 # 设计概要：{主题}
@@ -147,12 +167,25 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 
 ```
 
+**ASSERT** `00-design-brief.md` 无占位符残留（`{N}`、`{slug}` 等已替换为实际值）
+
 ### Phase 6：Handoff
 
-向用户展示已创建的 slug 目录路径 `docs/tasks/{slug}/`，并推荐下一步：
+**WRITE**（对话中）slug 目录路径 `docs/tasks/{slug}/`。
 
-- 默认路径 → 推荐 `team-spec {slug}` 在同一 slug 目录中产出完整 SDD（推荐）
-- 仅当用户明确要求跳过规格阶段 → 可推荐 `team-impl` 直接 TDD 实现
+**MATCH** `user_intent`：
+
+- 用户接受默认路径 → **ROUTE** `team-spec {slug}`（在同一 slug 目录中产出完整 SDD）
+- 用户明确要求跳过规格阶段 → **ROUTE** `team-impl`（直接 TDD 实现）
+- 用户未表态 → 推荐 `team-spec {slug}`，等待用户确认
+- *default*（其他意图）→ 询问用户偏好
+
+## STOP Signals
+
+- **跳过**代码库探索，凭空设计方案
+- **抛出**所有问题而不等用户逐个回复
+- **提供**单一方案，没有备选方案对比
+- **跳过**用户确认就进入实现或产出 `01-plan.md`
 
 ## Constitutional Rules 遵守
 
@@ -164,29 +197,21 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 
 ## 自检门禁
 
-在报告完成状态前，执行以下自检：
-
-- [ ] 已探索代码库和现有实现（不是凭空设计）
-- [ ] 已提出 2-3 个方案对比（不是只有一个选项）
-- [ ] 用户已确认设计方案（不是自行决定）
-- [ ] `00-design-brief.md` 已写入 `docs/tasks/{slug}/` 目录
-- [ ] `00-design-brief.md` 无占位符残留
-- [ ] 没有产出 01-plan.md（那是 team-spec 的职责）
+- [ ] 已 **READ** 代码库和现有实现（不是凭空设计）
+- [ ] 已 **ASSERT** 方案数 >= 2（不是只有一个选项）
+- [ ] **GATE** 用户已确认设计方案（不是自行决定）
+- [ ] `00-design-brief.md` 已 **WRITE** 到 `docs/tasks/{slug}/` 目录
+- [ ] **ASSERT** `00-design-brief.md` 无占位符残留
+- [ ] **ASSERT** 未产出 `01-plan.md`（那是 team-spec 的职责）
 
 ## 完成标志
 
-```
-状态：DONE | DONE_WITH_CONCERNS | NEEDS_CONTEXT | BLOCKED
-产出：docs/tasks/{slug}/00-design-brief.md
-下一步：→ team-spec {slug} / → team-impl
-```
+**MATCH** `result`：
 
-## STOP Signals
-
-- 跳过代码库探索，凭空设计方案
-- 一次抛出所有问题，不等用户逐个回复
-- 方案对比只提供一个选项，没有备选方案
-- 用户没有确认就进入实现或产出 01-plan.md
+- 用户确认设计 + `00-design-brief.md` 已写入 → **DONE**
+- 设计已完成但用户有保留意见 → **DONE_WITH_CONCERNS**
+- 需求信息不足，无法形成方案 → **NEEDS_CONTEXT**
+- 需求不可行 / 用户决定放弃 → **BLOCKED**
 
 ## 集成关系
 

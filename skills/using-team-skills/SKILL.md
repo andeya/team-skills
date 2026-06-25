@@ -16,16 +16,11 @@ If you were dispatched as a subagent to execute a specific task, skip this skill
 ```
 角色：Team Skills 向导——快速准确将用户引导到正确的 Skill
 核心原则：误导比慢导代价更高——推荐错误 Skill 浪费用户时间
-流程：
-1. 判断用户当前阶段（需求模糊/明确/已有规格/已有实现/遇 bug）
-2. 根据 Skill 选择矩阵推荐最合适的 Skill
-3. 不确定 → 引导 team-brainstorm
-4. 需要完整流水线 → 推荐 team-orchestrator
 ```
 
 ### 推理检查点
 
-**核心指令**：核心问题是"用户处于工程流程的哪个阶段"，而非"用户说了什么关键词"。
+> 核心问题是"用户处于工程流程的哪个阶段"，而非"用户说了什么关键词"。
 
 **推理框架**：
 
@@ -72,15 +67,30 @@ NO SKILL RECOMMENDATION WITHOUT SCENE ANALYSIS FIRST
 
 ### Step 1：分析用户场景
 
-对照 Skill 选择矩阵匹配用户当前阶段。不完全匹配时优先覆盖核心需求。
+**RESOLVE** `target_skill`（对照 Skill 选择矩阵，首个匹配即停）：
+
+1. **READ** 用户输入 → 提取阶段信号（需求/规格/实现/测试/审查/调试/完成）
+2. **MATCH** `scene`：
+   - 需求模糊 / 用户不确定要做什么 → `team-brainstorm`
+   - 需求明确但无规格 → `team-spec`
+   - 规格已有（`03-sdd.md` 存在）→ `team-impl`
+   - 实现已有，需测试审计 → `team-test`
+   - 代码 + 测试已有，需审查 → `team-review`
+   - 收到审查反馈 → `team-feedback`
+   - 遇到 bug → `team-debug`
+   - 声明完成，需验证 → `team-verify`
+   - 实现完成，需处理分支 → `team-finish`
+   - 评估 AI 协作成熟度 → `team-score`
+   - 需完整流水线 → `team-orchestrator`
+   - *none* → **NEEDS_CONTEXT**：请用户描述当前阶段和目标
 
 ### Step 2：推荐并说明理由
 
-推荐 Skill 并说明理由。
+**WRITE** 推荐结果（对话中）：推荐 Skill + 推荐理由 + 启动方式
 
 ### Step 3：可选 — 展示流程图
 
-如果用户需要了解全貌，展示 Mermaid 流程图。
+**IF** 用户需要了解全貌 → 展示 Mermaid 流程图
 
 ## 指令优先级
 
@@ -90,38 +100,36 @@ NO SKILL RECOMMENDATION WITHOUT SCENE ANALYSIS FIRST
 
 ## 使用规则
 
-**Invoke relevant skills BEFORE any response or action.** 即使只有 1% 的可能适用，也应该加载 skill 检查。
+**Invoke relevant skills BEFORE any response or action.** 首个匹配即停——找到最匹配的 skill 后立即推荐，不遍历全部。
+
+## STOP Signals
+
+- **跳过**场景分析直接推荐 Skill
+- **推荐**实现类 Skill 给场景模糊的用户（应推荐 team-brainstorm）
+- **凭记忆**推荐而不读取当前版本的选择矩阵
 
 ## Constitutional Rules 遵守
 
 引用 `_team-rules/constitutional-rules.md`。分诊阶段尤其注意：
 
 - **Rule #1 人类介入是一等公民**：推荐后等待用户确认再启动 skill，不可自动跳转（FP-1）
-- **Rule #4 Kill Switch**：如果用户描述的需求明显不可行，应告知而非推荐 skill 继续（FP-1 + FP-3）
+- **Rule #4 Kill Switch**：用户需求明显不可行时应告知而非推荐 skill 继续（FP-1 + FP-3）
 
 ## 自检门禁
 
-在推荐 Skill 前执行以下自检：
-
 - [ ] 已分析用户场景（需求/规格/实现/测试/审查/调试/完成？）
-- [ ] 推荐理由与场景匹配
-- [ ] 如果场景模糊，已推荐 team-brainstorm
-- [ ] 如果用户需要完整流水线，已推荐 team-orchestrator
+- [ ] `target_skill` 已 **RESOLVE** 且推荐理由与场景匹配
+- [ ] **IF** 场景模糊 → 已推荐 `team-brainstorm`
+- [ ] **IF** 用户需要完整流水线 → 已推荐 `team-orchestrator`
 
 ## 完成标志
 
-```
-状态：DONE | DONE_WITH_CONCERNS | NEEDS_CONTEXT | BLOCKED
-推荐 Skill：{skill-name}
-推荐理由：{reason}
-如有保留意见或阻塞，列出具体内容
-```
+**MATCH** `result`：
 
-## STOP Signals
-
-- 不分析场景就直接推荐 Skill
-- 场景模糊时跳过 team-brainstorm 直接推荐实现类 Skill
-- 凭记忆推荐 Skill 而不读取当前版本的选择矩阵
+- 推荐已给出且用户确认 → **DONE**
+- 多个 Skill 可能适用 → **DONE_WITH_CONCERNS**
+- 场景无法判断 → **NEEDS_CONTEXT**
+- 用户需求明显不可行 → **BLOCKED**
 
 ## 集成关系
 

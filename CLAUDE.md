@@ -276,6 +276,11 @@ H3 触发时，编排器 **MUST** 向用户展示以下结构化信息：
 | 2026-06-23 | Andeya | CLAUDE.md/AGENTS.md 区分说明 + TDD 纪律强制执行 + 交付清单模板与追踪 | 交互细节审查修复 |
 | 2026-06-23 | Andeya | 第一性原理注魂：§第零原则（FP-1~FP-4）+ 12 个 Skill 推理指引升级 + Constitutional Rules WHY 追溯 | 角色专精与第一性原理渗透 |
 | 2026-06-23 | Andeya | 第一性原理下沉：FP 定义迁移到 `_team-rules/first-principles.md`，skills 内所有 `CLAUDE.md §` 引用改为指向共享规则文件 | 分发兼容性修复 |
+| 2026-06-25 | Andeya | skill-spec v0.3→v1.0：执行模型 + 变量模型 + 组合模型 + 形式语法（BNF）+ 12 约定/12 模式/12 反模式 | 编程语言级审查 |
+| 2026-06-25 | Andeya | AP#10/AP#11 conformance：MATCH 兜底补全（team-spec/team-finish）+ EXEC exit_code 检查补全（3 文件 6 处） | v1.0 conformance 修复 |
+| 2026-06-25 | Andeya | 5 轮 LLM 消费者视角审查：R1 ASSERT 表达式化 + 关键词粗体化、R2 执行流歧义修复、R3 术语一致性、R4 跨文件结构对齐、R5 LLM 模拟执行终审（test_cmd 排序修复 + AP#4 残留清零） | 全量 SKILL.md 打磨 |
+| 2026-06-25 | Andeya | 逐字符 3 轮打磨（12 skills）：R1 结构/逻辑、R2 语言/信噪比、R3 韵律/优雅 + 跨 skill 流转连接 3 轮：集成关系修正 + RESOLVE 链一致性 + 完成→下游衔接验证 | 诗级打磨 |
+| 2026-06-25 | Andeya | Score+AI-consumer 双审查 3 轮：R1 业务规则GWT门禁+TDD commit数量验证+测试覆盖量化+风格一致性检查+功能点数交叉验证+模板阈值提升（5文件8处）、R2 SDD七部分ASSERT准确化、R3 24项AI稳定性验证全通过 | 双审查迭代修复 |
 
 ### 7.5 内容覆盖索引
 

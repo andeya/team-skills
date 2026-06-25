@@ -88,7 +88,10 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 
 ### Phase 1：五维度代码 Review
 
-对每个修改的文件进行以下 5 个维度的审查：
+1. **READ** `git diff`（代码变更）+ 修改的文件完整内容
+2. **READ** `03-sdd.md`（规格对照）
+
+**FOR** 每个修改的文件，按以下 5 个维度审查：
 
 | 维度         | 检查内容                                                       |
 | ------------ | -------------------------------------------------------------- |
@@ -102,22 +105,26 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 
 ### Phase 1.5：Constitutional 合规检查
 
-验证所有 Agent 是否遵守了 Constitutional Rules：
-
 > **精简模式注意**：`--compact` 模式下 01-plan.md、02-context.md、05-risk.md 不存在。涉及这些文件的检查项改为检查 03-sdd.md 中是否有对应信息，或标注"精简模式豁免"。
+
+**FOR** 每条 Constitutional Rule，执行对应检查：
 
 | 规则             | 检查方式                                                                                 | 违规表现                     | 严重级别 |
 | ---------------- | ---------------------------------------------------------------------------------------- | ---------------------------- | -------- |
-| 人类介入未被跳过 | 检查任务目录下文件中是否有 H1-H4 的确认记录（精简模式：H1+H4 即可，H2 不检查）           | 缺少人类确认记录             | P0       |
+| 人类介入未被跳过 | 检查任务目录下文件中 H1-H4 确认记录（精简模式：H1+H4 即可）           | 缺少人类确认记录             | P0       |
 | 有向图回退       | 检查 08-ai-decisions.md 和 11-review.md 中是否有回退记录                                 | 发现问题但未回退             | P1       |
-| TDD Iron Law     | 检查 06-tdd-log.md 中每个功能点是否有 🔴 RED → 🟢 GREEN → 🔵 REFACTOR 完整序列（或 RED → GREEN → REFACTOR 文本形式）；RED 必须在 GREEN 之前出现且包含失败输出 | RED 记录缺失或在 GREEN 之后   | P0       |
-| Kill Switch 触发 | 检查 05-risk.md 中 Kill Switch 条件是否被触发（精简模式：检查 03-sdd.md 或 .checkpoint.json 中是否有 Kill Switch 记录） | 条件满足但未触发 Kill Switch | P0       |
-| 分期交付         | 检查 01-plan.md 中是否有分期划分（精简模式豁免：简单任务无需分期）                       | 复杂任务无分期               | P2       |
+| TDD Iron Law     | 检查 06-tdd-log.md 中每个功能点 RED → GREEN → REFACTOR 序列完整；RED 在 GREEN 之前且含失败输出；功能点数 >= 03-sdd.md §二 业务规则数 | RED 记录缺失或在 GREEN 之后   | P0       |
+| Kill Switch 触发 | 检查 05-risk.md 中 Kill Switch 条件是否被触发（精简模式：检查 03-sdd.md 或 .checkpoint.json） | 条件满足但未触发 Kill Switch | P0       |
+| 分期交付         | 检查 01-plan.md 分期划分（精简模式豁免：简单任务无需分期）                       | 复杂任务无分期               | P2       |
 | 自我约束预算     | 检查 06-tdd-log.md 中预算 vs 实际                                                        | 预算超支未砍范围             | P1       |
-| 来源标签         | 检查 03-sdd.md 和 09-test-matrix.md 中是否有 {extracted}/{inferred}/{ambiguous} 标签（精简模式：02-context.md 不检查） | 缺少来源标签                 | P2       |
+| 来源标签         | 检查 03-sdd.md 和 09-test-matrix.md 中 {extracted}/{inferred}/{ambiguous} 标签（精简模式：02-context.md 不检查） | 缺少来源标签                 | P2       |
 | 产出必须验证     | 检查各 Agent 产出是否经过下游验证才进入下一步，而非仅依赖自我声明                        | 未经验证直接流转             | P1       |
 | 回退次数上限     | 检查同一阶段回退是否超过 2 次                                                            | 超过 2 次未触发 H3           | P1       |
 | 验证先行原则     | 检查 06-tdd-log.md 和 10-test-report.md 中的验证声明是否基于当次新鲜执行的完整输出       | 引用缓存结果或截断输出       | P0       |
+
+**ASSERT** `constitutional_rules_checked == 9`
+
+- 存在未检查项 → 补充检查后继续
 
 #### 问题分级标准
 
@@ -130,20 +137,19 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 
 ### Phase 2：问题路由决策
 
-根据审查发现的问题，决定处理方式：
+**MATCH** `severity`：
 
-| 问题类型        | 路由                      | 条件                          |
-| --------------- | ------------------------- | ----------------------------- |
-| P0 实现 bug     | → implAgent（通过编排器） | 问题在实现层面，spec 定义正确 |
-| P0 设计/架构缺陷 | → specAgent（通过编排器） | 问题根源在 SDD 设计决策而非实现 |
-| P0 安全漏洞     | → H3（人类介入）          | 安全决策需要人类确认          |
-| P1 实现 bug     | → implAgent（通过编排器） | 问题在实现层面                |
-| P1 测试遗漏     | → implAgent（通过编排器） | 需要补写测试                  |
-| P0/P1 spec 遗漏 | → specAgent（通过编排器） | 问题在规格层面                |
-| P2 可维护性问题 | 自行修复                  | 直接修改代码                  |
-| P2 测试改进     | 自行修复                  | 直接修改测试                  |
-| 需要人类决策    | → H3（通过编排器）        | 有多个可行方案需要选择        |
-| 无问题          | → 继续 Phase 3            | —                             |
+- `severity == P0` || `severity == P1`
+  - `P0 实现 bug` && `spec 定义正确` → **ROUTE** implAgent（通过编排器）
+  - `P0 设计/架构缺陷` → **ROUTE** specAgent（通过编排器）
+  - `P0 安全漏洞` → **H3**（安全决策需要人类确认）
+  - `P1 实现 bug` → **ROUTE** implAgent（通过编排器）
+  - `P1 测试遗漏` → **ROUTE** implAgent（通过编排器，需要补写测试）
+  - `P0/P1 spec 遗漏` → **ROUTE** specAgent（通过编排器）
+  - `需要人类决策` → **H3**（有多个可行方案需要选择）
+- `severity == P2` → 自行修复（**GOTO** Phase 3）
+- `severity == P3` → 记录但不处理
+- *no issues* → **GOTO** Phase 4
 
 **回退时必须提供**：
 
@@ -151,60 +157,58 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 - 具体位置（文件 + 行号）
 - 问题描述
 - 建议的修复方案
-- 如果回退到 implAgent：提供修复后的期望测试用例
+- **IF** 回退到 implAgent → 提供修复后的期望测试用例
 
 ### Phase 3：执行路由决策
 
-对于路由到自己的问题（P2 及以下）：
+> 对于路由到自己的问题（P2 及以下）。
 
 1. 直接修改代码/测试（**每个问题限 20 行以内的修改**——更大规模的重构记录为建议，不直接执行）
-2. 运行测试确认修复正确
-3. 运行项目 CI 检查命令确认无 lint 问题
-4. **更新文档**：将修复详情（问题 ID + 修复内容 + 验证结果）追加到 `11-review.md` §三修复记录
-5. **边界约束**：如修复导致新测试失败或引入新问题，**立即停止自修**，将问题路由到 implAgent（通过编排器），附带修复尝试的上下文和失败详情
+2. **EXEC** 项目测试命令 — 确认修复正确
+3. **EXEC** 项目 CI 检查命令 — 确认无 lint 问题
 
-> **验证协议**（步骤 2-3 声明"通过"前必须执行 `_team-rules/verification-protocol.md` 的 5 个步骤）
+**验证协议**（步骤 2-3 声明"通过"前必须执行 `_team-rules/verification-protocol.md` 的 5 个步骤）
 
-对于路由到 implAgent/specAgent 的问题：
+4. **ASSERT** `exit_code == 0` && `failures == 0`
+   - 通过 → **WRITE** 修复详情（问题 ID + 修复内容 + 验证结果）到 `11-review.md` §三修复记录
+   - 修复导致新测试失败或引入新问题 → 立即停止自修 → **ROLLBACK** implAgent（通过编排器），附带修复尝试的上下文和失败详情
 
-1. 在 `11-review.md` 中详细记录问题
+**IF** 问题路由到 implAgent/specAgent：
+
+1. **WRITE** 问题详情到 `11-review.md`
 2. 通过编排器传递上下文
 
-对于需要人类决策的问题：
+**IF** 问题需要人类决策：
 
-1. 在 `11-review.md` 中详细记录问题
-2. 向用户展示问题 + 选项，等待决策
+1. **WRITE** 问题详情到 `11-review.md`
+2. 向用户展示问题 + 选项 → **H3**，等待决策
 3. 根据决策执行修复
 
 ### Phase 4：AI 协作资产维护（消费方契约）
 
-> **精简模式**：仅执行 4.0（任务规则）、4.3（CHANGELOG）、4.6（工具适配确认）。跳过 4.0.5、4.1、4.1.5、4.2、4.4、4.5、4.7。
+> **精简模式**：仅执行 4.1（任务规则）、4.6（CHANGELOG）、4.8（工具适配确认）。跳过 4.2、4.3、4.4、4.5、4.7、4.9。
 
-更新以下资产文件（记录到 `12-asset-update.md`）。
+**WRITE** 所有资产更新记录到 `12-asset-update.md`。
 
-**消费方契约原则**：更新的资产必须能被下游 Agent 直接读取并执行，不需要额外解释。每条规则必须包含：
+> **消费方契约原则**：更新的资产必须能被下游 Agent 直接读取并执行，不需要额外解释。每条规则必须包含：触发条件 + 可执行指令 + 示例（好/坏对比）。
 
-- **触发条件**：什么情况下触发（让下游 Agent 知道何时应用）
-- **可执行指令**：具体做什么（让下游 Agent 知道怎么做）
-- **示例**：好/坏对比（让下游 Agent 理解边界）
+#### 4.1 任务级规则沉淀
 
-#### 4.0 任务级规则沉淀
-
-产出 `docs/tasks/{slug}/task-rules.md`，记录本任务中发现的、仅在本任务范围内适用的规则或约束。这建立了三层规则体系（项目级 > 模块级 > 任务级）：
+**WRITE** `docs/tasks/{slug}/task-rules.md` — 记录本任务中发现的、仅在本任务范围内适用的规则或约束：
 
 ```markdown
 # 任务级规则
 
 > reviewAgent 产出 | 仅适用于 {slug} 任务范围
 
-| 规则 | 适用范围 | 触发条件 | 可执行指令 |
-| ---- | -------- | -------- | ---------- |
-| ...  | 本任务   | ...      | ...        |
+| 规则 | 适用范围 | 触发条件 | 可执行指令 | 示例（✅/❌） |
+| ---- | -------- | -------- | ---------- | ------------ |
+| ...  | 本任务   | ...      | ...        | ✅ ... / ❌ ... |
 ```
 
-#### 4.0.5 内容覆盖度检查
+#### 4.2 内容覆盖度检查
 
-逐项确认以下 8 个内容类别在项目资产中有明确对应文件或章节。对「需补充」项，在项目 AI 规范文件（CLAUDE.md / .cursor/rules/）对应章节新增内容；如果 `docs/review-checklist.md` 或 `docs/delivery-checklist.md` 不存在，创建之。项目类型不适用的类别标注 N/A（如 CLI 工具无需"系统架构"文档）。
+**READ** 项目 AI 规范文件（CLAUDE.md / .cursor/rules/）及以下 8 个内容类别的对应位置：
 
 | 类别        | 典型位置                                            | 状态      |
 | ----------- | --------------------------------------------------- | --------- |
@@ -217,38 +221,41 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 | Review 标准 | docs/review-checklist.md                            | ✅/需补充 |
 | 交付要求    | docs/delivery-checklist.md                          | ✅/需补充 |
 
-#### 4.1 项目级 AI 规范（CLAUDE.md / .cursor/rules/）
+**IF** 存在「需补充」项 → **WRITE** 内容到项目 AI 规范文件（CLAUDE.md / .cursor/rules/）对应章节
+**IF** `docs/review-checklist.md` 或 `docs/delivery-checklist.md` 不存在 → 创建之
+**IF** 项目类型不适用的类别 → 标注 N/A（如 CLI 工具无需"系统架构"文档）
 
-检查是否需要新增规则：
+#### 4.3 项目级 AI 规范（CLAUDE.md / .cursor/rules/）
+
+**READ** 项目 AI 规范文件，检查是否需要新增规则：
 
 - 本次任务引入的新模式/约定
 - 本次任务发现的常见错误模式
 - 本次任务涉及的特殊技术约束
 
-更新方式：追加到项目 AI 规范文件（CLAUDE.md 或 .cursor/rules/，取项目中已存在的文件）的对应章节，保持原有结构。
+**IF** 需要新增规则 → **WRITE** 追加到项目 AI 规范文件（CLAUDE.md 或 .cursor/rules/，取项目中已存在的文件）的对应章节，保持原有结构
 
-#### 4.1.5 项目级 AGENTS.md
+#### 4.4 项目级 AGENTS.md
 
-如果本次任务涉及以下变更，检查并更新 `AGENTS.md`（如不存在则创建）：
+**IF** 本次任务涉及以下变更：
 
 - **架构变更**：新增/删除模块、服务拆分/合并、数据流变更
 - **新增模块**：模块职责、目录结构、对外接口
 - **接口签名变更**：公共 API、RPC 接口、事件定义的签名变更
 - **模块职责变更**：模块边界调整、依赖关系变化
 
-更新方式：在 `AGENTS.md` 对应章节追加或修改，保持与代码实际结构一致。AGENTS.md 应包含：系统架构概览、模块职责清单、关键接口定义、目录结构说明。
+→ **READ** `AGENTS.md`（**IF** 不存在 → 创建）→ **WRITE** 在对应章节追加或修改，保持与代码实际结构一致。AGENTS.md 应包含：系统架构概览、模块职责清单、关键接口定义、目录结构说明。
 
-#### 4.2 模块级 AI 规范
+#### 4.5 模块级 AI 规范
 
-如果本次任务修改了特定模块（如 `frontend/`、`backend/`），检查该模块的 AI 规范文件（`CLAUDE.md` / `.cursor/rules/`）是否需要更新：
+**IF** 本次任务修改了特定模块（如 `frontend/`、`backend/`）：
 
-- 新增的 API 或接口规范
-- 新增的测试约定
-- 新增的代码模式
+1. **READ** 该模块的 AI 规范文件（`CLAUDE.md` / `.cursor/rules/`）
+2. **IF** 需要更新（新增的 API/接口规范、测试约定、代码模式） → **WRITE** 追加到模块 AI 规范文件
 
-#### 4.3 CHANGELOG.md
+#### 4.6 CHANGELOG.md
 
-追加本次变更记录：
+**WRITE** 追加本次变更记录到 `CHANGELOG.md`：
 
 ```markdown
 
@@ -268,23 +275,19 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 
 ```
 
-#### 4.4 Review Checklist
+#### 4.7 Checklist 维护
 
-如果本次 Review 发现了新的检查项，追加到 `docs/review-checklist.md`。如果文件不存在，按模板 `references/review-checklist-template.md` 创建并填充本次实际检查内容（替换所有占位符）。已存在则追加本次发现的新检查项。每项 **MUST** 可执行（有具体检查对象和通过标准）。
+**FOR** each `checklist_type` in [`review-checklist`, `delivery-checklist`]：
 
-```markdown
+1. **READ** `docs/{checklist_type}.md`
+   - *not found* → **WRITE** 按模板 `references/{checklist_type}-template.md` 创建并填充实际内容
+   - 已存在 → **IF** 本次发现新检查项 → **WRITE** 追加
+2. **ASSERT** `每项有检查对象` && `每项有通过标准`
+3. **IF** `checklist_type == delivery-checklist` && 完成交付 → 将已完成项标记为 `- [x]`
 
-- [ ] {新检查项描述}
+#### 4.8 工具适配产物确认（≥ 2 类）
 
-```
-
-#### 4.5 Delivery Checklist
-
-如果本次任务发现了新的交付检查项，追加到 `docs/delivery-checklist.md`。如果文件不存在，按模板 `references/delivery-checklist-template.md` 创建并填充本次实际检查内容（替换所有占位符）。已存在则追加本次发现的新交付项。每项 **MUST** 可执行。完成交付后，将已完成项标记为 `- [x]`。
-
-#### 4.6 工具适配产物确认（≥ 2 类）
-
-确认项目至少有 2 类工具适配产物。如不足，从以下列表中选择并创建缺失类型（创建时必须填充实际内容，不可创建空文件）：
+**ASSERT** `工具适配产物数 >= 2`：
 
 | 类型                                    | 文件路径                             | 创建内容来源 | 状态  |
 | --------------------------------------- | ------------------------------------ | ------------ | ----- |
@@ -293,17 +296,26 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 | Delivery Checklist    | docs/delivery-checklist.md           | Phase 4 资产清单 + 验证步骤 | ✅/❌ |
 | Prompt 模板           | docs/tasks/{slug}/prompt-template.md | specAgent 产出 | ✅/❌ |
 
-#### 4.7 资产可维护性保障
+- 不足 2 类 → 从以上列表中选择并创建缺失类型（**WRITE** 时必须填充实际内容，不可创建空文件）
 
-确认项目 AI 规范文件（CLAUDE.md 或 .cursor/rules/）中存在「资产维护机制」段落（含更新触发条件、版本记录表、规则管理层级），如不存在则按 CLAUDE.md §七.2 消费方契约原则新增。每次更新后向"版本记录"表追加一行。
+#### 4.9 资产可维护性保障
+
+**READ** 项目 AI 规范文件（CLAUDE.md 或 .cursor/rules/）
+
+**ASSERT** `资产维护机制段落` 存在
+
+- *not found* → **WRITE** 按 CLAUDE.md §七.2 消费方契约原则新增
+
+**IF** 本次有资产更新 → **WRITE** 向"版本记录"表追加一行
 
 ### Phase 5：个人复盘
 
-按照产出文件 §`13-retrospective.md` 模板，记录以下内容：
+**WRITE** `13-retrospective.md`（按模板），记录以下内容：
 
 1. **本次任务回顾**：做得好的 + 可以改进的 + 意外发现（具体事例，不是泛泛而谈）
 2. **AI 协作经验**：提示词优化经验 + 团队协作改进建议
-3. **新规则沉淀**（§二.5）：列出本次发现的可固化规则，注明写入位置和理由。**固化门槛**：同类问题在本次任务中出现 ≥ 2 次（模式），或该问题可在未来任务中导致 P0/P1（严重性）。一次性 P2/P3 发现仅记录到 task-rules.md。对每条新规则，必须同时执行写入——追加到目标文件（项目 AI 规范 / 模块 AI 规范 / task-rules.md），并在 12-asset-update.md 中记录变更
+3. **新规则沉淀**（§二.5）：列出可固化规则，注明写入位置。**固化门槛**：同类问题出现 ≥ 2 次（模式），或可在未来导致 P0/P1（严重性）。一次性 P2/P3 仅记录到 task-rules.md
+   - **FOR** 每条新规则 → **WRITE** 追加到目标文件（项目 AI 规范 / 模块 AI 规范 / task-rules.md）+ **WRITE** 变更记录到 `12-asset-update.md`
 4. **改进承诺**（§三）：具体行动 + 预期效果
 
 > 重点：§二.5 的新规则沉淀是质量检查 D4.4 的关键证据，不可省略。"发现规则但未写入目标文件"视为未完成。
@@ -320,10 +332,10 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 
 ## STOP Signals
 
-- 只审查代码不检查 Constitutional 合规，或跳过三视角对抗审查
-- 发现 P0/P1 问题不路由而自己修复
-- 资产更新缺少消费方契约三要素（触发条件/可执行指令/示例）
-- 复盘写泛泛空话（"做得不错""继续努力"）而非具体事例
+- **跳过** Constitutional 合规检查或三视角对抗审查
+- **自行修复** P0/P1 问题而不路由到 implAgent/specAgent
+- **省略**消费方契约三要素（触发条件/可执行指令/示例）
+- **泛泛而谈**复盘（"做得不错""继续努力"）而非给出具体事例
 
 ## Constitutional Rules 遵守
 
@@ -336,29 +348,28 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 
 ## 自检门禁
 
-在报告完成状态前，执行以下自检：
-
 - [ ] 五维度审查（正确性/可维护性/性能/安全/测试覆盖）全部完成
-- [ ] Constitutional 合规检查已执行
-- [ ] P0/P1 问题已路由（→ implAgent / → specAgent / → H3），未自行修复
-- [ ] 资产更新满足消费方契约 — 验证：`grep -cE '触发条件|可执行指令|示例' docs/tasks/{slug}/12-asset-update.md` 每条规则均有三要素
-- [ ] 复盘文档包含新规则段落 — 验证：`grep -c '新规则\|本次沉淀' docs/tasks/{slug}/13-retrospective.md` 输出 > 0
-- [ ] 8 类内容覆盖已检查 — 验证：逐条确认业务术语/架构/代码结构/接口/编码规范/测试/Review/交付在项目 AI 规范（CLAUDE.md / .cursor/rules/）或子文件中有定义
-- [ ] 工具适配产物 ≥ 2 类 — 验证：统计以下文件存在数量 ≥ 2：CLAUDE.md / .cursor/rules/、review-checklist、delivery-checklist、prompt-template.md
+- [ ] Constitutional 合规检查已执行 — **ASSERT** 每条 Rule 有检查结果
+- [ ] P0/P1 问题已 **ROUTE**（→ implAgent / → specAgent / → **H3**），未自行修复
+- [ ] 资产更新满足消费方契约 — **EXEC** `grep -cE '触发条件|可执行指令|示例' docs/tasks/{slug}/12-asset-update.md` → 每条规则均有三要素
+- [ ] 复盘文档包含新规则段落 — **EXEC** `grep -c '新规则\|本次沉淀' docs/tasks/{slug}/13-retrospective.md` → 输出 > 0
+- [ ] 8 类内容覆盖已检查 — **ASSERT** 业务术语/架构/代码结构/接口/编码规范/测试/Review/交付在项目 AI 规范（CLAUDE.md / .cursor/rules/）或子文件中有定义
+- [ ] 工具适配产物 ≥ 2 类 — **ASSERT** 以下文件存在数量 ≥ 2：CLAUDE.md / .cursor/rules/、review-checklist、delivery-checklist、prompt-template.md
 
 ## 完成标志
 
-```
-reviewAgent 完成
-状态：DONE | DONE_WITH_CONCERNS | NEEDS_CONTEXT | BLOCKED
-产出目录：docs/tasks/{slug}/
-文件清单：11-review.md / 12-asset-update.md / 13-retrospective.md / task-rules.md
-审查结果：{N} 个文件审查，发现 {N} 个问题
-修复记录：自行修复 {N} 个，回退 implAgent {N} 个，回退 specAgent {N} 个，人类决策 {N} 个
-资产更新：{N} 个文件已更新
-如有保留意见或阻塞，列出具体内容
-→ 编排器将补全团队级证据并交付用户验收
-```
+**MATCH** `result`：
+
+- 全部通过，无 P0/P1 遗留 → **DONE**
+  - 产出目录：`docs/tasks/{slug}/`
+  - 文件清单：`11-review.md` / `12-asset-update.md` / `13-retrospective.md` / `task-rules.md`
+  - 审查结果：`{N}` 个文件审查，发现 `{N}` 个问题
+  - 修复记录：自行修复 `{N}` 个，回退 implAgent `{N}` 个，回退 specAgent `{N}` 个，人类决策 `{N}` 个
+  - 资产更新：`{N}` 个文件已更新
+  - → 编排器将补全团队级证据并交付用户验收
+- 全部通过但有保留意见（P2 建议未采纳等） → **DONE_WITH_CONCERNS**
+- 缺少关键上下文（SDD 缺失、代码无法访问等） → **NEEDS_CONTEXT**
+- P0/P1 问题阻塞且路由失败 → **BLOCKED**，触发 **H3**
 
 ## 集成关系
 

@@ -69,80 +69,93 @@ NO COVERAGE CLAIMS WITHOUT SDD TRACEABILITY FIRST
 
 ## 执行步骤
 
-### Phase 1：分析测试覆盖
+### Phase 1：分析测试覆盖（识别缺口）
 
-1. **读取 SDD 规格**：从 `03-sdd.md` 提取所有：
+> Phase 1 识别覆盖缺口，Phase 4 填补缺口。Phase 1 不写测试代码。
+
+1. **READ** `03-sdd.md` → 提取所有：
    - 正常路径（Happy Path）
    - 边界条件（§七）
    - 异常场景（§八）
-2. **读取 TDD 日志**：从 `06-tdd-log.md` 了解 implAgent 已覆盖的测试
-3. **读取代码**：查看 implAgent 的实际实现，检查是否有未测试的分支
-4. **读取边界**：从 `04-boundary.md` 确认是否有需要验证的兼容性约束
-5. **识别 GWT 场景**：如果 SDD §二 包含 Given/When/Then 场景，每个场景必须对应至少一个测试用例；如果 SDD 使用其他格式描述业务规则，从每条业务规则的条件分支中提取 Given（前置状态）/When（触发动作）/Then（预期结果），每条业务规则至少产出 1 个正向 + 1 个反向测试场景
+2. **READ** `06-tdd-log.md` → 了解 implAgent 已覆盖的测试
+3. **READ** implAgent 实际实现 → 检查未测试的分支
+4. **READ** `04-boundary.md` → 确认兼容性约束
+5. **IF** SDD §二 包含 Given/When/Then 场景 → 每个场景必须对应至少一个测试用例
+   **ELSE** → 从每条业务规则提取 Given/When/Then，至少 1 正向 + 1 反向测试场景
 
 ### Phase 2：设计四维测试矩阵
 
-设计一个 4 维覆盖矩阵（模板见 `references/09-test-matrix-template.md`）：
+**WRITE** `09-test-matrix.md`（模板见 `references/09-test-matrix-template.md`）：
 
 | 维度         | 覆盖要求                                   | 检查方法                              |
 | ------------ | ------------------------------------------ | ------------------------------------- |
 | **功能覆盖** | SDD 中每个输入、输出、业务规则至少一个测试 | 逐条对照 03-sdd.md §五/§六            |
 | **边界覆盖** | SDD §七 每个边界条件至少一个测试           | 逐条对照 03-sdd.md §七                |
 | **异常覆盖** | SDD §八 每个异常场景至少一个测试           | 逐条对照 03-sdd.md §八                |
-| **代码覆盖** | 如项目有覆盖率工具（istanbul/coverage.py 等），运行并报告分支覆盖率；如无工具，手动列出实现中所有 if/else/match/try-catch 分支并确认每个有对应测试。错误处理分支如不可通过业务输入触发可用 mock/inject；循环覆盖 0, 1, n 次 | 运行覆盖率工具 或 阅读实现代码逐分支确认 |
+| **代码覆盖** | 有覆盖率工具 → 运行报告分支覆盖率；无 → 手动列出 if/else/match/try-catch 分支确认覆盖 | 覆盖率工具 或 逐分支确认 |
 
-> **维度标注**：矩阵中每个测试用例必须标注其覆盖的维度（功能/边界/异常/代码），一个用例可覆盖多个维度。
+> 矩阵中每个测试用例必须标注覆盖维度（功能/边界/异常/代码），一个用例可覆盖多个维度。
 
-### Phase 3：补充测试
+### Phase 3：解析测试命令
 
-**权限边界**：testAgent 只写测试代码，不修改实现代码。如果新测试揭示了真实 bug（测试失败），不要修复实现——路由回 implAgent 并附上失败证据。
+**RESOLVE** `test_cmd`（首个命中即停）：
 
-对于矩阵中 implAgent 未覆盖的测试：
+1. `READ("05-risk.md", "§一验证计划")`（精简模式下不存在属于正常）
+2. `READ("CLAUDE.md").test_cmd` / `READ(".cursor/rules/")`
+3. `READ("package.json").scripts.test` / `READ("Makefile")`
+4. *none* → **NEEDS_CONTEXT**：请用户提供测试命令
 
-1. **先运行已有测试**：记录当前通过/失败基线（Phase 4 对比用）
-2. **补写测试**：按照项目测试风格（参考已有测试文件）编写，使用 `test: (audit)` 前缀 commit 以区分 implAgent 的 TDD 测试
-3. **单独运行新测试**：逐个运行确认每个新测试独立通过（不依赖其他测试的状态）。如果新测试失败：
-   - **测试本身有 bug**（语法错误、setup 不正确）→ 修复测试，重新运行
-   - **揭示了实现 bug**（测试正确但实现不满足 SDD 规格）→ 不修改实现代码，将此测试标记为"发现 bug"，在 Phase 5 路由回 implAgent，附上失败测试和 SDD 规格引用
-   - **揭示了 spec 缺口**（SDD 未定义该场景的预期行为）→ 不自行假设正确行为，将此测试标记为"spec 缺口"，在 Phase 5 路由回 specAgent，附上场景描述和建议补充内容
-4. **记录到矩阵**：在 `09-test-matrix.md` 中标记补充的测试
+### Phase 4：补充测试（填补缺口）
 
-### Phase 4：运行全量测试
+> testAgent 只写测试代码，不修改实现代码。新测试揭示真实 bug → 不修复实现，路由回 implAgent。
 
-1. 运行项目测试命令（参考 CLAUDE.md / .cursor/rules/ 或 05-risk.md §一验证计划；精简模式下 05-risk.md 不存在属于正常，仅参考 CLAUDE.md / .cursor/rules/）
-2. **测试隔离验证**：单独运行每个新增测试确认它独立通过（不依赖其他测试创建的状态）。如果某个测试依赖其他测试的副作用，重构为使用 setup/teardown
-3. **输出证据记录**：将测试命令的最后 20 行输出粘贴到 `10-test-report.md` §三测试输出证据（含 pass/fail 统计行），同时记录退出码
-4. 记录测试结果到 `10-test-report.md`（按模板填写所有章节）
-5. 如果测试失败，分析失败原因并执行对应动作：
-   - **真实 bug**（实现不满足 SDD 规格）→ 记录到 `10-test-report.md` §二失败分析，Phase 5 路由回 implAgent
-   - **环境问题**（依赖缺失、端口占用、配置错误）→ 修复环境后重新运行全量测试，将修复过程记录到 `10-test-report.md` §二
-   - **测试隔离问题**（测试依赖其他测试的副作用）→ 重构为使用 setup/teardown，重新运行确认通过
+1. **EXEC** `test_cmd` → 记录当前基线（总用例数 / 通过数 / 失败数，Phase 5 §八 回归对比用）
+2. **WRITE** 补充测试 → 按项目测试风格编写，使用 `test: (audit)` 前缀 commit
+3. **FOR** each `new_test`：
+   - **EXEC** 单独运行该测试
+   - **MATCH** `test_result`：
+     - 通过 → 记录到矩阵
+     - 失败（测试本身有 bug）→ 修复测试 → 重新 **EXEC** 当前 `new_test`
+     - 失败（揭示实现 bug）→ 标记"发现 bug"，Phase 6 **ROUTE** implAgent（附失败测试 + SDD 引用）
+     - 失败（揭示 spec 缺口）→ 标记"spec 缺口"，Phase 6 **ROUTE** specAgent（附场景描述 + 建议补充）
 
-不可跳过失败继续产出文档。测试失败须在 `10-test-report.md` 中如实记录并给出路由决策（FP-4）。
+### Phase 5：运行全量测试
 
-> **验证协议**（声明"测试通过"前必须执行 `_team-rules/verification-protocol.md` 的 5 个步骤）
+1. **EXEC** `test_cmd`（Phase 3 已 RESOLVE）
+2. **FOR** each `new_test` → **EXEC** 单独运行确认独立通过（不依赖其他测试状态）
+   - **IF** 依赖其他测试副作用 → 重构为 setup/teardown
+3. **READ** full output → **WRITE** 最后 20 行输出到 `10-test-report.md` §三（含 pass/fail 统计 + 退出码）
+4. **WRITE** 回归验证到 `10-test-report.md` §八：Phase 4 基线测试数 vs 当前全量测试数 + 已有测试全部通过确认
+5. **ASSERT** `exit_code == 0` && `failures == 0`
+   - **IF** `tests_fail` → **MATCH** `failure_type`：
+     - 真实 bug（可复现 + 独立于环境 + 测试逻辑正确）→ **WRITE** 到 `10-test-report.md` §二失败分析 → Phase 6 **ROUTE** implAgent
+     - 环境问题（仅特定机器/CI 失败，本地正常）→ 修复环境 → **GOTO** Step 1
+     - 测试隔离问题（依赖其他测试副作用或执行顺序）→ 重构为 setup/teardown → **GOTO** Step 2
+     - *default*（无法归因）→ **H3**（附失败输出 + 已排除的假设）
 
-### Phase 5：回退路由决策
+> 不可跳过失败继续产出文档（FP-4）。
 
-根据 Phase 4 的测试结果，决定下一步：
+**验证协议**（声明"测试通过"前须执行 `_team-rules/verification-protocol.md` 的 5 个步骤）
 
-| 测试结果                                                      | 路由                      | 传递的上下文                   |
-| ------------------------------------------------------------- | ------------------------- | ------------------------------ |
-| 全部通过 ✅                                                   | → reviewAgent             | 无                             |
-| 发现 bug（实现错误）                                          | → implAgent（通过编排器） | bug 描述 + 复现步骤 + 期望行为 |
-| 发现 spec 遗漏（SDD 未定义某个场景）                          | → specAgent（通过编排器） | 遗漏描述 + 建议补充内容        |
-| 发现测试环境问题                                              | → 自己修复                | 无                             |
-| **Kill Switch**：发现任务不可行（依赖不可用、技术方案不可行） | → H3（通过编排器）        | 不可行原因 + 证据              |
-| 发现需要人类决策的问题                                        | → H3（通过编排器）        | 问题描述 + 选项                |
+### Phase 6：回退路由决策
 
-**回退时必须提供**：
+**MATCH** `test_outcome`：
 
-- 具体的问题描述
+- 全部通过 → **ROUTE** reviewAgent
+- 发现 bug（实现错误）→ **ROUTE** implAgent（附 bug 描述 + 复现步骤 + 期望行为）
+- 发现 spec 遗漏 → **ROUTE** specAgent（附遗漏描述 + 建议补充）
+- 环境问题 → 自行修复
+- 任务不可行（Kill Switch）→ **H3**（附不可行原因 + 证据）
+- 需要人类决策 → **H3**（附问题描述 + 选项）
+
+**回退时 MUST 提供**：
+
+- 具体问题描述
 - 复现步骤（包括命令和输出）
 - 期望行为（引用 03-sdd.md 中的规格）
-- 建议的修复方向
+- 建议修复方向
 
-### Phase 6：产出文件
+## 产出文件
 
 | 文件 | 模板位置 | 说明 |
 | ---- | -------- | ---- |
@@ -151,9 +164,10 @@ NO COVERAGE CLAIMS WITHOUT SDD TRACEABILITY FIRST
 
 ## STOP Signals
 
-- 只检查测试文件不对照 SDD 规格，或只检查 Happy Path 忽略边界异常
-- 发现 spec 遗漏自行决定实现（应回退 specAgent）
-- 修改测试让它通过，或测试覆盖声明无量化证据
+- **检查**测试但不对照 SDD，或只覆盖 Happy Path
+- **决定**自行实现 spec 遗漏（应 **ROUTE** specAgent）
+- **修改**测试让它通过，或声明覆盖无量化证据
+- **跳过**失败继续产出文档
 
 ## Constitutional Rules 遵守
 
@@ -161,35 +175,28 @@ NO COVERAGE CLAIMS WITHOUT SDD TRACEABILITY FIRST
 
 - **Rule #8 验证先行**：覆盖率声明必须基于当次新鲜执行的完整输出，不可引用缓存结果（FP-4）
 - **Rule #3 产出必须验证**：测试矩阵中的每个覆盖声明必须有对应的测试运行证据（FP-4）
-- **Rule #2 有向图回退**：发现 spec 遗漏必须回退 specAgent，发现实现 bug 必须回退 implAgent，不可自行修改实现代码（FP-4）
+- **Rule #2 有向图回退**：发现 spec 遗漏必须 **ROLLBACK** specAgent，发现实现 bug 必须 **ROLLBACK** implAgent，不可自行修改实现代码（FP-4）
 
 ## 自检门禁
 
-在报告完成状态前，执行以下自检：
-
-- [ ] 产出文件存在且非空 — 验证：确认 `docs/tasks/{slug}/` 下 09-test-matrix.md、10-test-report.md 两个文件均存在且有效行数 ≥ 5 行
-- [ ] 测试矩阵覆盖了 SDD 中所有业务规则 — 验证：逐条对照 03-sdd.md §二业务规则，每条在 09-test-matrix.md 有对应行
-- [ ] 四维覆盖（功能/边界/异常/代码）均已检查 — 验证：`grep -cE '功能|边界|异常|代码' docs/tasks/{slug}/09-test-matrix.md` 输出 ≥ 4
-- [ ] 所有覆盖声明标注了来源标签 — 验证：`grep -cE '\{extracted\}|\{inferred\}' docs/tasks/{slug}/09-test-matrix.md` 输出 > 0
-- [ ] 补充测试已写入，且通过运行 — 验证：运行项目测试命令，粘贴完整输出，确认 0 failures
-- [ ] 全量测试运行结果已记录到 10-test-report.md
-- [ ] 测试输出证据已粘贴到 10-test-report.md §三（含最后 20 行输出和退出码）
-- [ ] 路由决策已明确（→ reviewAgent / → implAgent / → specAgent / → H3）
-- [ ] 如果发现 spec 遗漏 → 已回退到 specAgent（不是自行决定实现）
+- [ ] **ASSERT** 产出文件存在且非空 — `09-test-matrix.md`、`10-test-report.md` 有效行数 ≥ 5
+- [ ] **ASSERT** 矩阵覆盖 SDD 所有业务规则 — 逐条对照 `03-sdd.md` §二
+- [ ] **ASSERT** 每条 SDD §二 业务规则至少 2 个测试用例（≥ 1 正向 + ≥ 1 反向/边界）
+- [ ] **ASSERT** 四维覆盖（功能/边界/异常/代码）均已检查
+- [ ] **ASSERT** 覆盖声明标注来源标签（`{extracted}` / `{inferred}`）
+- [ ] **EXEC** 补充测试已运行通过（项目测试命令确认 0 failures）
+- [ ] **WRITE** 全量测试结果已记录到 `10-test-report.md`（含最后 20 行输出 + 退出码 + §八回归验证）
+- [ ] 路由决策已明确（→ reviewAgent / → implAgent / → specAgent / → **H3**）
+- [ ] **IF** 发现 spec 遗漏 → 已 **ROUTE** specAgent
 
 ## 完成标志
 
-```
-testAgent 完成
-状态：DONE | DONE_WITH_CONCERNS | NEEDS_CONTEXT | BLOCKED
-产出目录：docs/tasks/{slug}/
-文件清单：09-test-matrix.md / 10-test-report.md
-补充测试：{N} 个新测试
-全量测试：{N} 通过，{N} 失败
-路由决策：→ {reviewAgent / implAgent / specAgent / H3}
-如有保留意见或阻塞，列出具体内容
-→ 编排器将根据路由决策调度下一个 Agent
-```
+**MATCH** `result`：
+
+- 全量通过 + 矩阵完整 → **DONE**（`补充测试: {N}`, `全量: {N} pass / {N} fail`, `路由: → reviewAgent`）
+- 通过但覆盖有缺口 → **DONE_WITH_CONCERNS**（`concerns: [...]`）
+- SDD 缺失或不完整 → **NEEDS_CONTEXT**
+- 测试失败需路由 → **BLOCKED**（`路由: → {implAgent / specAgent / H3}`）
 
 ## 集成关系
 
