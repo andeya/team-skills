@@ -8,6 +8,7 @@ const __dirname = dirname(__filename);
 export const PACKAGE_ROOT = join(__dirname, '..', '..');
 export const DEFAULT_SKILLS_TARGET = join(homedir(), '.agents', 'skills');
 export const DEFAULT_COMMANDS_TARGET = join(homedir(), '.claude', 'commands');
+export const DEFAULT_CLAUDE_SKILLS_TARGET = join(homedir(), '.claude', 'skills');
 export const CURSOR_HOOKS_DIR = join(homedir(), '.cursor', 'hooks');
 export const CLAUDE_HOOKS_DIR = join(homedir(), '.claude', 'hooks');
 export const SKILLS_DIR = 'skills';

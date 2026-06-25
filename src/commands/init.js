@@ -1,7 +1,7 @@
 import { join, resolve } from 'node:path';
 import { copyFileSync as fsCopyFile } from 'node:fs';
 import { PACKAGE_ROOT } from '../lib/constants.js';
-import { discoverSkills, discoverSharedRules, discoverCommands } from '../lib/inventory.js';
+import { discoverSkills, discoverSharedRules } from '../lib/inventory.js';
 import { copyRecursive, ensureDir } from '../lib/fs-utils.js';
 import { detectIDE } from '../lib/detect-ide.js';
 import * as log from '../lib/logger.js';
@@ -55,27 +55,24 @@ function runInit(dir, opts) {
     }
   }
 
-  // Claude Code: skills as slash commands + CLI helpers → .claude/commands/
+  // Claude Code: skills → .claude/skills/ (same structure as Cursor)
   if (ides.includes('claude')) {
-    const cmdsDst = join(dir, '.claude', 'commands');
-    log.heading(`复制 Skills → ${cmdsDst}`);
+    const skillsDst = join(dir, '.claude', 'skills');
+    log.heading(`复制 Skills → ${skillsDst}`);
 
-    if (!dryRun) ensureDir(cmdsDst);
-
-    // Each skill's SKILL.md becomes a slash command
+    if (!dryRun) ensureDir(skillsDst);
     for (const skill of skills) {
-      const src = join(skill.path, 'SKILL.md');
-      const dest = join(cmdsDst, `${skill.name}.md`);
-      if (!dryRun) fsCopyFile(src, dest);
-      log.success(`${tag}/${skill.name}`);
+      const dest = join(skillsDst, skill.name);
+      if (!dryRun) copyRecursive(skill.path, dest);
+      log.success(`${tag}Skill: ${skill.name}`);
       count++;
     }
 
-    // CLI helper commands
-    const cmds = discoverCommands();
-    for (const c of cmds) {
-      if (!dryRun) fsCopyFile(c.path, join(cmdsDst, c.filename));
-      log.success(`${tag}Command: ${c.filename}`);
+    const rulesDst = join(skillsDst, '_team-rules');
+    if (!dryRun) ensureDir(rulesDst);
+    for (const r of rules) {
+      if (!dryRun) fsCopyFile(r.path, join(rulesDst, r.name));
+      log.success(`${tag}Rule: ${r.name}`);
       count++;
     }
   }

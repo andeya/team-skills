@@ -1,6 +1,7 @@
 import { join } from 'node:path';
 import {
   PACKAGE_ROOT, DEFAULT_SKILLS_TARGET, DEFAULT_COMMANDS_TARGET,
+  DEFAULT_CLAUDE_SKILLS_TARGET,
   CURSOR_HOOKS_DIR, CLAUDE_HOOKS_DIR,
 } from '../lib/constants.js';
 import { discoverSkills, discoverSharedRules, discoverCommands, discoverHooks } from '../lib/inventory.js';
@@ -44,12 +45,25 @@ function runUninstall(target, opts) {
     if (remove(join(target, skill.name), skill.path, `Skill: ${skill.name}`, dryRun)) removed++;
   }
 
-  // Claude Code skill slash commands → ~/.claude/commands/
-  log.heading('移除 Claude Code Skill 命令');
+  // Claude Code Skills → ~/.claude/skills/
+  log.heading('移除 Claude Code Skills');
+  const claudeSkillsTarget = DEFAULT_CLAUDE_SKILLS_TARGET;
   for (const skill of skills) {
-    const skillMd = join(skill.path, 'SKILL.md');
-    const dest = join(DEFAULT_COMMANDS_TARGET, `${skill.name}.md`);
-    if (remove(dest, skillMd, `/${skill.name}`, dryRun)) removed++;
+    if (remove(join(claudeSkillsTarget, skill.name), skill.path, `Claude Skill: ${skill.name}`, dryRun)) removed++;
+  }
+
+  // Claude Code shared rules → ~/.claude/skills/_team-rules/
+  log.heading('移除 Claude Code 共享规则');
+  for (const rule of discoverSharedRules()) {
+    if (remove(join(claudeSkillsTarget, '_team-rules', rule.name), rule.path, `Claude Rule: ${rule.name}`, dryRun)) removed++;
+  }
+  if (!dryRun) rmdirIfEmpty(join(claudeSkillsTarget, '_team-rules'));
+
+  // Legacy: clean old ~/.claude/commands/ skill symlinks (backward compat)
+  for (const skill of skills) {
+    const legacyDest = join(DEFAULT_COMMANDS_TARGET, `${skill.name}.md`);
+    const legacySource = join(skill.path, 'SKILL.md');
+    if (remove(legacyDest, legacySource, `旧路径 ${skill.name}.md`, dryRun)) removed++;
   }
 
   // Shared rules
@@ -69,9 +83,16 @@ function runUninstall(target, opts) {
         if (!dryRun) rmdirIfEmpty(join(target, cmd.name));
       }
 
-      // Claude Code command
-      const cmdDest = join(DEFAULT_COMMANDS_TARGET, cmd.filename);
-      if (remove(cmdDest, cmd.path, `Claude Command: ${cmd.filename}`, dryRun)) removed++;
+      // Claude Code Skill directory
+      const claudeSkillDest = join(claudeSkillsTarget, cmd.name, 'SKILL.md');
+      if (remove(claudeSkillDest, cmd.path, `Claude Skill: ${cmd.name}`, dryRun)) {
+        removed++;
+        if (!dryRun) rmdirIfEmpty(join(claudeSkillsTarget, cmd.name));
+      }
+
+      // Legacy: old ~/.claude/commands/ path
+      const legacyCmdDest = join(DEFAULT_COMMANDS_TARGET, cmd.filename);
+      if (remove(legacyCmdDest, cmd.path, `旧路径 ${cmd.filename}`, dryRun)) removed++;
     }
   }
 

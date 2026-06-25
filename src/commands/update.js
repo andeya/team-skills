@@ -2,7 +2,7 @@ import { join, resolve } from 'node:path';
 import { existsSync, copyFileSync as fsCopyFile, rmSync, readdirSync, readFileSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 import { PACKAGE_ROOT } from '../lib/constants.js';
-import { discoverSkills, discoverSharedRules, discoverCommands } from '../lib/inventory.js';
+import { discoverSkills, discoverSharedRules } from '../lib/inventory.js';
 import { copyRecursive, ensureDir } from '../lib/fs-utils.js';
 import { detectIDE } from '../lib/detect-ide.js';
 import * as log from '../lib/logger.js';
@@ -59,21 +59,6 @@ function cleanStaleSkills(targetDir, currentNames, dryRun) {
   }
 }
 
-function cleanStaleCommands(cmdDir, currentNames, dryRun) {
-  if (!existsSync(cmdDir)) return;
-  const existing = readdirSync(cmdDir).filter(
-    name => name.startsWith('team-') && name.endsWith('.md'),
-  );
-  for (const name of existing) {
-    const skillName = name.slice(0, -3);
-    if (!currentNames.has(skillName)) {
-      const tag = dryRun ? '[dry-run] ' : '';
-      if (!dryRun) rmSync(join(cmdDir, name));
-      log.warn(`${tag}移除旧命令: ${name}`);
-    }
-  }
-}
-
 function runUpdate(dir, opts) {
   dir = resolve(dir);
   const { ide, withScore, skipSelf, dryRun } = opts;
@@ -97,9 +82,7 @@ function runUpdate(dir, opts) {
 
   const skills = discoverSkills(PACKAGE_ROOT, { exclude });
   const rules = discoverSharedRules();
-  const cmds = discoverCommands();
   const currentSkillNames = new Set(skills.map(s => s.name));
-  const currentCmdNames = new Set(cmds.map(c => c.name));
 
   // Cursor: skills → .cursor/skills/
   if (ides.includes('cursor')) {
@@ -128,28 +111,29 @@ function runUpdate(dir, opts) {
     }
   }
 
-  // Claude Code: skills as commands + CLI helpers → .claude/commands/
+  // Claude Code: skills → .claude/skills/ (same structure as Cursor)
   if (ides.includes('claude')) {
-    const cmdsDst = join(dir, '.claude', 'commands');
-    log.heading(`更新 Commands → ${cmdsDst}`);
+    const skillsDst = join(dir, '.claude', 'skills');
+    log.heading(`更新 Skills → ${skillsDst}`);
 
-    cleanStaleCommands(cmdsDst, new Set([...currentSkillNames, ...currentCmdNames]), dryRun);
+    cleanStaleSkills(skillsDst, currentSkillNames, dryRun);
 
-    if (!dryRun) ensureDir(cmdsDst);
-
-    // Each skill's SKILL.md becomes a slash command
+    if (!dryRun) ensureDir(skillsDst);
     for (const skill of skills) {
-      const src = join(skill.path, 'SKILL.md');
-      const dest = join(cmdsDst, `${skill.name}.md`);
-      if (!dryRun) fsCopyFile(src, dest);
-      log.success(`${tag}/${skill.name}`);
+      const dest = join(skillsDst, skill.name);
+      if (!dryRun) {
+        if (existsSync(dest)) rmSync(dest, { recursive: true });
+        copyRecursive(skill.path, dest);
+      }
+      log.success(`${tag}Skill: ${skill.name}`);
       count++;
     }
 
-    // CLI helper commands
-    for (const c of cmds) {
-      if (!dryRun) fsCopyFile(c.path, join(cmdsDst, c.filename));
-      log.success(`${tag}Command: ${c.filename}`);
+    const rulesDst = join(skillsDst, '_team-rules');
+    if (!dryRun) ensureDir(rulesDst);
+    for (const r of rules) {
+      if (!dryRun) fsCopyFile(r.path, join(rulesDst, r.name));
+      log.success(`${tag}Rule: ${r.name}`);
       count++;
     }
   }

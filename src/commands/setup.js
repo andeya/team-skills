@@ -1,6 +1,6 @@
 import { join } from 'node:path';
 import {
-  PACKAGE_ROOT, DEFAULT_SKILLS_TARGET, DEFAULT_COMMANDS_TARGET,
+  PACKAGE_ROOT, DEFAULT_SKILLS_TARGET, DEFAULT_CLAUDE_SKILLS_TARGET,
   CURSOR_HOOKS_DIR, CLAUDE_HOOKS_DIR,
 } from '../lib/constants.js';
 import { discoverSkills, discoverSharedRules, discoverCommands, discoverHooks } from '../lib/inventory.js';
@@ -47,18 +47,29 @@ function runSetup(target, opts) {
     if (result === 'created' || result === 'dry-run') count++;
   }
 
-  // Skills → ~/.claude/commands/ as slash commands (Claude Code discovers from here)
-  log.heading('安装 Skills → Claude Code 斜杠命令');
-  if (!dryRun) ensureDir(DEFAULT_COMMANDS_TARGET);
+  // Skills → ~/.claude/skills/ (Claude Code auto-discovers from here)
+  log.heading('安装 Skills → Claude Code');
+  const claudeSkillsTarget = DEFAULT_CLAUDE_SKILLS_TARGET;
+  if (!dryRun) ensureDir(claudeSkillsTarget);
   for (const skill of skills) {
-    const skillMd = join(skill.path, 'SKILL.md');
-    const dest = join(DEFAULT_COMMANDS_TARGET, `${skill.name}.md`);
-    const result = createSymlinkSafe(skillMd, dest, { force, dryRun });
-    logResult(`${tag}/${skill.name}`, result, dest);
+    const dest = join(claudeSkillsTarget, skill.name);
+    const result = createSymlinkSafe(skill.path, dest, { force, dryRun });
+    logResult(`${tag}Skill: ${skill.name}`, result, dest);
     if (result === 'created' || result === 'dry-run') count++;
   }
 
-  // CLI helper commands → both IDE formats
+  // Shared rules → ~/.claude/skills/_team-rules/
+  log.heading('安装 Claude Code 共享规则');
+  const claudeRulesTarget = join(claudeSkillsTarget, '_team-rules');
+  if (!dryRun) ensureDir(claudeRulesTarget);
+  for (const rule of rules) {
+    const dest = join(claudeRulesTarget, rule.name);
+    const result = createSymlinkSafe(rule.path, dest, { force, dryRun });
+    logResult(`${tag}Rule: ${rule.name}`, result, dest);
+    if (result === 'created' || result === 'dry-run') count++;
+  }
+
+  // CLI helper commands → ~/.claude/skills/ as Skill directories
   log.heading('安装 CLI 辅助命令');
   const cmds = discoverCommands();
   for (const cmd of cmds) {
@@ -74,11 +85,17 @@ function runSetup(target, opts) {
       if (result === 'created' || result === 'dry-run') count++;
     }
 
-    // As Claude Code slash command
-    const cmdDest = join(DEFAULT_COMMANDS_TARGET, cmd.filename);
-    const result = createSymlinkSafe(cmd.path, cmdDest, { force, dryRun });
-    logResult(`${tag}Claude Command: ${cmd.filename}`, result, cmdDest);
-    if (result === 'created' || result === 'dry-run') count++;
+    // As Claude Code Skill directory
+    const claudeSkillDest = join(claudeSkillsTarget, cmd.name);
+    if (isSymlink(claudeSkillDest)) {
+      log.skip(`${cmd.name} 跳过：已存在同名 Claude Skill`);
+    } else {
+      if (!dryRun) ensureDir(claudeSkillDest);
+      const dest = join(claudeSkillDest, 'SKILL.md');
+      const result = createSymlinkSafe(cmd.path, dest, { force, dryRun });
+      logResult(`${tag}Claude Skill: ${cmd.name}`, result, dest);
+      if (result === 'created' || result === 'dry-run') count++;
+    }
   }
 
   if (hooks !== false) {
@@ -113,11 +130,12 @@ function runSetup(target, opts) {
     };
     for (const skill of skills) {
       verify(`Cursor Skill: ${skill.name}`, join(target, skill.name));
-      verify(`Claude /${skill.name}`, join(DEFAULT_COMMANDS_TARGET, `${skill.name}.md`));
+      verify(`Claude Skill: ${skill.name}`, join(claudeSkillsTarget, skill.name));
     }
     for (const rule of rules) verify(`Rule: ${rule.name}`, join(rulesTarget, rule.name));
     for (const cmd of cmds) {
-      verify(`Command: ${cmd.filename}`, join(DEFAULT_COMMANDS_TARGET, cmd.filename));
+      verify(`Command (Cursor): ${cmd.name}`, join(target, cmd.name, 'SKILL.md'));
+      verify(`Command (Claude): ${cmd.name}`, join(claudeSkillsTarget, cmd.name, 'SKILL.md'));
     }
     if (errors > 0) {
       log.error(`有 ${errors} 个组件安装异常，请检查。`);

@@ -2,6 +2,7 @@ import { join } from 'node:path';
 import { existsSync, readlinkSync } from 'node:fs';
 import {
   DEFAULT_SKILLS_TARGET, DEFAULT_COMMANDS_TARGET,
+  DEFAULT_CLAUDE_SKILLS_TARGET,
   CURSOR_HOOKS_DIR, CLAUDE_HOOKS_DIR,
 } from '../lib/constants.js';
 import { discoverSkills, discoverSharedRules, discoverCommands, discoverHooks } from '../lib/inventory.js';
@@ -42,24 +43,42 @@ function runList(opts) {
     });
   }
 
-  // Skill slash commands in Claude Code
+  // Claude Code Skills
+  const claudeSkillsTarget = DEFAULT_CLAUDE_SKILLS_TARGET;
   for (const skill of skills) {
-    const skillMd = join(skill.path, 'SKILL.md');
-    const dest = join(DEFAULT_COMMANDS_TARGET, `${skill.name}.md`);
+    const dest = join(claudeSkillsTarget, skill.name);
     results.skillCommands.push({
       name: skill.name,
-      status: getStatus(dest, skillMd),
+      status: getStatus(dest, skill.path),
       path: dest,
+    });
+  }
+
+  // Claude Code shared rules
+  for (const rule of discoverSharedRules()) {
+    const claudeRuleDest = join(claudeSkillsTarget, '_team-rules', rule.name);
+    results.rules.push({
+      name: `Claude/${rule.name}`,
+      status: getStatus(claudeRuleDest, rule.path),
+      path: claudeRuleDest,
     });
   }
 
   // CLI helper commands
   for (const cmd of discoverCommands()) {
-    const dest = join(DEFAULT_COMMANDS_TARGET, cmd.filename);
+    // Cursor
+    const cursorDest = join(target, cmd.name, 'SKILL.md');
     results.commands.push({
-      name: cmd.name,
-      status: getStatus(dest, cmd.path),
-      path: dest,
+      name: `Cursor/${cmd.name}`,
+      status: getStatus(cursorDest, cmd.path),
+      path: cursorDest,
+    });
+    // Claude Code
+    const claudeDest = join(claudeSkillsTarget, cmd.name, 'SKILL.md');
+    results.commands.push({
+      name: `Claude/${cmd.name}`,
+      status: getStatus(claudeDest, cmd.path),
+      path: claudeDest,
     });
   }
 
@@ -91,7 +110,7 @@ function runList(opts) {
   log.heading('共享规则');
   printTable(results.rules);
 
-  log.heading('Claude Code Skill 斜杠命令');
+  log.heading('Claude Code Skills');
   printTable(results.skillCommands);
 
   log.heading('CLI 辅助命令');
