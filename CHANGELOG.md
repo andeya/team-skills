@@ -13,6 +13,11 @@
 
 - `team-refine` 每轮新增 Step 4：team-score 满分校验（硬门槛覆盖 + 评分维度覆盖 + 缺口修复），收敛条件同步强化
 - 6 个 SKILL.md 质量修复：移除 bare `>` 空行（brainstorm）、`*none*` → `*default*` 兜底修正（review/security）、GATE 自检补充对抗性自问（brainstorm/orchestrator/score）
+- CLI 模块化重构：提取 `installers.js` 共享模块（5 个函数），命令文件总行数 -278 行
+
+### 修复
+
+- 项目路径与全局路径重叠时保留 symlinks，跳过文件复制（避免 `update`/`init` 覆盖全局 symlinks）
 
 ## [1.3.4] - 2026-06-26
 
