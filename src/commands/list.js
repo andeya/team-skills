@@ -1,11 +1,11 @@
 import { join } from 'node:path';
 import { existsSync, readlinkSync } from 'node:fs';
 import {
-  DEFAULT_SKILLS_TARGET, DEFAULT_COMMANDS_TARGET,
+  DEFAULT_SKILLS_TARGET,
   DEFAULT_CLAUDE_SKILLS_TARGET,
   CURSOR_HOOKS_DIR, CLAUDE_HOOKS_DIR,
 } from '../lib/constants.js';
-import { discoverSkills, discoverSharedRules, discoverCommands, discoverHooks } from '../lib/inventory.js';
+import { discoverSkills, discoverSharedRules, discoverHooks } from '../lib/inventory.js';
 import { isSymlink } from '../lib/fs-utils.js';
 import * as log from '../lib/logger.js';
 
@@ -20,7 +20,7 @@ export function registerList(program) {
 
 function runList(opts) {
   const { target, json } = opts;
-  const results = { skills: [], rules: [], skillCommands: [], commands: [], hooks: [] };
+  const results = { skills: [], rules: [], skillCommands: [], hooks: [] };
 
   // Check symlink-based install
   const skills = discoverSkills();
@@ -64,24 +64,6 @@ function runList(opts) {
     });
   }
 
-  // CLI helper commands
-  for (const cmd of discoverCommands()) {
-    // Cursor
-    const cursorDest = join(target, cmd.name, 'SKILL.md');
-    results.commands.push({
-      name: `Cursor/${cmd.name}`,
-      status: getStatus(cursorDest, cmd.path),
-      path: cursorDest,
-    });
-    // Claude Code
-    const claudeDest = join(claudeSkillsTarget, cmd.name, 'SKILL.md');
-    results.commands.push({
-      name: `Claude/${cmd.name}`,
-      status: getStatus(claudeDest, cmd.path),
-      path: claudeDest,
-    });
-  }
-
   // Hooks
   for (const hook of discoverHooks()) {
     const dirs = hook.name === 'hooks.json'
@@ -112,9 +94,6 @@ function runList(opts) {
 
   log.heading('Claude Code Skills');
   printTable(results.skillCommands);
-
-  log.heading('CLI 辅助命令');
-  printTable(results.commands);
 
   log.heading('Hooks');
   printTable(results.hooks);

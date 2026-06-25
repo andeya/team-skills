@@ -1,6 +1,6 @@
 import { readdirSync, statSync, existsSync } from 'node:fs';
-import { join, basename } from 'node:path';
-import { PACKAGE_ROOT, SKILLS_DIR, HOOKS_DIR, COMMANDS_DIR } from './constants.js';
+import { join } from 'node:path';
+import { PACKAGE_ROOT, SKILLS_DIR, HOOKS_DIR } from './constants.js';
 
 export function discoverSkills(root = PACKAGE_ROOT, { exclude = [] } = {}) {
   const skillsDir = join(root, SKILLS_DIR);
@@ -29,19 +29,6 @@ export function discoverSharedRules(root = PACKAGE_ROOT) {
     .map(name => ({
       name,
       path: join(rulesDir, name),
-    }));
-}
-
-export function discoverCommands(root = PACKAGE_ROOT) {
-  const cmdDir = join(root, COMMANDS_DIR);
-  if (!existsSync(cmdDir)) return [];
-
-  return readdirSync(cmdDir)
-    .filter(name => name.endsWith('.md'))
-    .map(name => ({
-      name: basename(name, '.md'),
-      filename: name,
-      path: join(cmdDir, name),
     }));
 }
 

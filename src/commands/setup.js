@@ -3,7 +3,7 @@ import {
   PACKAGE_ROOT, DEFAULT_SKILLS_TARGET, DEFAULT_CLAUDE_SKILLS_TARGET,
   CURSOR_HOOKS_DIR, CLAUDE_HOOKS_DIR,
 } from '../lib/constants.js';
-import { discoverSkills, discoverSharedRules, discoverCommands, discoverHooks } from '../lib/inventory.js';
+import { discoverSkills, discoverSharedRules, discoverHooks } from '../lib/inventory.js';
 import { createSymlinkSafe, ensureDir, isSymlink } from '../lib/fs-utils.js';
 import * as log from '../lib/logger.js';
 
@@ -69,35 +69,6 @@ function runSetup(target, opts) {
     if (result === 'created' || result === 'dry-run') count++;
   }
 
-  // CLI helper commands → ~/.claude/skills/ as Skill directories
-  log.heading('安装 CLI 辅助命令');
-  const cmds = discoverCommands();
-  for (const cmd of cmds) {
-    // As Cursor Skill directory
-    const skillDest = join(target, cmd.name);
-    if (isSymlink(skillDest)) {
-      log.skip(`${cmd.name} 跳过：已存在同名 Skill`);
-    } else {
-      if (!dryRun) ensureDir(skillDest);
-      const dest = join(skillDest, 'SKILL.md');
-      const result = createSymlinkSafe(cmd.path, dest, { force, dryRun });
-      logResult(`${tag}Cursor Skill: ${cmd.name}`, result, dest);
-      if (result === 'created' || result === 'dry-run') count++;
-    }
-
-    // As Claude Code Skill directory
-    const claudeSkillDest = join(claudeSkillsTarget, cmd.name);
-    if (isSymlink(claudeSkillDest)) {
-      log.skip(`${cmd.name} 跳过：已存在同名 Claude Skill`);
-    } else {
-      if (!dryRun) ensureDir(claudeSkillDest);
-      const dest = join(claudeSkillDest, 'SKILL.md');
-      const result = createSymlinkSafe(cmd.path, dest, { force, dryRun });
-      logResult(`${tag}Claude Skill: ${cmd.name}`, result, dest);
-      if (result === 'created' || result === 'dry-run') count++;
-    }
-  }
-
   if (hooks !== false) {
     log.heading('安装 Hooks');
     const hookFiles = discoverHooks();
@@ -133,10 +104,6 @@ function runSetup(target, opts) {
       verify(`Claude Skill: ${skill.name}`, join(claudeSkillsTarget, skill.name));
     }
     for (const rule of rules) verify(`Rule: ${rule.name}`, join(rulesTarget, rule.name));
-    for (const cmd of cmds) {
-      verify(`Command (Cursor): ${cmd.name}`, join(target, cmd.name, 'SKILL.md'));
-      verify(`Command (Claude): ${cmd.name}`, join(claudeSkillsTarget, cmd.name, 'SKILL.md'));
-    }
     if (errors > 0) {
       log.error(`有 ${errors} 个组件安装异常，请检查。`);
       process.exit(1);
