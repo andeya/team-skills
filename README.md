@@ -57,8 +57,18 @@ reviewAgent 发现 spec 遗漏 ──→ 自动回退 specAgent
 
 - **5 步验证协议**：确定命令 → 新鲜执行 → 完整阅读 → 检查退出码 → 声明通过
 - **9 条 Constitutional Rules**：不可覆盖的硬约束
-- **反规避条款**：预判 6 种常见借口并逐一反驳
+- **反规避条款**：预判 9 种常见借口并逐一反驳
 - **三视角对抗审查**：攻击者/怀疑者/用户视角反向验证
+
+### 📝 规则沉淀，不是"每次从零"
+
+- **三层规则体系**：项目级 → 模块级 → 任务级，冲突按优先级覆盖
+- **消费方契约**：每条规则含触发条件 + 可执行指令 + 示例，下游 Agent 可直接执行
+
+### 📊 量化评估，不是"凭感觉"
+
+- **7 硬门禁 + 24 评分项**：五维度 100 分制量化打分
+- **反虚构规则**：占位符 >20% 或有效行 <10 → 判定 0 分
 
 ---
 
@@ -83,7 +93,7 @@ npx team-skills@latest setup
 npx team-skills@latest setup --with-score
 ```
 
-如需频繁使用 CLI，可全局安装：
+全局安装后可直接在终端调用：
 
 ```bash
 npm i -g team-skills
@@ -166,11 +176,11 @@ npx team-skills@latest update
 | 已有规格，开始编码 | `/team-impl` |
 | 测试覆盖够吗？ | `/team-test` |
 | 代码质量如何？ | `/team-review` |
+| Review 反馈来了 | `/team-feedback` |
 | 这个 bug 怎么回事？ | `/team-debug` |
 | 测试真的过了吗？ | `/team-verify` |
-| 项目做得好不好？ | `/team-score` |
-| Review 反馈来了 | `/team-feedback` |
 | 代码写完了 | `/team-finish` |
+| 项目做得好不好？ | `/team-score` |
 | 不知道用哪个 | `/using-team-skills` |
 
 ---
@@ -230,7 +240,7 @@ flowchart TD
 
 ## 🗺️ Skill 使用地图
 
-> 从你的场景出发，找到对应的 Skill。实线是你主动调用，虚线是编排器自动调度。
+> 从你的场景出发，找到对应的 Skill。
 
 ```mermaid
 graph TD
@@ -248,8 +258,8 @@ graph TD
     Q -->|"代码就绪，需要审查"| REVIEW[🔍 team-review<br/>→ 五维审查报告]:::skill
     Q -->|"收到审查反馈"| FB[💬 team-feedback<br/>→ 修改方案]:::skill
     Q -->|"遇到 Bug"| DEBUG[🐛 team-debug<br/>→ 根因分析 + 修复]:::skill
-    Q -->|"实现完成，准备合并"| FINISH[🏁 team-finish<br/>→ 合并/PR/清理]:::skill
     Q -->|"声称完成"| VERIFY[✅ team-verify<br/>→ 验证证据链]:::skill
+    Q -->|"实现完成，准备合并"| FINISH[🏁 team-finish<br/>→ 合并/PR/清理]:::skill
     Q -->|"项目做得好不好"| SCORE[📊 team-score<br/>→ 量化评分报告]:::skill
     Q -->|"不知道用哪个"| USING[🧭 using-team-skills<br/>→ Skill 推荐]:::skill
     Q -->|"需要完整交付流水线"| ORCH[⚙️ team-orchestrator<br/>→ 全自动编排]:::orch
@@ -261,11 +271,7 @@ graph TD
     ORCH -.->|自动调度| FINISH
 ```
 
-**使用说明：**
-
-- **实线箭头 →**：你主动调用某个 Skill，适合只做其中一步
-- **虚线箭头 ⇢**：编排器自动调度，适合需要完整流水线
-- 每个 Skill 下方标注了它的产出物
+> 实线 = 你主动调用；虚线 = 编排器自动调度。每个节点下方标注了产出物。
 
 ---
 
@@ -278,11 +284,11 @@ graph TD
 | `team-impl` | TDD 红-绿-重构循环实现 | "规格有了，开始写代码" |
 | `team-test` | 四维测试矩阵 + 补充测试 | "测试覆盖够吗？" |
 | `team-review` | 五维审查 + 资产沉淀 + 复盘 | "代码质量如何？" |
-| `team-orchestrator` | 有向图流程编排 + 分支管理，4 个人类介入点 | "我要完整交付流水线" |
-| `team-verify` | 5 步验证门禁，杜绝虚假通过 | "测试真的过了吗？" |
-| `team-debug` | 四阶段根因分析 + 修复 | "这个 bug 怎么回事？" |
 | `team-feedback` | 先验证再实施，非表演性同意 | "Review 反馈来了" |
+| `team-debug` | 四阶段根因分析 + 修复 | "这个 bug 怎么回事？" |
+| `team-verify` | 5 步验证门禁，杜绝虚假通过 | "测试真的过了吗？" |
 | `team-finish` | 分支完成处理（合并/PR/保留/丢弃） | "代码写完了" |
+| `team-orchestrator` | 有向图流程编排 + 分支管理，4 个人类介入点 | "我要完整交付流水线" |
 | `team-score` | 7 硬门禁 + 24 项五维度评分（100 分制） | "项目做得好不好？" |
 | `using-team-skills` | Meta-skill，自动引导你选正确的 Skill | "我该用哪个？" |
 
@@ -349,15 +355,6 @@ docs/
 
 ---
 
-## 🔧 兼容性
-
-| 工具 | 调用方式 | 自动发现 |
-|------|----------|----------|
-| **Claude Code** | `/team-{name}` 斜杠命令 | `~/.claude/commands/` |
-| **Cursor** | Skill 自动发现 | `~/.agents/skills/` |
-
----
-
 ## 📚 体系来源
 
 Team Skills 融合了业界多个 AI 协作框架的精华：
@@ -388,6 +385,10 @@ npm run format     # 自动修复 Markdown 格式
 npm run cli-test   # CLI 冒烟测试
 npm run setup      # 安装 Skills 到全局目录
 ```
+
+### Skill 编写规范
+
+编写或修改 Skill 时，请参考 `skills/_team-rules/skill-spec.md`（Markdown Skill Language v1.0 形式语法）。
 
 ### CI 流程
 
