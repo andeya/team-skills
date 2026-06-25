@@ -138,7 +138,7 @@ description: one-line description
 | 类别 | 关键词 | 语义 |
 |------|--------|------|
 | 动作 | `READ` `WRITE` `EXEC` `RESOLVE` | 读取、写入、执行命令、按优先级解析变量 |
-| 控制流 | `IF` `ELSE` `MATCH` `FOR` `IN` `REPEAT` `GOTO` | 条件、否则、多路分发、遍历、集合/成员、有限重试、跳转 |
+| 控制流 | `IF` `ELSE` `MATCH` `FOR` `IN` `REPEAT` `MAX` `GOTO` | 条件、否则、多路分发、遍历、集合/成员、有限重试、上限、跳转 |
 | 验证 | `ASSERT` `GATE` | 单条件断言（失败执行 fallback）、多条件门禁（全部通过才放行） |
 | 状态 | `DONE` `DONE_WITH_CONCERNS` `NEEDS_CONTEXT` `BLOCKED` | 四态完成状态 |
 | 组合 | `ROUTE` `ROLLBACK` `H3` | 调用 Skill、回退上游、人类介入 |
@@ -285,10 +285,10 @@ EXEC 后**必须**检查结果：`**ASSERT** \`exit_code == 0\``。
 
 > **DP-12 显式集合优先** — 隐式集合依赖 LLM 推断，不同模型可能推断不同集合（FP-4）。仅在集合由上一步骤输出自然确定、且显式枚举不可行时使用隐式形式。
 
-**REPEAT** MAX=N — 有限重试。`*repeat exhausted*` 兜底**必须**提供
+**REPEAT** **MAX**=N — 有限重试。`*repeat exhausted*` 兜底**必须**提供
 
 ```markdown
-**REPEAT** MAX=2：
+**REPEAT** **MAX**=2：
 
 1. 修复 → **EXEC** `verify_cmd`
    - 通过 → **GOTO** Phase 4
@@ -387,9 +387,9 @@ Skill 执行结束时**必须**声明以下状态之一：
 
 **H3** — 暂停执行，触发人类介入
 
-框架定义了四个人类介入点（H1 初始化确认 / H2 规格确认 / H3 阻塞决策 / H4 验收交付，见 CLAUDE.md §六）。其中 H1、H2、H4 由编排器在固定阶段触发，不是 Skill 语言关键词；`**H3**` 是唯一可被任意 Skill 在执行中主动触发的介入关键词。
+框架定义了四个人类介入点（H1 初始化确认 / H2 规格确认 / H3 阻塞决策 / H4 验收交付，见 `_team-rules/task-lifecycle.md` §2）。其中 H1、H2、H4 由编排器在固定阶段触发，不是 Skill 语言关键词；`**H3**` 是唯一可被任意 Skill 在执行中主动触发的介入关键词。
 
-`**H3**` 不接收参数。触发后由编排器按 H3 结构化协议（CLAUDE.md §六.3）向用户展示选项。人类决策后按选择继续或终止。
+`**H3**` 不接收参数。触发后由编排器按 H3 结构化协议（`_team-rules/task-lifecycle.md` §2.3）向用户展示选项。人类决策后按选择继续或终止。
 
 ---
 

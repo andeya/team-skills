@@ -128,7 +128,7 @@ NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE FIRST
 
 > 验证命令本身执行失败（超时、进程崩溃、环境错误），不同于验证不通过。
 
-**REPEAT** MAX=2：
+**REPEAT** **MAX**=2：
 
 1. 记录失败原因和错误输出
 2. 修复环境问题 → **EXEC** `verify_cmd`

@@ -329,7 +329,8 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 - `DONE` || `DONE_WITH_CONCERNS` → 提示用户"该任务已完成"，询问是否新建变体任务
 - `BLOCKED` → 触发 **H3** 展示 `blocked_reason`
 - `NEEDS_CONTEXT` → 展示缺失信息，请求用户补充
-- *not found*（checkpoint 不存在）→ **GOTO** 恢复
+- *not found*（checkpoint 不存在）→ **GOTO** 恢复：文件推断阶段
+- *default*（status 值不在预定义范围内）→ **H3**，展示 checkpoint 内容，由用户决定恢复策略
 
 #### 恢复：文件推断阶段
 
@@ -931,6 +932,7 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 - `完成但有保留意见` → **DONE_WITH_CONCERNS**（`concerns: [...]`）
 - `缺少关键上下文` → **NEEDS_CONTEXT**
 - `被阻塞`（Kill Switch / 人类决策）→ **BLOCKED** → **H3**
+- *default* → **BLOCKED** → **H3**
 
 ## 集成关系
 

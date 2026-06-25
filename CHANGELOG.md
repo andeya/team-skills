@@ -5,6 +5,31 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，
 本项目遵循[语义化版本](https://semver.org/lang/zh-CN/spec/v2.0.0.html)。
 
+## [Unreleased]
+
+## [1.3.2] - 2026-06-26
+
+### 新增
+
+- `team-refine` 开发者命令：融合 Spec ↔ Skills 对抗审计（10 维度）+ LLM 执行质量打磨（5 维度），按编排流程顺序逐 Skill 精炼
+- `team-release` 开发者命令：版本发布自动化（更新 package.json + CHANGELOG + install/format/lint/cli-test）
+- 3 个 `_team-rules/` 共享规则文件：`spec-driven-workflow.md`、`task-lifecycle.md`、`ai-collaboration-standards.md`
+- README 新增"开发者斜杠命令"章节
+
+### 变更
+
+- CLAUDE.md 职责分离：仅保留项目开发规范，运行时规则提取到 `_team-rules/`（共享规则从 5 → 8 个）
+- `team-adversarial` 命令重命名为 `team-refine`，默认轮次从 10 调整为 5
+- skill-spec v1.0 重设计：移除 BNF/变量作用域/类型系统，新增引用块子类型 + 输出骨架 + GATE 自我审问 + 20 条设计原则
+- `.claude/commands/` 不再发布和安装到用户端
+
+### 移除
+
+- `hooks/` 目录及全部 hooks 功能（`hooks.json`、`session-start`）：Skills 已通过 IDE 原生机制自动发现，无需 session hook 注入
+- CLI `--no-hooks` 选项（`setup`、`uninstall` 命令）
+- `package.json` `files` 数组中的 `hooks/` 条目
+- 开发者命令 `team-pull`、`team-push`、`team-setup`、`team-uninstall`（功能可通过 git/CLI 直接完成）
+
 ## [1.1.2] - 2026-06-23
 
 ### 变更

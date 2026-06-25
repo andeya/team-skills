@@ -85,7 +85,7 @@ reviewAgent 发现 spec 遗漏 ──→ 自动回退 specAgent
 npx team-skills@latest setup
 ```
 
-自动将 Skills 和 Hooks 以 symlink 方式安装到全局目录（Skills 安装后即为 IDE 斜杠命令）。
+自动将 Skills 以 symlink 方式安装到全局目录（Skills 安装后即为 IDE 斜杠命令）。
 
 启用可选的项目评分功能（`team-score`）：
 
@@ -116,7 +116,7 @@ npx team-skills@latest init --with-score
 npx team-skills@latest update
 ```
 
-> **提示**：Hooks 仅在全局安装（`setup`）模式下生效，`init` 不安装 hooks。
+> **提示**：全局安装（`setup`）和项目初始化（`init`）的区别在于：setup 使用 symlink 指向包源文件，init 复制文件到项目中支持版本控制和自定义。
 
 ### 安装内容
 
@@ -124,7 +124,6 @@ npx team-skills@latest update
 |------|------|------|
 | 13 个 Agent Skills | `~/.agents/skills/` + `~/.claude/skills/` | Cursor / Claude Code 自动发现（team-score 需 `--with-score`） |
 | 共享规则 | `~/.agents/skills/_team-rules/` + `~/.claude/skills/_team-rules/` | 被所有 Skill 引用 |
-| Hooks（可选） | `~/.cursor/hooks/` | session-start 自动加载 |
 
 ### 验证
 
@@ -137,10 +136,10 @@ npx team-skills@latest update
 
 | 命令 | 说明 | 关键选项 |
 |------|------|----------|
-| `team-skills setup` | symlink 安装到全局目录 | `--with-score` `--no-hooks` `--force` |
+| `team-skills setup` | symlink 安装到全局目录 | `--with-score` `--force` |
 | `team-skills init [dir]` | 复制到项目 IDE 目录 | `--ide <claude\|cursor\|both>` `--with-score` |
 | `team-skills update [dir]` | 升级包 + 更新项目副本 | `--skip-self` `--ide` `--with-score` |
-| `team-skills uninstall` | 移除所有全局 symlink | `--no-hooks` |
+| `team-skills uninstall` | 移除所有全局 symlink | — |
 | `team-skills list` | 查看全局安装状态 | `--json` |
 
 所有命令支持 `--dry-run`。
@@ -370,7 +369,7 @@ Team Skills 融合了业界多个 AI 协作框架的精华：
 | **OpenSpec** (Fission AI) | Delta Spec 增量规格、RFC 2119 + Given/When/Then |
 | **Karpathy Skills** | 过度抽象防御、死代码清理、困惑管理 |
 | **Agent-Style** | 5 条 LLM 输出质量约束 |
-| **独创** | 有向图回退、质量追溯矩阵、消费方契约、H1-H4 人类介入点、100 分制量化评估、Markdown Skill Language |
+| **独创** | 有向图回退、质量追溯矩阵、消费方契约、H1-H4 人类介入点、100 分制量化评估、Skill Spec Language（20 条设计原则） |
 
 ---
 
@@ -393,7 +392,16 @@ npm run setup      # 安装 Skills 到全局目录
 
 ### Skill 编写规范
 
-编写或修改 Skill 时，请参考 `skills/_team-rules/skill-spec.md`（Markdown Skill Language v1.0 形式语法）。
+编写或修改 Skill 时，请参考 `skills/_team-rules/skill-spec.md`（Skill Spec v1.0：格式约定 + 关键词参考 + 20 条设计原则）。
+
+### 开发者斜杠命令（Claude Code）
+
+在 Claude Code 中可使用以下开发者命令（仅限本仓库，不随 Skills 分发到用户项目）：
+
+| 命令 | 说明 | 参数 |
+|------|------|------|
+| `/team-refine` | 对抗审计（10 维度）+ 执行质量打磨（5 维度），按编排流程顺序逐 Skill 精炼到收敛 | 轮次数，默认 5 |
+| `/team-release` | 版本发布：更新 package.json + CHANGELOG，运行 install/format/lint/cli-test | `patch` / `minor` / `major` / `x.y.z` |
 
 ### CI 流程
 

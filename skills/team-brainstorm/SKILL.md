@@ -137,9 +137,7 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 
 ### Phase 4：展示设计
 >
-> 逐段确认而非一次倾倒，每段确认后再展示下一段。目标是让用户在每个维度上做出知情决策，而非被信息量压垮后草率同意。
-
-> 逐段展示而非一次倾倒，降低用户认知负荷（FP-1）。
+> 逐段确认而非一次倾倒，每段确认后再展示下一段。目标是让用户在每个维度上做出知情决策，而非被信息量压垮后草率同意（FP-1）。
 
 逐段展示设计，每段后等待用户确认：
 
@@ -269,7 +267,9 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 - 用户确认设计 + `00-design-brief.md` 已写入 → **DONE**
 - 设计已完成但用户有保留意见 → **DONE_WITH_CONCERNS**
 - 需求信息不足，无法形成方案 → **NEEDS_CONTEXT**
-- 需求不可行 / 用户决定放弃 → **BLOCKED**
+- 需求不可行 → **BLOCKED**
+- 用户决定放弃 → **DONE**（`状态: 用户主动终止`）
+- *default* → **NEEDS_CONTEXT**
 
 ## 集成关系
 

@@ -99,6 +99,7 @@ NO IMPLEMENTATION WITHOUT TECHNICAL VERIFICATION FIRST
    - internal 且无引用 → 建议删除，向审查者回应："该功能当前未被调用，建议删除（YAGNI）"
    - 有引用 → 按建议实现
    - *not found* 且无法确定 → 标注 `{ambiguous}` → **NEEDS_CONTEXT**：询问用户
+   - *default* → 标记待实施，在 Phase 4 中额外注意验证
 
 ### Phase 3：外部反馈处理
 
@@ -256,6 +257,7 @@ NO IMPLEMENTATION WITHOUT TECHNICAL VERIFICATION FIRST
 - 已实施但有保留意见 → **DONE_WITH_CONCERNS**（`concerns: [...]`）
 - 缺少关键信息无法验证 → **NEEDS_CONTEXT**（`missing: [...]`）
 - 被阻塞 → **BLOCKED** → **H3**
+- *default* → **NEEDS_CONTEXT**
 
 ## 集成关系
 

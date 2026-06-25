@@ -139,7 +139,8 @@ Phase 1 只分析，不写测试代码。
 **IF** 新测试揭示真实 bug → 不修复实现，Phase 6 **ROUTE** `team-impl`
 
 1. **EXEC** `verify_cmd` → 记录当前基线（总用例数 / 通过数 / 失败数，Phase 5 §八 回归对比用）
-   - **IF** `exit_code != 0` → 记录失败基线，继续（基线可含已知失败）
+   - **ASSERT** `exit_code == 0` || `基线已知失败已记录`
+   - **IF** `exit_code != 0` → 记录失败基线（区分本任务相关 vs 既有失败），继续
 2. **WRITE** `补充测试文件` → 按项目测试风格编写，使用 `test: (audit)` 前缀 commit
 3. **FOR** `new_test`：
    - **EXEC** `new_test`（单独运行）
@@ -165,7 +166,7 @@ Phase 1 只分析，不写测试代码。
      - 环境问题（仅特定机器/CI 失败，本地正常）→ 修复环境 → **GOTO** Phase 5
      - 测试隔离问题（依赖其他测试副作用或执行顺序）→ 重构为 setup/teardown → **GOTO** Phase 5
      - *default*（无法归因）→ **H3**（附失败输出 + 已排除的假设）
-3. **FOR** `new_test`：
+3. **FOR** `new_test`（隔离验证——确认每个新测试不依赖其他测试的执行顺序或副作用）：
    - **EXEC** `new_test`（单独运行确认独立通过）
    - **IF** `exit_code != 0` → 标记隔离问题
    - **IF** 依赖其他测试副作用 → 重构为 setup/teardown

@@ -134,7 +134,7 @@ NO CODE WITHOUT SPEC FIRST
 
 - `确认` → **GOTO** Phase 2
 - `要求修改` → 调整后重新展示
-- `否决任务` → **DONE**（`状态：CANCELLED`）
+- `否决任务` → **DONE**（`结果: 用户主动终止，不进入实现阶段`）
 - *default* → 澄清用户意图后重新匹配
 
 ### Phase 2：写规格文档
@@ -302,9 +302,10 @@ NO CODE WITHOUT SPEC FIRST
 
 - `全部文件产出 && 自检通过` → **DONE**（`模式: {完整/精简}`, `文件: [...]`）
 - `产出完成 && 有保留意见` → **DONE_WITH_CONCERNS**（`concerns: [...]`）
-- `用户否决任务` → **DONE**（`状态: CANCELLED`）
+- `用户否决任务` → **DONE**（`结果: 用户主动终止`）
 - `需求信息不足` → **NEEDS_CONTEXT**
 - `需求不可行` → **BLOCKED**
+- *default* → **NEEDS_CONTEXT**
 
 ## 集成关系
 

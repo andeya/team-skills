@@ -82,6 +82,8 @@ NO SKILL RECOMMENDATION WITHOUT SCENE ANALYSIS FIRST
 
 **READ** 用户输入 → 提取阶段信号（需求/规格/实现/测试/审查/调试/完成）
 
+> SIGNAL：用户描述同时匹配多个场景（如"实现完成但有个 bug"）→ 按优先级推荐主 Skill，附注辅助 Skill。不要推荐流水线代替精准分诊。
+
 **RESOLVE** `target_skill`（对照 Skill 选择矩阵，首个匹配即停）：
 
 1. 需求模糊 / 用户不确定要做什么 → `team-brainstorm`
@@ -90,12 +92,12 @@ NO SKILL RECOMMENDATION WITHOUT SCENE ANALYSIS FIRST
 4. 实现已有，需测试审计 → `team-test`
 5. 代码 + 测试已有，需审查 → `team-review`
 6. 收到审查反馈 → `team-feedback`
-7. 遇到 bug → `team-debug`
+7. 遇到 bug / 测试失败 / 异常行为 → `team-debug`
 8. 声明完成，需验证 → `team-verify`
 9. 实现完成，需处理分支 → `team-finish`
 10. 评估 AI 协作成熟度 → `team-score`
 11. AI 使用涉及敏感数据 / 外部 AI 服务 / 自动化 Agent → `team-security`
-12. 需完整流水线 → `team-orchestrator`
+12. 需完整流水线（明确说"从头到尾"或"完整开发"） → `team-orchestrator`
 13. *none* → **NEEDS_CONTEXT**：请用户描述当前阶段和目标
 
 ### Step 2：推荐并说明理由
@@ -166,7 +168,6 @@ NO SKILL RECOMMENDATION WITHOUT SCENE ANALYSIS FIRST
 
 **被谁调用：**
 
-- Session hook（会话启动时自动加载）
 - 用户直接调用
 
 **配对使用：**

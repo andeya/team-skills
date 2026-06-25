@@ -324,7 +324,7 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 **FOR** `checklist_type` **IN** [`review-checklist`, `delivery-checklist`]：
 
 1. **READ** `docs/{checklist_type}.md`
-   - *not found* → **WRITE** 按模板 `references/{checklist_type}-template.md` 创建并填充实际内容
+   - *not found* → **IF** `references/{checklist_type}-template.md EXISTS` → **WRITE** 按模板创建并填充实际内容 **ELSE** → **WRITE** 创建空白检查清单并从本次审查结论中填充
    - 已存在 → **IF** 本次发现新检查项 → **WRITE** 追加
 2. **ASSERT** `items_without_check_target == 0` && `items_without_pass_criteria == 0`
 3. **IF** `checklist_type == delivery-checklist` && `交付完成` → 将已完成项标记为 `[x]`
@@ -348,7 +348,7 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 
 **ASSERT** `资产维护机制段落 EXISTS`
 
-- *not found* → **WRITE** 按 CLAUDE.md §七.2 消费方契约原则新增
+- *not found* → **WRITE** 按 `_team-rules/ai-collaboration-standards.md` §1.2 消费方契约原则新增
 
 **IF** 本次有资产更新 → **WRITE** 向"版本记录"表追加一行
 
@@ -489,12 +489,14 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 - 全部通过但有保留意见（P2 建议未采纳等） → **DONE_WITH_CONCERNS**
 - 缺少关键上下文（SDD 缺失、代码无法访问等） → **NEEDS_CONTEXT**
 - P0/P1 问题阻塞且路由失败 → **BLOCKED**，触发 **H3**
+- *default* → **BLOCKED**，触发 **H3**
 
 ## 集成关系
 
 **被谁调用：**
 
 - `team-orchestrator`（编排模式）
+- `team-test`（测试全部通过后路由）
 
 **配对使用：**
 

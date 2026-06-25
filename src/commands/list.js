@@ -3,9 +3,8 @@ import { existsSync, readlinkSync } from 'node:fs';
 import {
   DEFAULT_SKILLS_TARGET,
   DEFAULT_CLAUDE_SKILLS_TARGET,
-  CURSOR_HOOKS_DIR, CLAUDE_HOOKS_DIR,
 } from '../lib/constants.js';
-import { discoverSkills, discoverSharedRules, discoverHooks } from '../lib/inventory.js';
+import { discoverSkills, discoverSharedRules } from '../lib/inventory.js';
 import { isSymlink } from '../lib/fs-utils.js';
 import * as log from '../lib/logger.js';
 
@@ -20,7 +19,7 @@ export function registerList(program) {
 
 function runList(opts) {
   const { target, json } = opts;
-  const results = { skills: [], rules: [], skillCommands: [], hooks: [] };
+  const results = { skills: [], rules: [], skillCommands: [] };
 
   // Check symlink-based install
   const skills = discoverSkills();
@@ -64,22 +63,6 @@ function runList(opts) {
     });
   }
 
-  // Hooks
-  for (const hook of discoverHooks()) {
-    const dirs = hook.name === 'hooks.json'
-      ? [CURSOR_HOOKS_DIR]
-      : [CURSOR_HOOKS_DIR, CLAUDE_HOOKS_DIR];
-    for (const dir of dirs) {
-      const platform = dir.includes('.cursor') ? 'Cursor' : 'Claude Code';
-      const dest = join(dir, hook.name);
-      results.hooks.push({
-        name: `${platform}/${hook.name}`,
-        status: getStatus(dest, hook.path),
-        path: dest,
-      });
-    }
-  }
-
   if (json) {
     console.log(JSON.stringify(results, null, 2));
     return;
@@ -94,9 +77,6 @@ function runList(opts) {
 
   log.heading('Claude Code Skills');
   printTable(results.skillCommands);
-
-  log.heading('Hooks');
-  printTable(results.hooks);
 
   // Summary
   const installed = results.skills.filter(s => s.status === 'ok' || s.status === 'file').length;

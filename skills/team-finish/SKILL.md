@@ -150,7 +150,7 @@ NO BRANCH COMPLETION WITHOUT TEST VERIFICATION FIRST
        - 失败（auth 错误、远程未配置）→ **WRITE**（对话中）错误信息给用户，**BLOCKED**
   2. **RESOLVE** `pr_cmd`（首个命中即停）：
      1. `READ("CLAUDE.md").pr_cmd` / `READ(".cursor/rules/").pr_cmd`
-     2. *default* → `gh pr create`
+     2. *default* → `gh pr create --title "{slug}: {一句话描述}" --body "{变更摘要}"`
   3. **EXEC** `{pr_cmd}`
      - **ASSERT** `exit_code == 0`
        - 通过 → **WRITE**（对话中）PR URL
@@ -231,7 +231,7 @@ NO BRANCH COMPLETION WITHOUT TEST VERIFICATION FIRST
    ## 新规则沉淀
    | 规则 | 触发条件 | 可执行指令 | 已合并到 |
    |------|----------|-----------|---------|
-   | {规则名} | {何时适用} | {具体做什么} | CLAUDE.md §{N} / 未合并 |
+   | {规则名} | {何时适用} | {具体做什么} | 项目 CLAUDE.md / 未合并 |
    ```
 
 4. **WRITE** `docs/tasks/{slug}/15-brief.md`：

@@ -18,7 +18,7 @@
 
 - [ ] 验证 Skill 能正常加载
 - [ ] 验证交叉引用正确解析
-- [ ] 验证与 `skills/CLAUDE.md` 规范的一致性
+- [ ] 验证与 `CLAUDE.md` + `skills/_team-rules/skill-spec.md` 规范的一致性
 
 ## 检查清单
 

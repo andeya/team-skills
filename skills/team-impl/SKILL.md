@@ -85,7 +85,7 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 2. **WRITE**（对话中）当前代码与 spec 要求的差距
 3. **ASSERT** `spec 方案在当前基线上可行`
    - 不可行或依赖不可用 → **ROLLBACK** specAgent（通过编排器）
-4. **EXEC** 项目构建/测试命令
+4. **EXEC** 项目测试命令
    - **IF** `exit_code == 0` → 基线健康，继续
    - **IF** `exit_code != 0` → 记录到 `06-tdd-log.md` 审计段落（含失败测试名+输出），确认与本任务无关后继续
 
@@ -155,7 +155,7 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 1. **WRITE** 最少代码让测试通过
 2. **EXEC** 项目测试命令 → **ASSERT** `exit_code == 0`
    - **IF** `exit_code == 0` → **WRITE** `06-tdd-log.md` GREEN 记录
-   - **IF** `exit_code != 0` → 修改实现（非测试）→ **GOTO** 循环 2
+   - **IF** `exit_code != 0` → 修改实现（非测试）→ 重新执行步骤 1-2
 3. GREEN 记录格式：
 
    ```
@@ -339,6 +339,8 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 - **Rule #8 验证先行**：声明"测试通过"前必须执行验证协议 5 步（FP-4）
 
 ## 自检门禁
+
+**GATE** 产出前自检（全部通过才放行）：
 
 - [ ] **ASSERT** `06-tdd-log.md EXISTS` && `07-prompt-log.md EXISTS` && `08-ai-decisions.md EXISTS` && `各文件有效行数 ≥ 5`
 - [ ] **ASSERT** `每个功能点有 RED → GREEN → REFACTOR 序列` && `时间递增`

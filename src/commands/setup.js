@@ -1,9 +1,8 @@
 import { join } from 'node:path';
 import {
   PACKAGE_ROOT, DEFAULT_SKILLS_TARGET, DEFAULT_CLAUDE_SKILLS_TARGET,
-  CURSOR_HOOKS_DIR, CLAUDE_HOOKS_DIR,
 } from '../lib/constants.js';
-import { discoverSkills, discoverSharedRules, discoverHooks } from '../lib/inventory.js';
+import { discoverSkills, discoverSharedRules } from '../lib/inventory.js';
 import { createSymlinkSafe, ensureDir, isSymlink } from '../lib/fs-utils.js';
 import * as log from '../lib/logger.js';
 
@@ -12,7 +11,6 @@ export function registerSetup(program) {
     .command('setup')
     .description('Install skills via symlinks to global directories')
     .argument('[target]', 'Target skills directory', DEFAULT_SKILLS_TARGET)
-    .option('--no-hooks', 'Skip hook installation')
     .option('--with-score', 'Include team-score skill (hidden by default)', false)
     .option('--force', 'Overwrite existing symlinks', false)
     .option('--dry-run', 'Show what would be done without doing it', false)
@@ -20,7 +18,7 @@ export function registerSetup(program) {
 }
 
 function runSetup(target, opts) {
-  const { hooks, withScore, force, dryRun } = opts;
+  const { withScore, force, dryRun } = opts;
   const tag = dryRun ? '[dry-run] ' : '';
   const exclude = withScore ? [] : ['team-score'];
   let count = 0;
@@ -67,25 +65,6 @@ function runSetup(target, opts) {
     const result = createSymlinkSafe(rule.path, dest, { force, dryRun });
     logResult(`${tag}Rule: ${rule.name}`, result, dest);
     if (result === 'created' || result === 'dry-run') count++;
-  }
-
-  if (hooks !== false) {
-    log.heading('安装 Hooks');
-    const hookFiles = discoverHooks();
-    for (const hook of hookFiles) {
-      // hooks.json is Cursor-specific, session-start works for both
-      const dirs = hook.name === 'hooks.json'
-        ? [CURSOR_HOOKS_DIR]
-        : [CURSOR_HOOKS_DIR, CLAUDE_HOOKS_DIR];
-      for (const dir of dirs) {
-        const platform = dir.includes('.cursor') ? 'Cursor' : 'Claude Code';
-        if (!dryRun) ensureDir(dir);
-        const dest = join(dir, hook.name);
-        const result = createSymlinkSafe(hook.path, dest, { force, dryRun });
-        logResult(`${tag}${platform} ${hook.name}`, result, dest);
-        if (result === 'created' || result === 'dry-run') count++;
-      }
-    }
   }
 
   if (!dryRun) {

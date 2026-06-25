@@ -570,6 +570,7 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
 - 一级红线违规 → **BLOCKED**
   - 触发 **H3**：违规详情 + 影响评估 + 处置建议
 - 无法判定（缺少关键信息） → **NEEDS_CONTEXT**
+- *default* → **NEEDS_CONTEXT**
 
 ## 集成关系
 

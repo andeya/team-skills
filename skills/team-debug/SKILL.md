@@ -64,7 +64,8 @@ NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST
 
 1. **READ** 完整错误信息 — 不跳过 stack trace、行号、错误码
 2. **EXEC** 稳定复现 — 确认触发条件和频率
-   - **ASSERT** `exit_code == 0` — 复现成功；失败 → 调整触发条件后重试
+   - **IF** `bug 成功复现`（测试失败 / 异常症状重现）→ 记录复现命令和输出，继续
+   - **IF** `bug 无法复现` → 调整触发条件（输入值、并发、环境变量）后重试；3 次仍无法复现 → **WRITE**（对话中）已尝试的条件 → **H3**
 3. **READ** `git diff` + 最近 commits + 依赖变更 — 检查最近变更
 4. **IF** 多组件系统 → 在每层边界添加诊断埋点，定位故障层
 
@@ -109,7 +110,7 @@ NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST
 
 > TRAP：你会倾向于在一个测试通过后就声明"修好了"。单个测试通过不代表修复正确——回归测试全通过才算。
 
-**REPEAT** MAX=3（修复尝试）：
+**REPEAT** **MAX**=3（修复尝试）：
 
 1. **WRITE** 失败测试到测试文件（最小复现用例）
 2. **EXEC** 修复根因（不是症状）
@@ -120,7 +121,7 @@ NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST
 > SIGNAL：修复通过但不同测试失败 → 修复停留在症状层面，根因仍在。回到 Phase 1 重新调查。
 
 4. **IF** 编排模式（任务目录存在）→ **WRITE** 修复循环到 `06-tdd-log.md` + 决策到 `08-ai-decisions.md`
-5. 修复成功 → **GOTO** 自检门禁
+5. 修复成功 → 退出 `REPEAT`，进入自检门禁
 
 - *repeat exhausted* → **BLOCKED**，触发 **H3**，提交以下信息：
   - 已尝试的 3 种修复方案 + 每种的失败原因
@@ -201,6 +202,7 @@ NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST
 - 根因未确定但已实施防护措施 → **DONE_WITH_CONCERNS**
 - 需要更多上下文信息 → **NEEDS_CONTEXT**
 - 3 次修复失败 → **BLOCKED**
+- *default* → **NEEDS_CONTEXT**
 
 ## 集成关系
 

@@ -2,9 +2,8 @@ import { join } from 'node:path';
 import {
   PACKAGE_ROOT, DEFAULT_SKILLS_TARGET,
   DEFAULT_CLAUDE_SKILLS_TARGET,
-  CURSOR_HOOKS_DIR, CLAUDE_HOOKS_DIR,
 } from '../lib/constants.js';
-import { discoverSkills, discoverSharedRules, discoverHooks } from '../lib/inventory.js';
+import { discoverSkills, discoverSharedRules } from '../lib/inventory.js';
 import { removeSymlinkSafe, rmdirIfEmpty } from '../lib/fs-utils.js';
 import * as log from '../lib/logger.js';
 
@@ -13,7 +12,6 @@ export function registerUninstall(program) {
     .command('uninstall')
     .description('Remove all team-skills symlinks')
     .argument('[target]', 'Target skills directory', DEFAULT_SKILLS_TARGET)
-    .option('--no-hooks', 'Skip removing hooks')
     .option('--dry-run', 'Show what would be removed', false)
     .action(runUninstall);
 }
@@ -34,7 +32,7 @@ function remove(dest, expectedSource, label, dryRun) {
 }
 
 function runUninstall(target, opts) {
-  const { hooks, dryRun } = opts;
+  const { dryRun } = opts;
   let removed = 0;
 
   // Cursor Skills → ~/.agents/skills/
@@ -64,19 +62,6 @@ function runUninstall(target, opts) {
     if (remove(join(target, '_team-rules', rule.name), rule.path, `Rule: ${rule.name}`, dryRun)) removed++;
   }
   if (!dryRun) rmdirIfEmpty(join(target, '_team-rules'));
-
-  if (hooks !== false) {
-    log.heading('移除 Hooks');
-    for (const hook of discoverHooks()) {
-      const dirs = hook.name === 'hooks.json'
-        ? [CURSOR_HOOKS_DIR]
-        : [CURSOR_HOOKS_DIR, CLAUDE_HOOKS_DIR];
-      for (const dir of dirs) {
-        const dest = join(dir, hook.name);
-        if (remove(dest, hook.path, `Hook: ${dest}`, dryRun)) removed++;
-      }
-    }
-  }
 
   log.done(`卸载完成${dryRun ? ' (dry-run)' : ''}，共移除 ${removed} 个软链接。`);
   if (!dryRun) console.log('本仓库源文件未受影响。');

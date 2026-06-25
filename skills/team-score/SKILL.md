@@ -415,6 +415,7 @@ NO SCORE WITHOUT EVIDENCE FIRST
 - 部分评分项证据不足但已标注 → **DONE_WITH_CONCERNS**
 - 关键文件无法访问 → **NEEDS_CONTEXT**
 - 项目测试命令无法执行 → **BLOCKED**，触发 **H3**
+- *default* → **NEEDS_CONTEXT**
 
 ## 集成关系
 

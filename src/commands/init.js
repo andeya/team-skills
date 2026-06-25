@@ -78,5 +78,4 @@ function runInit(dir, opts) {
   }
 
   log.done(`初始化完成${dryRun ? ' (dry-run)' : ''}！共 ${count} 个组件。`);
-  log.info('提示：Hooks 仅在全局安装 (setup) 模式下生效，init 不安装 hooks。');
 }
