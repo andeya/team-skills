@@ -7,6 +7,13 @@
 
 ## [Unreleased]
 
+## [1.3.4] - 2026-06-26
+
+### 变更
+
+- 全局安装目录从 2 个扩展为 3 个：新增 `~/.cursor/skills/`（Cursor 全局 Skills 目录）
+- `setup`、`update`、`uninstall`、`list` 四个命令统一使用循环模式处理 3 个全局目标（Agents / Cursor / Claude Code）
+
 ## [1.3.3] - 2026-06-26
 
 ### 变更

@@ -1,9 +1,6 @@
 import { join } from 'node:path';
 import { existsSync, readlinkSync } from 'node:fs';
-import {
-  DEFAULT_SKILLS_TARGET,
-  DEFAULT_CLAUDE_SKILLS_TARGET,
-} from '../lib/constants.js';
+import { DEFAULT_SKILLS_TARGET, resolveTargets } from '../lib/constants.js';
 import { discoverSkills, discoverSharedRules } from '../lib/inventory.js';
 import { isSymlink } from '../lib/fs-utils.js';
 import * as log from '../lib/logger.js';
@@ -19,48 +16,29 @@ export function registerList(program) {
 
 function runList(opts) {
   const { target, json } = opts;
-  const results = { skills: [], rules: [], skillCommands: [] };
+  const results = { skills: [], rules: [] };
 
-  // Check symlink-based install
   const skills = discoverSkills();
-  for (const skill of skills) {
-    const dest = join(target, skill.name);
-    results.skills.push({
-      name: skill.name,
-      status: getStatus(dest, skill.path),
-      path: dest,
-    });
-  }
+  const rules = discoverSharedRules();
+  const targets = resolveTargets(target);
 
-  // Shared rules
-  for (const rule of discoverSharedRules()) {
-    const dest = join(target, '_team-rules', rule.name);
-    results.rules.push({
-      name: rule.name,
-      status: getStatus(dest, rule.path),
-      path: dest,
-    });
-  }
-
-  // Claude Code Skills
-  const claudeSkillsTarget = DEFAULT_CLAUDE_SKILLS_TARGET;
-  for (const skill of skills) {
-    const dest = join(claudeSkillsTarget, skill.name);
-    results.skillCommands.push({
-      name: skill.name,
-      status: getStatus(dest, skill.path),
-      path: dest,
-    });
-  }
-
-  // Claude Code shared rules
-  for (const rule of discoverSharedRules()) {
-    const claudeRuleDest = join(claudeSkillsTarget, '_team-rules', rule.name);
-    results.rules.push({
-      name: `Claude/${rule.name}`,
-      status: getStatus(claudeRuleDest, rule.path),
-      path: claudeRuleDest,
-    });
+  for (const t of targets) {
+    for (const skill of skills) {
+      const dest = join(t.dir, skill.name);
+      results.skills.push({
+        name: `${t.label}/${skill.name}`,
+        status: getStatus(dest, skill.path),
+        path: dest,
+      });
+    }
+    for (const rule of rules) {
+      const dest = join(t.dir, '_team-rules', rule.name);
+      results.rules.push({
+        name: `${t.label}/${rule.name}`,
+        status: getStatus(dest, rule.path),
+        path: dest,
+      });
+    }
   }
 
   if (json) {
@@ -68,17 +46,14 @@ function runList(opts) {
     return;
   }
 
-  // Pretty print
-  log.heading('Agent Skills');
-  printTable(results.skills);
+  for (const t of targets) {
+    log.heading(`${t.label} Skills`);
+    printTable(results.skills.filter(s => s.name.startsWith(`${t.label}/`)));
+  }
 
   log.heading('共享规则');
   printTable(results.rules);
 
-  log.heading('Claude Code Skills');
-  printTable(results.skillCommands);
-
-  // Summary
   const installed = results.skills.filter(s => s.status === 'ok' || s.status === 'file').length;
   const total = results.skills.length;
   console.log(`\nSkills: ${installed}/${total} 已安装`);

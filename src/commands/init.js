@@ -1,9 +1,8 @@
-import { join, resolve } from 'node:path';
-import { copyFileSync as fsCopyFile, existsSync, rmSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { PACKAGE_ROOT } from '../lib/constants.js';
 import { discoverSkills, discoverSharedRules } from '../lib/inventory.js';
-import { copyRecursive, ensureDir } from '../lib/fs-utils.js';
 import { detectIDE } from '../lib/detect-ide.js';
+import { installSkillsProject } from '../lib/installers.js';
 import * as log from '../lib/logger.js';
 
 export function registerInit(program) {
@@ -23,65 +22,13 @@ function runInit(dir, opts) {
   const exclude = withScore ? [] : ['team-score'];
   const ides = detectIDE(dir, ide, { strict: true });
 
-  const tag = dryRun ? '[dry-run] ' : '';
-  let count = 0;
-
   log.heading('初始化 team-skills 到项目');
   log.info(`项目目录: ${dir}`);
   log.info(`目标 IDE: ${ides.join(', ')}`);
 
   const skills = discoverSkills(PACKAGE_ROOT, { exclude });
   const rules = discoverSharedRules();
-
-  // Cursor: skills → .cursor/skills/
-  if (ides.includes('cursor')) {
-    const skillsDst = join(dir, '.cursor', 'skills');
-    log.heading(`复制 Skills → ${skillsDst}`);
-
-    if (!dryRun) ensureDir(skillsDst);
-    for (const skill of skills) {
-      const dest = join(skillsDst, skill.name);
-      if (!dryRun) {
-        if (existsSync(dest)) rmSync(dest, { recursive: true });
-        copyRecursive(skill.path, dest);
-      }
-      log.success(`${tag}Skill: ${skill.name}`);
-      count++;
-    }
-
-    const rulesDst = join(skillsDst, '_team-rules');
-    if (!dryRun) ensureDir(rulesDst);
-    for (const r of rules) {
-      if (!dryRun) fsCopyFile(r.path, join(rulesDst, r.name));
-      log.success(`${tag}Rule: ${r.name}`);
-      count++;
-    }
-  }
-
-  // Claude Code: skills → .claude/skills/ (same structure as Cursor)
-  if (ides.includes('claude')) {
-    const skillsDst = join(dir, '.claude', 'skills');
-    log.heading(`复制 Skills → ${skillsDst}`);
-
-    if (!dryRun) ensureDir(skillsDst);
-    for (const skill of skills) {
-      const dest = join(skillsDst, skill.name);
-      if (!dryRun) {
-        if (existsSync(dest)) rmSync(dest, { recursive: true });
-        copyRecursive(skill.path, dest);
-      }
-      log.success(`${tag}Skill: ${skill.name}`);
-      count++;
-    }
-
-    const rulesDst = join(skillsDst, '_team-rules');
-    if (!dryRun) ensureDir(rulesDst);
-    for (const r of rules) {
-      if (!dryRun) fsCopyFile(r.path, join(rulesDst, r.name));
-      log.success(`${tag}Rule: ${r.name}`);
-      count++;
-    }
-  }
+  const count = installSkillsProject(dir, ides, skills, rules, { dryRun });
 
   log.done(`初始化完成${dryRun ? ' (dry-run)' : ''}！共 ${count} 个组件。`);
 }
