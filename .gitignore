@@ -13,6 +13,7 @@ Thumbs.db
 .idea/
 .vscode/
 *.sublime-*
+.claude/settings.json
 
 # Environment
 .env
