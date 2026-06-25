@@ -107,16 +107,6 @@ NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST
 - 门槛通过 → **WRITE**（对话中）已调查内容和排除的假设 → 实施防护措施（重试、超时、错误处理）→ **DONE_WITH_CONCERNS**
 - 门槛未通过 → **GOTO** Phase 1
 
-### Phase 6：自检门禁
-
-**GATE** 产出前自检（全部通过才放行）：
-
-- [ ] **ASSERT** `根因描述` 非空（不是"可能是 X"而是"根因是 `{X}`"）
-- [ ] **ASSERT** `失败测试` 存在 — 修复前已 **WRITE** 失败测试
-- [ ] **ASSERT** `exit_code == 0` — 修复后 **EXEC** 验证通过
-- [ ] **ASSERT** `修复失败次数 < 3` || `H3 已触发`
-- [ ] **ASSERT** `同时修改变量数 <= 1`
-
 ## 用户信号识别
 
 | 用户说 | 意味着 | 你应该 |
@@ -126,6 +116,16 @@ NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST
 | "别猜了" | 你在没理解根因的情况下提修复方案 | **GOTO** Phase 1，先找根因 |
 | "想想根本原因" | 你在修症状不是根因 | 质疑你的假设，回到根因分析 |
 | "我们卡住了？"（沮丧） | 你的方法不对 | 暂停，重新评估策略 |
+
+## 自检门禁
+
+**GATE** 产出前自检（全部通过才放行）：
+
+- [ ] **ASSERT** `根因描述` 非空（不是"可能是 X"而是"根因是 `{X}`"）
+- [ ] **ASSERT** `失败测试` 存在 — 修复前已 **WRITE** 失败测试
+- [ ] **ASSERT** `exit_code == 0` — 修复后 **EXEC** 验证通过
+- [ ] **ASSERT** `修复失败次数 < 3` || `H3 已触发`
+- [ ] **ASSERT** `同时修改变量数 <= 1`
 
 ## STOP Signals
 
