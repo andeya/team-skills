@@ -85,7 +85,7 @@ reviewAgent 发现 spec 遗漏 ──→ 自动回退 specAgent
 npx team-skills@latest setup
 ```
 
-自动将 Skills、斜杠命令和 Hooks 以 symlink 方式安装到全局目录。
+自动将 Skills 和 Hooks 以 symlink 方式安装到全局目录（Skills 安装后即为 IDE 斜杠命令）。
 
 启用可选的项目评分功能（`team-score`）：
 
@@ -294,7 +294,7 @@ graph TD
 | `team-security` | AI 安全红线合规检查（6+4 红线 + 6 场景） | "AI 使用安全吗？" |
 | `using-team-skills` | Meta-skill，自动引导你选正确的 Skill | "我该用哪个？" |
 
-> 每个 Skill 可独立使用，也可通过 `team-orchestrator` 串联成完整流水线。`team-score` 和 `team-security` 为可选评估工具，安装时需 `--with-score`。
+> 每个 Skill 可独立使用，也可通过 `team-orchestrator` 串联成完整流水线。`team-score` 为可选评估工具，安装时需 `--with-score`。
 
 ---
 
