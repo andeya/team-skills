@@ -80,14 +80,15 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 > 在开始编码前对照 spec 分析当前代码基线，识别差距。
 
 1. **READ** spec 中涉及的文件 → 确认当前实现状态
-2. **WRITE** 当前代码与 spec 要求的差距
-3. **ASSERT** spec 方案在当前基线上可行
+2. **WRITE**（对话中）当前代码与 spec 要求的差距
+3. **ASSERT** `spec 方案在当前基线上可行`
    - 不可行或依赖不可用 → **ROLLBACK** specAgent（通过编排器）
-4. **EXEC** 项目构建/测试命令 → 确认基线可编译、已有测试通过
-   - **IF** 基线测试已有失败 → 记录到 `06-tdd-log.md` 审计段落（含失败测试名+输出），确认与本任务无关后继续
-5. **WRITE** 差距快照到 `06-tdd-log.md` 开头（格式见产出模板）
+4. **EXEC** 项目构建/测试命令
+   - **IF** `exit_code == 0` → 基线健康，继续
+   - **IF** `exit_code != 0` → 记录到 `06-tdd-log.md` 审计段落（含失败测试名+输出），确认与本任务无关后继续
+5. **WRITE** `06-tdd-log.md` 差距快照（格式见产出模板）
 6. **FOR** each `confusion`（阅读 spec/源码时的困惑）：
-   - **WRITE** 到 `06-tdd-log.md` 审计段落，标注 `{ambiguous}`
+   - **WRITE** `06-tdd-log.md` 审计段落，标注 `{ambiguous}`
    - 不可默默假设后继续编码
 
 ### Phase 1：TDD 红-绿-重构循环
@@ -98,8 +99,8 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 
 1. **READ** `03-sdd.md` → 提取该功能点的规格
 2. **WRITE** 测试 → 覆盖 Happy Path + 边界条件（SDD §七）+ 异常场景（SDD §八）
-3. **EXEC** 项目测试命令 → **ASSERT** 测试失败（尚无实现）
-4. **WRITE** RED 记录到 `06-tdd-log.md`：
+3. **EXEC** 项目测试命令 → **ASSERT** `exit_code != 0`（尚无实现，测试必须失败）
+4. **WRITE** `06-tdd-log.md` RED 记录：
 
    ```
    ### 功能点：{名称}
@@ -113,13 +114,16 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 5. **EXEC** `git commit -m "test: {功能点} (RED)"`
    - **ASSERT** `exit_code == 0`（commit 失败 → 检查 pre-commit hook 输出，修复后重试）
 
-**GATE** RED 已记录到 `06-tdd-log.md` + 已 commit → 才能进入 GREEN。
+**GATE** RED 完成检查（全部通过才放行）：
+
+- [ ] **ASSERT** `06-tdd-log.md 包含 RED 记录`
+- [ ] **ASSERT** `git log 包含 RED commit`
 
 #### 循环 2：绿（Green）— 写实现
 
 1. **WRITE** 最少代码让测试通过
-2. **EXEC** 项目测试命令 → **ASSERT** 测试通过
-   - **IF** `tests_pass` → **WRITE** GREEN 记录到 `06-tdd-log.md`
+2. **EXEC** 项目测试命令 → **ASSERT** `exit_code == 0`
+   - **IF** `tests_pass` → **WRITE** `06-tdd-log.md` GREEN 记录
    - **IF** `tests_fail` → 修改实现（非测试）→ **GOTO** Step 2
 3. GREEN 记录格式：
 
@@ -137,32 +141,38 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 #### 循环 3：重构（Refactor）
 
 1. **IF** 有可优化项 → 提取公共逻辑、消除重复、优化命名
-2. **EXEC** 项目测试命令 → **ASSERT** 测试仍通过
-3. **WRITE** REFACTOR 记录到 `06-tdd-log.md`
+2. **EXEC** 项目测试命令 → **ASSERT** `exit_code == 0`
+3. **WRITE** `06-tdd-log.md` REFACTOR 记录
 4. **EXEC** `git commit -m "refactor: {功能点}"` → **ASSERT** `exit_code == 0`
 
 **提交纪律**（Constitutional Rule #9）：每个功能点的 RED → GREEN → REFACTOR 各自独立 commit（`test:` → `feat:/fix:` → `refactor:`）。RED commit 必须在写实现代码之前完成。编排器通过 `git log` 验证时序。违反 → 删除实现，从 RED 重新开始。
 
 #### Bug 修复验证模式
 
-**IF** 修复 bug → 完整回归验证：
+**IF** 修复 bug：
 
-1. **WRITE** 回归测试 → **EXEC** 项目测试命令（预期失败）
-2. **WRITE** 修复代码 → **EXEC** 项目测试命令（预期通过）
-3. **ROLLBACK** 修复 → **EXEC** 项目测试命令（必须失败）
-4. 恢复修复 → **EXEC** 项目测试命令（必须通过）
+1. **WRITE** 回归测试 → **EXEC** 项目测试命令 → **ASSERT** `exit_code != 0`（预期失败）
+2. **WRITE** 修复代码 → **EXEC** 项目测试命令 → **ASSERT** `exit_code == 0`（预期通过）
+3. **ROLLBACK** 修复 → **EXEC** 项目测试命令 → **ASSERT** `exit_code != 0`（必须失败）
+4. 恢复修复 → **EXEC** 项目测试命令 → **ASSERT** `exit_code == 0`（必须通过）
 
-**IF** "回滚修复后测试仍通过" → 回归测试未覆盖修复逻辑，测试太弱，需重写。
+**ELSE**：
+
+- 跳过，继续下一功能点
+
+**IF** `回滚修复后测试仍通过` → 回归测试未覆盖修复逻辑，测试太弱，需重写
 
 #### 硬重置规则
 
-**IF** 发现以下任何情况 → 删除代码，从 RED 重新开始：
+**IF** 发现以下任何情况：
 
 - 先写实现再写测试
 - 测试通过但未见其失败过
 - 修改测试而非修改实现
 - 跳过 RED 直接写 GREEN
 - 在无测试覆盖的代码上重构
+
+→ 删除代码，从 RED 重新开始
 
 > 为什么 TDD 顺序不可逆？后写测试被实现偏见污染（FP-2）：测的是已构建的行为，不是需求。"先实现再补测试效果一样""已经手动测试过了""删掉 X 小时工作太浪费了"——这些借口均不成立。
 
@@ -180,7 +190,7 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 
 > 与 Phase 1 TDD 循环同步进行，实时记录，不可事后回忆补写。
 
-**WRITE** 到 `08-ai-decisions.md`（模板见 `references/08-ai-decisions-template.md`）：
+**WRITE** `08-ai-decisions.md`（模板见 `references/08-ai-decisions-template.md`）：
 
 | 决策类型 | 记录内容 |
 | -------- | -------- |
@@ -194,7 +204,7 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 
 > 与 Phase 1 TDD 循环同步进行。
 
-**WRITE** 到 `07-prompt-log.md`（模板见 `references/07-prompt-log-template.md`），每条含：
+**WRITE** `07-prompt-log.md`（模板见 `references/07-prompt-log-template.md`），每条含：
 
 1. **五要素**：目标、上下文、边界、输出格式、验证标准
 2. **效果**：成功/失败/部分成功
@@ -214,18 +224,18 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 
 **验证协议**（步骤 2-4 每次声明"通过"前须执行 `_team-rules/verification-protocol.md` 的 5 个步骤）
 
-5. **EXEC** `git diff --name-only` → **READ** `04-boundary.md` deny 列表 → **ASSERT** 无越界修改
-6. **READ** `01-plan.md` 预算 → **ASSERT** 未超出自我约束预算
-7. **ASSERT** Constitutional 合规：TDD 顺序正确 + 未自行假设 spec + 预算未超支
+5. **EXEC** `git diff --name-only` → **READ** `04-boundary.md` deny 列表 → **ASSERT** `无越界修改`
+6. **READ** `01-plan.md` 预算 → **ASSERT** `未超出自我约束预算`
+7. **ASSERT** `TDD 顺序正确` && `未自行假设 spec` && `预算未超支`
 
 **IF** `exit_code != 0`：
 
 1. **READ** full output → 定位失败原因
 2. **WRITE** 失败测试（RED）→ 修复代码（GREEN）→ 仍遵循 TDD
-3. **EXEC** 从步骤 2 重新运行全部检查
-4. **WRITE** 修复循环到 `06-tdd-log.md` + 修复决策到 `08-ai-decisions.md`
+3. **GOTO** Phase 2 Step 2（重新运行全部检查）
+4. **WRITE** `06-tdd-log.md` 修复循环 + **WRITE** `08-ai-decisions.md` 修复决策
 
-**ELSE** → **GOTO** 下一功能点
+**ELSE** → 继续 Phase 2 下一步骤
 
 > 不可跳过失败继续后续步骤（FP-4）。预算超支砍范围，不放宽预算。
 
@@ -233,12 +243,13 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 
 **MATCH** `issue_type`：
 
-- 发现 spec 遗漏（SDD 未定义某个边界）→ **ROLLBACK** specAgent（通过编排器，附遗漏点 + 建议补充）
-- 发现 spec 矛盾（`03-sdd.md` 与 `02-context.md` 冲突）→ **ROLLBACK** specAgent（附矛盾位置 + 分析）
-- 发现 spec 范围不合理（`04-boundary` 禁止了必要修改）→ **ROLLBACK** specAgent（附修改理由 + 建议调整）
-- 需要人类判断的技术决策 → **H3**（附选项 + 各选项 trade-off）
-- testAgent 报告的 bug → 自己修复（仍遵循 TDD：先 RED 再 GREEN）
-- reviewAgent 报告的 P0/P1 bug → 自己修复（仍遵循 TDD）
+- `spec 遗漏`（SDD 未定义某个边界）→ **ROLLBACK** specAgent（通过编排器，附遗漏点 + 建议补充）
+- `spec 矛盾`（`03-sdd.md` 与 `02-context.md` 冲突）→ **ROLLBACK** specAgent（附矛盾位置 + 分析）
+- `spec 范围不合理`（`04-boundary` 禁止了必要修改）→ **ROLLBACK** specAgent（附修改理由 + 建议调整）
+- `需要人类判断` → **H3**（附选项 + 各选项 trade-off）
+- `testAgent 报告 bug` → 自己修复（仍遵循 TDD：先 RED 再 GREEN）
+- `reviewAgent 报告 P0/P1 bug` → 自己修复（仍遵循 TDD）
+- *default* → 记录到 `08-ai-decisions.md`，继续当前流程
 
 > 自修复仍遵循 TDD：RED（回归测试）→ GREEN（修复）→ 追加 `06-tdd-log.md` + `08-ai-decisions.md`。修复后全量测试确认无回归。
 
@@ -267,23 +278,24 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 
 ## 自检门禁
 
-- [ ] **ASSERT** 产出文件存在且非空 — `06-tdd-log.md`、`07-prompt-log.md`、`08-ai-decisions.md` 有效行数 ≥ 5
-- [ ] **ASSERT** 每个功能点 RED→GREEN→REFACTOR 完整（失败输出 → 通过输出 → 时间递增）
+- [ ] **ASSERT** `06-tdd-log.md 存在` && `07-prompt-log.md 存在` && `08-ai-decisions.md 存在` && `各文件有效行数 ≥ 5`
+- [ ] **ASSERT** `每个功能点有 RED → GREEN → REFACTOR 序列` && `时间递增`
 - [ ] **EXEC** 项目测试命令 → **ASSERT** `failures == 0`
 - [ ] **EXEC** 项目 lint 命令 → **ASSERT** `exit_code == 0`
-- [ ] **EXEC** `git diff --name-only` → **ASSERT** 未修改 `04-boundary.md` deny 文件
-- [ ] **ASSERT** 未超出 `01-plan.md` 自我约束预算
-- [ ] **ASSERT** 所有困惑已显式记录（`06-tdd-log.md` 审计段落）
-- [ ] **IF** 发现 spec 问题 → 已 **ROLLBACK** specAgent
+- [ ] **EXEC** `git diff --name-only` → **ASSERT** `未修改 04-boundary.md deny 文件`
+- [ ] **ASSERT** `实际消耗 <= 01-plan.md 自我约束预算`
+- [ ] **ASSERT** `所有困惑已显式记录于 06-tdd-log.md 审计段落`
+- [ ] **IF** 发现 spec 问题 → **ASSERT** `已 ROLLBACK specAgent`
 
 ## 完成标志
 
 **MATCH** `result`：
 
-- TDD 完成 + CI 通过 + 边界合规 → **DONE**（`文件: {N} 修改 / {N} 新增`, `测试: {N} pass / {N} fail`, `CI: pass`）
-- 完成但有保留意见 → **DONE_WITH_CONCERNS**（`concerns: [...]`）
-- spec 不足无法继续 → **NEEDS_CONTEXT**
-- 被阻塞（spec 问题/人类决策）→ **BLOCKED**
+- `TDD 完成` && `CI 通过` && `边界合规` → **DONE**（`文件: {N} 修改 / {N} 新增`, `测试: {N} pass / {N} fail`, `CI: pass`）
+- `完成但有保留意见` → **DONE_WITH_CONCERNS**（`concerns: [...]`）
+- `spec 不足` → **NEEDS_CONTEXT**
+- `被阻塞` → **BLOCKED**
+- *default* → **BLOCKED**
 
 ## 集成关系
 

@@ -59,16 +59,17 @@ NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE FIRST
 1. `READ("05-risk.md", "§一验证计划")`
 2. `READ("CLAUDE.md").test_cmd` / `READ(".cursor/rules/")`
 3. `READ("package.json").scripts.test` / `READ("Makefile")` / `READ("Cargo.toml")`
-4. *none* → **NEEDS_CONTEXT**：请用户提供验证命令
-5. *no automation* → 手动验证（`截图` / `curl` / `日志对比`），标注验证方式
+4. *none*：
+   - 手动验证可行（`截图` / `curl` / `日志对比`）→ 标注验证方式
+   - *default* → **NEEDS_CONTEXT**：请用户提供验证命令
 
 ### Step 2：执行验证
 
 1. **EXEC** `verify_cmd` — 不使用缓存/上一轮输出
-2. **READ** full output — 不截断、不跳过 warning
+2. **READ** `output`（完整阅读）— 不截断、不跳过 warning
 3. **ASSERT** `exit_code == 0` && `failures == 0`
-   - warning && `exit_code == 0` → warning 不计入 failures，不阻塞通过。**WRITE** warning 内容到验证报告供人类判断
-   - `exit_code != 0` || `failures > 0` → 记录失败详情 → fix → **GOTO** Step 2.1
+   - warning && `exit_code == 0` → warning 不计入 failures，不阻塞通过。**WRITE**（对话中）warning 内容供人类判断
+   - `exit_code != 0` || `failures > 0` → 记录失败详情 → fix → **GOTO** Step 2
 
 ### Step 3：报告结果
 
@@ -90,11 +91,12 @@ NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE FIRST
 
 1. 记录失败原因和错误输出
 2. 修复环境问题 → **EXEC** `verify_cmd`
-   - 通过 → **GOTO** Step 3
-   - 仍失败 → 继续 REPEAT
+   - **IF** `exit_code == 0` → **GOTO** Step 3
+3. 继续 **REPEAT**
 
 - *repeat exhausted* → **BLOCKED**，触发 **H3**
-- **ASSERT** "工具失败" ≠ "验证通过"
+
+> "工具失败"≠"验证通过"——REPEAT 修复的是执行环境，不是验证结果。
 
 ## 常见失败模式
 
@@ -113,10 +115,10 @@ NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE FIRST
 
 ## STOP Signals
 
-- **使用**推测性语言（"应该""可能""看起来"）声明通过
-- **引用**上一轮运行结果而非当次新鲜执行
-- **跳过**部分输出或 warning 就声明通过
-- **表达**满意（"太好了""完美""完成了"）在验证之前
+- 使用推测性语言（"应该""可能""看起来"）声明通过
+- 引用上一轮运行结果而非当次新鲜执行
+- 跳过部分输出或 warning 就声明通过
+- 表达满意（"太好了""完美""完成了"）在验证之前
 
 ## Constitutional Rules 遵守
 
@@ -127,11 +129,13 @@ NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE FIRST
 
 ## 自检门禁
 
-- [ ] `verify_cmd` 已 **RESOLVE**（来源：`05-risk.md` / `CLAUDE.md` / `.cursor/rules/` / `package.json`）
-- [ ] **EXEC** 已新鲜执行（非缓存）
-- [ ] full output 已完整 **READ**（不截断、不跳过 warning）
-- [ ] **ASSERT** `exit_code == 0` && `failures == 0`
-- [ ] 验证报告已 **WRITE**（含 `exit_code` + 输出摘要）
+**GATE** 产出前自检（全部通过才放行）：
+
+- [ ] `verify_cmd` 已解析（来源：`05-risk.md` / `CLAUDE.md` / `.cursor/rules/` / `package.json`）
+- [ ] 验证命令已新鲜执行（非缓存）
+- [ ] `output` 已完整阅读（不截断、不跳过 warning）
+- [ ] `exit_code == 0` && `failures == 0`
+- [ ] 验证报告已输出（含 `exit_code` + 输出摘要）
 
 ## 完成标志
 
@@ -141,6 +145,7 @@ NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE FIRST
 - 通过但有 warning → **DONE_WITH_CONCERNS**
 - 验证失败 → 记录失败详情 → **GOTO** Step 2（修复后重新验证）
 - 工具失败且修复失败 → **BLOCKED**
+- *default* → **NEEDS_CONTEXT**
 
 ## 集成关系
 

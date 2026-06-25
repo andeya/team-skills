@@ -62,7 +62,7 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 
 ## 产出目录
 
-`docs/tasks/{slug}/`（slug 由 Phase 1 RESOLVE）
+`docs/tasks/{slug}/`（slug 由 Phase 1 **RESOLVE**）
 
 ## 执行步骤
 
@@ -73,11 +73,15 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 3. **READ** 相关源码模块，理解现有实现
 4. **IF** 需求包含多个独立子系统：
    - 先帮助用户分解为独立任务，逐个处理
-5. **RESOLVE** `slug`：
-   1. **READ** `docs/tasks/` 已有目录列表
-   2. **IF** `docs/tasks/` 不存在 → 创建 `docs/tasks/`
-   3. 取最大序号 +1（从 `0001` 起），拼接任务关键词（kebab-case，整体 ≤ 50 字符）
-   4. 创建 `docs/tasks/{slug}/` 目录
+   **ELSE**：
+   - 按单一任务继续
+5. **RESOLVE** `keyword`（首个命中即停）：
+   1. 从用户需求提取核心关键词（kebab-case）
+   2. 从项目上下文推断关键词
+   3. *none* → **NEEDS_CONTEXT**：请用户提供任务关键词
+6. **IF** `docs/tasks/` 不存在 → 创建 `docs/tasks/`
+7. **READ** `docs/tasks/` 已有目录列表 → 取最大序号 +1（从 `0001` 起）→ 拼接 `slug` = `{序号}-{keyword}`（整体 ≤ 50 字符）
+8. 创建 `docs/tasks/{slug}/` 目录
 
 ### Phase 2：需求澄清（一次性提问）
 
@@ -91,13 +95,19 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 
 **IF** 用户回复揭示需求不可行：
 
-- → **H3**：暂停设计，展示不可行原因，请用户决策（Kill Switch / 调整需求）
+- **H3**：暂停设计，展示不可行原因，请用户决策（Kill Switch / 调整需求）
+
+**ELSE**：
+
+- 整合用户回复，进入 Phase 3
 
 ### Phase 3：方案设计
 
 提出 2-3 个不同方案，含优缺点对比和推荐理由：
 
-**ASSERT** `方案数 >= 2`（不可只提供单一方案）
+**ASSERT** `方案数 >= 2`
+
+- `方案数 < 2` → 补充备选方案后重新对比
 
 ```
 
@@ -121,10 +131,19 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 - 关键接口
 - 测试策略
 
-**GATE** 用户已确认设计方案 → 继续 Phase 5
+**GATE** 用户设计确认（全部通过才进入 Phase 5）：
 
+- [ ] 架构/组件已展示并确认
+- [ ] 数据流已展示并确认
+- [ ] 关键接口已展示并确认
+- [ ] 测试策略已展示并确认
+
+**MATCH** `user_decision`：
+
+- 用户确认通过 → 继续 Phase 5
 - 用户要求修改 → **GOTO** Phase 3（仅重新展示修改后的方案，无需重新生成全部选项）
 - 用户决定放弃 → **BLOCKED**，记录原因
+- *default* → 向用户澄清确认意图
 
 ### Phase 5：产出 00-design-brief.md
 
@@ -167,7 +186,9 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 
 ```
 
-**ASSERT** `00-design-brief.md` 无占位符残留（`{N}`、`{slug}` 等已替换为实际值）
+**ASSERT** `00-design-brief.md 无占位符残留`（`{N}`、`{slug}` 等已替换为实际值）
+
+- 残留占位符 → 替换为实际值后重新 **WRITE**
 
 ### Phase 6：Handoff
 
@@ -197,12 +218,14 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 
 ## 自检门禁
 
+**GATE** 产出前自检（全部通过才放行）：
+
 - [ ] 已 **READ** 代码库和现有实现（不是凭空设计）
-- [ ] 已 **ASSERT** 方案数 >= 2（不是只有一个选项）
-- [ ] **GATE** 用户已确认设计方案（不是自行决定）
-- [ ] `00-design-brief.md` 已 **WRITE** 到 `docs/tasks/{slug}/` 目录
-- [ ] **ASSERT** `00-design-brief.md` 无占位符残留
-- [ ] **ASSERT** 未产出 `01-plan.md`（那是 team-spec 的职责）
+- [ ] **ASSERT** `方案数 >= 2`（不是只有一个选项）
+- [ ] **ASSERT** `用户已确认设计方案`（不是自行决定）
+- [ ] **ASSERT** `00-design-brief.md 存在`（已 **WRITE** 到 `docs/tasks/{slug}/`）
+- [ ] **ASSERT** `00-design-brief.md 无占位符残留`
+- [ ] **ASSERT** `01-plan.md 不存在`（那是 team-spec 的职责）
 
 ## 完成标志
 

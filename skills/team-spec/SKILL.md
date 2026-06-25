@@ -65,7 +65,12 @@ NO CODE WITHOUT SPEC FIRST
 
 ## 产出目录
 
-**RESOLVE** `slug`：扫描 `docs/tasks/` 取最大序号 +1（从 `0001` 起），拼接 kebab-case 关键词，整体 ≤ 50 字符。产出到 `docs/tasks/{slug}/`。
+**RESOLVE** `slug`：
+
+1. 扫描 `docs/tasks/` 取最大序号 +1（从 `0001` 起），拼接 kebab-case 关键词，整体 ≤ 50 字符
+2. *none*（`docs/tasks/` 不存在）→ 创建目录，序号从 `0001` 起
+
+产出到 `docs/tasks/{slug}/`。
 
 **IF** 从 `team-brainstorm` 接手 → 复用已有 slug 目录，将 `00-design-brief.md` 作为背景输入。
 
@@ -79,16 +84,16 @@ NO CODE WITHOUT SPEC FIRST
 
 1. **READ** 用户需求 → 提取核心问题
 2. **READ** 项目规范：`CLAUDE.md` / `.cursor/rules/`（必读）；`AGENTS.md`、`CONTRIBUTING.md`、`docs/architecture.md`、`docs/pm-truth-ledger.yaml`（存在则读，不存在跳过）
-3. **EXEC** `grep` / `find` → 定位 3-5 个最相关源文件，精读后按依赖关系向外扩展
+3. **EXEC** `grep` / `find` → 定位 3-5 个最相关源文件（探索性命令，失败不阻塞），精读后按依赖关系向外扩展
 4. **READ** 任务涉及的接口、数据结构、已有测试
-5. 影响范围分析（**EXEC** `grep` + `git log` 定位三类依赖）：
+5. 影响范围分析（**EXEC** `grep` + `git log` 定位三类依赖，探索性命令，失败不阻塞）：
    - 直接依赖（import/require/use）
    - 反向依赖（导出符号被谁引用）
    - 时序耦合（`git log --follow` 常一起改的文件）
 6. 提取业务术语（domain 概念、聚合名、事件名）
 7. **MATCH** `task_type`：
-   - 新建功能（代码中无对应实现）→ `sdd_template = 完整 SDD`
-   - 修改已有功能（变更/增强/修复）→ `sdd_template = Delta Spec`
+   - `新建功能`（代码中无对应实现）→ `sdd_template = 完整 SDD`
+   - `修改已有功能`（变更/增强/修复）→ `sdd_template = Delta Spec`
    - *default*（混合型或无法判断）→ `sdd_template = 完整 SDD`，§一 标注混合范围
 
 ### Phase 1.5：探索结论展示 + 需求澄清（人类介入点）
@@ -120,16 +125,22 @@ NO CODE WITHOUT SPEC FIRST
 
 **IF** 3 个问题仍不足以消除歧义 → 说明仍不清楚的部分，询问用户继续澄清还是按当前假设推进。
 
-**GATE** 用户已确认探索结论
+**MATCH** `用户反馈`：
 
-- 确认 → **GOTO** Phase 2
-- 要求修改 → 调整后重新展示
-- 否决任务 → **DONE**（`状态：CANCELLED`）
+- `确认` → **GOTO** Phase 2
+- `要求修改` → 调整后重新展示
+- `否决任务` → **DONE**（`状态：CANCELLED`）
+- *default* → 澄清用户意图后重新匹配
 
 ### Phase 2：写规格文档
 
-**IF** `mode == compact` → 仅 **WRITE** `03-sdd.md` + `04-boundary.md`
-**ELSE** → 按顺序 **WRITE** 6 个文件（每个依赖前一个，不可乱序）：
+**IF** `mode == compact`：
+
+- 仅 **WRITE** `03-sdd.md` + `04-boundary.md`
+
+**ELSE**：
+
+- 按顺序 **WRITE** 6 个文件（每个依赖前一个，不可乱序）：
 
 | 顺序 | 文件 | 模板位置 | 说明 |
 | ---- | ---- | -------- | ---- |
@@ -142,7 +153,7 @@ NO CODE WITHOUT SPEC FIRST
 
 #### 占位符零容忍
 
-**ASSERT** `产出文件无占位符残留`——下游 Agent 无法执行含占位符的规格。发现一个就补全一个：
+**ASSERT** `"TBD"/"TODO"/"待补充"/"按需调整" 匹配数 == 0`——下游 Agent 无法执行含占位符的规格。发现一个就补全一个：
 
 | 禁止 | 正确做法 |
 | ---- | -------- |
@@ -158,13 +169,13 @@ NO CODE WITHOUT SPEC FIRST
 
 **通用项**（完整 + 精简模式均检查）：
 
-- [ ] **ASSERT** SDD 含七部分：背景动机、业务规则、关键设计决策、数据流（精简模式可省略）、输入/输出、边界条件、异常场景
-- [ ] **ASSERT** SDD §二 业务规则每条含 Given/When/Then 或等效条件格式（IF/WHEN 触发 + THEN 预期）
-- [ ] **ASSERT** SDD 含关键设计决策表（选择方案 + 拒绝方案 + 拒绝理由）
-- [ ] **ASSERT** boundary 有 allow 和 deny 两个方向
-- [ ] **ASSERT** 来源标签（`{extracted}` / `{inferred}` / `{ambiguous}`）已标注
-- [ ] **ASSERT** 修改类任务用 Delta Spec，新建类任务用完整 SDD
-- [ ] **ASSERT** `产出文件无占位符残留`
+- [ ] **ASSERT** `SDD 含七部分：背景动机 && 业务规则 && 关键设计决策 && 数据流 && 输入输出 && 边界条件 && 异常场景`（精简模式数据流可省略）
+- [ ] **ASSERT** `SDD §二 业务规则每条含 Given/When/Then 格式`
+- [ ] **ASSERT** `SDD 含关键设计决策表（选择方案 + 拒绝方案 + 拒绝理由）`
+- [ ] **ASSERT** `boundary 含 allow 列表 && deny 列表`
+- [ ] **ASSERT** `来源标签（{extracted}/{inferred}/{ambiguous}）标注数 >= 1`
+- [ ] **ASSERT** `修改类任务用 Delta Spec` || `新建类任务用完整 SDD`
+- [ ] **ASSERT** `"TBD"/"TODO"/"待补充" 匹配数 == 0`
 
 **完整模式附加项**（精简模式跳过）：
 
@@ -194,21 +205,23 @@ NO CODE WITHOUT SPEC FIRST
 
 ## 自检门禁
 
-- [ ] **ASSERT** 完整模式 6 文件 / 精简模式 2 文件已全部产出
-- [ ] **GATE** Phase 3 检查全部通过（通用项 + 适用的附加项）
-- [ ] **GATE** 用户已确认探索结论（Phase 1.5）后才进入 Phase 2
-- [ ] **ASSERT** `产出文件无占位符残留`
-- [ ] **ASSERT** `来源标签已使用`
+**GATE** Skill 完成前自检（全部通过才声明完成）：
+
+- [ ] **ASSERT** `完整模式产出文件数 == 6` || `精简模式产出文件数 == 2`
+- [ ] **ASSERT** `Phase 3 检查全部通过（通用项 + 适用的附加项）`
+- [ ] **ASSERT** `Phase 1.5 用户确认 == true`
+- [ ] **ASSERT** `"TBD"/"TODO"/"待补充" 匹配数 == 0`
+- [ ] **ASSERT** `来源标签使用数 >= 1`
 
 ## 完成标志
 
 **MATCH** `result`：
 
-- 全部文件产出 + 自检通过 → **DONE**（`模式: {完整/精简}`, `文件: [...]`）
-- 产出完成但有保留意见 → **DONE_WITH_CONCERNS**（`concerns: [...]`）
-- 用户否决任务 → **DONE**（`状态: CANCELLED`）
-- 需求信息不足 → **NEEDS_CONTEXT**
-- 需求不可行 → **BLOCKED**
+- `全部文件产出 && 自检通过` → **DONE**（`模式: {完整/精简}`, `文件: [...]`）
+- `产出完成 && 有保留意见` → **DONE_WITH_CONCERNS**（`concerns: [...]`）
+- `用户否决任务` → **DONE**（`状态: CANCELLED`）
+- `需求信息不足` → **NEEDS_CONTEXT**
+- `需求不可行` → **BLOCKED**
 
 ## 集成关系
 

@@ -31,8 +31,8 @@ If you were dispatched as a subagent to execute a specific task, skip this skill
 
 **对抗自检**：
 
-- [ ] 按推荐启动 Skill 后用户会否在第一步就卡住？
-- [ ] 用户需要单个 Skill 还是完整流水线？
+- 按推荐启动 Skill 后用户会否在第一步就卡住？
+- 用户需要单个 Skill 还是完整流水线？
 
 ## Iron Law
 
@@ -67,26 +67,26 @@ NO SKILL RECOMMENDATION WITHOUT SCENE ANALYSIS FIRST
 
 ### Step 1：分析用户场景
 
+**READ** 用户输入 → 提取阶段信号（需求/规格/实现/测试/审查/调试/完成）
+
 **RESOLVE** `target_skill`（对照 Skill 选择矩阵，首个匹配即停）：
 
-1. **READ** 用户输入 → 提取阶段信号（需求/规格/实现/测试/审查/调试/完成）
-2. **MATCH** `scene`：
-   - 需求模糊 / 用户不确定要做什么 → `team-brainstorm`
-   - 需求明确但无规格 → `team-spec`
-   - 规格已有（`03-sdd.md` 存在）→ `team-impl`
-   - 实现已有，需测试审计 → `team-test`
-   - 代码 + 测试已有，需审查 → `team-review`
-   - 收到审查反馈 → `team-feedback`
-   - 遇到 bug → `team-debug`
-   - 声明完成，需验证 → `team-verify`
-   - 实现完成，需处理分支 → `team-finish`
-   - 评估 AI 协作成熟度 → `team-score`
-   - 需完整流水线 → `team-orchestrator`
-   - *none* → **NEEDS_CONTEXT**：请用户描述当前阶段和目标
+1. 需求模糊 / 用户不确定要做什么 → `team-brainstorm`
+2. 需求明确但无规格 → `team-spec`
+3. 规格已有（`03-sdd.md` 存在）→ `team-impl`
+4. 实现已有，需测试审计 → `team-test`
+5. 代码 + 测试已有，需审查 → `team-review`
+6. 收到审查反馈 → `team-feedback`
+7. 遇到 bug → `team-debug`
+8. 声明完成，需验证 → `team-verify`
+9. 实现完成，需处理分支 → `team-finish`
+10. 评估 AI 协作成熟度 → `team-score`
+11. 需完整流水线 → `team-orchestrator`
+12. *none* → **NEEDS_CONTEXT**：请用户描述当前阶段和目标
 
 ### Step 2：推荐并说明理由
 
-**WRITE** 推荐结果（对话中）：推荐 Skill + 推荐理由 + 启动方式
+**WRITE**（对话中）推荐结果：推荐 Skill + 推荐理由 + 启动方式
 
 ### Step 3：可选 — 展示流程图
 
@@ -117,6 +117,8 @@ NO SKILL RECOMMENDATION WITHOUT SCENE ANALYSIS FIRST
 
 ## 自检门禁
 
+**GATE** 产出前自检（全部通过才放行）：
+
 - [ ] 已分析用户场景（需求/规格/实现/测试/审查/调试/完成？）
 - [ ] `target_skill` 已 **RESOLVE** 且推荐理由与场景匹配
 - [ ] **IF** 场景模糊 → 已推荐 `team-brainstorm`
@@ -130,6 +132,7 @@ NO SKILL RECOMMENDATION WITHOUT SCENE ANALYSIS FIRST
 - 多个 Skill 可能适用 → **DONE_WITH_CONCERNS**
 - 场景无法判断 → **NEEDS_CONTEXT**
 - 用户需求明显不可行 → **BLOCKED**
+- *default* → **NEEDS_CONTEXT**
 
 ## 集成关系
 

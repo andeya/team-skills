@@ -14,10 +14,11 @@ argument-hint: [target-dir]
 | 组件 | 位置 |
 |------|------|
 | Cursor Skills | `~/.agents/skills/team-*` |
-| Claude Code Skill 斜杠命令 | `~/.claude/commands/team-*.md` |
-| 共享规则 | `~/.agents/skills/_team-rules/` |
+| Claude Code Skills | `~/.claude/skills/team-*` |
+| 共享规则 | `~/.agents/skills/_team-rules/` + `~/.claude/skills/_team-rules/` |
 | CLI 辅助命令 | 两端均移除 |
 | Hooks | `~/.cursor/hooks/`、`~/.claude/hooks/` |
+| 旧路径（向后兼容） | `~/.claude/commands/team-*.md`（如存在） |
 
 ## 使用方式
 

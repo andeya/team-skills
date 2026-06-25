@@ -51,6 +51,7 @@ NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST
 
 1. **READ** 完整错误信息 — 不跳过 stack trace、行号、错误码
 2. **EXEC** 稳定复现 — 确认触发条件和频率
+   - **ASSERT** `exit_code == 0` — 复现成功；失败 → 调整触发条件后重试
 3. **READ** `git diff` + 最近 commits + 依赖变更 — 检查最近变更
 4. **IF** 多组件系统 → 在每层边界添加诊断埋点，定位故障层
 
@@ -58,28 +59,30 @@ NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST
 
 1. **READ** 代码库中相似的工作示例（完整阅读，不 skim）
 2. **WRITE**（对话中）工作与失败之间的每个差异
-3. **ASSERT** `每个差异已解释`（不可假设"那个差异不重要"）
+3. **ASSERT** `未解释差异数 == 0`（不可假设"那个差异不重要"）
 
 ### Phase 3：假设验证
 
 1. **WRITE**（对话中）单一假设："根因是 `{X}`，因为 `{Y}`"
 2. **EXEC** 最小变更验证假设 — 一次只变一个变量
-3. **MATCH** `verify_result`：
+3. **IF** `exit_code != 0` → 记录执行失败详情
+4. **MATCH** `verify_result`：
    - 假设成立 → **GOTO** Phase 4
-   - 假设不成立 → 新假设 → **GOTO** Phase 3.1
-   - *default*（证据不足以判断）→ 补充诊断埋点 → **GOTO** Phase 1.4
+   - 假设不成立 → 新假设 → **GOTO** Phase 3
+   - *default*（证据不足以判断）→ 补充诊断埋点 → **GOTO** Phase 1
 
 ### Phase 4：修复实现
 
+**REPEAT** max=3（修复尝试）：
+
 1. **WRITE** 失败测试到测试文件（最小复现用例）
 2. **EXEC** 修复根因（不是症状）
+   - **ASSERT** `exit_code == 0` — 修复应用成功；失败 → 检查语法/编译错误
 3. **EXEC** 项目测试命令 — 确认修复通过且无回归
-   - 修复引入新的测试失败 → 立即回到步骤 2 定位新问题
+   - **IF** `exit_code != 0` → 修复引入新的测试失败 → 回到步骤 2 定位新问题
 4. **IF** 编排模式（任务目录存在）→ **WRITE** 修复循环到 `06-tdd-log.md` + 决策到 `08-ai-decisions.md`
+5. 修复成功 → **GOTO** Phase 6
 
-**REPEAT** max=3（修复尝试，当前第 `attempt_count`/3 次）：
-
-- 修复成功 → **GOTO** 自检门禁
 - *repeat exhausted* → **BLOCKED**，触发 **H3**，提交以下信息：
   - 已尝试的 3 种修复方案 + 每种的失败原因
   - 怀疑的架构问题
@@ -91,11 +94,11 @@ NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST
 
 **GATE** "找不到根因"的最低门槛（全部满足才可声明）：
 
-- [ ] 完整 **READ** 了错误信息（含 stack trace 全文）
-- [ ] 稳定复现了问题（≥ 3 次独立复现，非 Phase 1 的首次复现）
-- [ ] 检查了 `git log` 最近 10 次提交的变更
-- [ ] 对比了 ≥ 1 个正常工作的相似实现
-- [ ] 添加了 ≥ 5 个诊断日志/断言
+- [ ] **ASSERT** `stack_trace 已完整 READ`
+- [ ] **ASSERT** `独立复现次数 >= 3`（非 Phase 1 的首次复现）
+- [ ] **ASSERT** `最近提交检查数 >= 10`
+- [ ] **ASSERT** `正常实现对比数 >= 1`
+- [ ] **ASSERT** `诊断日志/断言数 >= 5`
 
 95% 的"找不到根因"是调查不充分。门槛未全部满足时，**GOTO** Phase 1。
 
@@ -103,6 +106,16 @@ NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST
 
 - 门槛通过 → **WRITE**（对话中）已调查内容和排除的假设 → 实施防护措施（重试、超时、错误处理）→ **DONE_WITH_CONCERNS**
 - 门槛未通过 → **GOTO** Phase 1
+
+### Phase 6：自检门禁
+
+**GATE** 产出前自检（全部通过才放行）：
+
+- [ ] **ASSERT** `根因描述` 非空（不是"可能是 X"而是"根因是 `{X}`"）
+- [ ] **ASSERT** `失败测试` 存在 — 修复前已 **WRITE** 失败测试
+- [ ] **ASSERT** `exit_code == 0` — 修复后 **EXEC** 验证通过
+- [ ] **ASSERT** `修复失败次数 < 3` || `H3 已触发`
+- [ ] **ASSERT** `同时修改变量数 <= 1`
 
 ## 用户信号识别
 
@@ -129,14 +142,6 @@ NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST
 - **Rule #3 产出必须验证**：修复完成后必须执行 `_team-rules/verification-protocol.md` 的 5 个步骤（FP-4）
 - **Rule #7 回退次数上限**：3 次修复失败必须触发 **H3**，不可无限重试（FP-1）
 - **Rule #2 有向图回退**：调试发现根源在 spec 歧义/遗漏 → **ROLLBACK** specAgent（FP-4）
-
-## 自检门禁
-
-- [ ] 根因已明确描述（不是"可能是 X"而是"根因是 `{X}`"）
-- [ ] 修复前 **WRITE** 了失败测试
-- [ ] 修复后 **EXEC** 验证通过（项目测试命令确认）
-- [ ] **IF** 3 次修复失败 → 已触发 **H3**
-- [ ] **ASSERT** 没有同时修改多个变量
 
 ## 完成标志
 

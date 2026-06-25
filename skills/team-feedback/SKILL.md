@@ -72,17 +72,21 @@ NO IMPLEMENTATION WITHOUT TECHNICAL VERIFICATION FIRST
    - **IF** 含义不确定 → 先提问澄清，暂不处理该项
 3. **FOR** each `feedback_item`：
    - **EXEC** `grep` / **READ** 实际代码 — 验证该建议在当前代码库中的技术正确性
-   - **ASSERT** `验证基于代码证据`（不凭印象）
+   - **IF** `exit_code != 0` && `output 为空` → 标记该项为 *not found*，记录无法验证
+   - **ASSERT** `evidence_source != 印象`（验证基于代码证据，不凭印象）
 4. **FOR** each `feedback_item`：
    - **IF** 技术正确 → 记录确认，标记待实施
    - **ELSE** → 用技术理由推回（参考「推回指南」）
-5. 分析完成 → **IF** 存在「增加功能/完善」建议 → Phase 2 YAGNI 检查；**IF** 存在外部反馈 → Phase 3 验证。最终 → **GOTO** Phase 4 实施
+5. **IF** 存在「增加功能/完善」建议 → **GOTO** Phase 2
+6. **IF** 存在外部反馈 → **GOTO** Phase 3
+7. **GOTO** Phase 4
 
 ### Phase 2：YAGNI 检查
 
 > 当审查者建议"实现得更完善"或添加新功能时，用代码证据判断是否真正需要。
 
 1. **EXEC** `grep` 在代码库中查找该功能/接口的实际使用
+   - **IF** `exit_code != 0` && `output 为空` → `usage_result` = *not found*
 
 2. **MATCH** `usage_result`：
    - exported / public API 且有外部消费方可能 → 保留，即使当前项目未直接调用
@@ -96,8 +100,9 @@ NO IMPLEMENTATION WITHOUT TECHNICAL VERIFICATION FIRST
 
 1. **FOR** each `external_feedback_item`：
    - **EXEC** `grep` / **READ** 实际代码 — 验证技术正确性（同 Phase 1 步骤 3）
+   - **IF** `exit_code != 0` && `output 为空` → 标记该项为 *not found*
    - **READ** `08-ai-decisions.md` — 检查与已有决策是否冲突
-   - **ASSERT** `验证基于代码证据`（不凭印象）
+   - **ASSERT** `evidence_source != 印象`（验证基于代码证据，不凭印象）
 
 2. **MATCH** `check_result`：
    - 技术正确 + 无冲突 → 标记待实施（**GOTO** Phase 4）
@@ -106,6 +111,7 @@ NO IMPLEMENTATION WITHOUT TECHNICAL VERIFICATION FIRST
    - 与已有决策冲突 → **H3**：暂停，展示冲突点，等待用户决策
    - 反馈揭示 spec 遗漏 → **ROUTE** `team-spec`
    - 反馈揭示架构问题 → **H3**
+   - *default* → 记录情况 → **NEEDS_CONTEXT**
 
 ### Phase 4：实施
 
@@ -121,17 +127,17 @@ NO IMPLEMENTATION WITHOUT TECHNICAL VERIFICATION FIRST
 实施顺序：
 
 1. **ASSERT** `不明确项 == 0`（所有不明确项已在 Phase 1 步骤 2 中澄清）
+   - `不明确项 > 0` → **GOTO** Phase 1 步骤 2 澄清后重试
 2. 按优先级排序：阻塞问题 → 简单修复 → 复杂修复
 3. **FOR** each `impl_item`（按排序顺序）：
    - 实施修改
    - **EXEC** `verify_cmd` — 单独测试该项修改
    - **ASSERT** `exit_code == 0` && `failures == 0`
-     - **IF** `tests_fail` → 立即定位原因并修复 → **GOTO** Step 3 当前项重新测试
+     - `exit_code != 0` → 立即定位原因并修复 → **GOTO** Step 3 当前项重新测试
 4. **EXEC** `verify_cmd` — 全量测试，确认无回归
    - **ASSERT** `exit_code == 0` && `failures == 0`
-   - **IF** `regression_detected` → 定位引入问题的修改 → **ROLLBACK** 该修改 → 重新实施 → **GOTO** Step 3 该项
-5. **IF** 任务目录存在（编排模式）：
-   - **WRITE** 每项修改的实施结果（反馈项 + 修改内容 + 测试结果）到 `08-ai-decisions.md`
+     - `exit_code != 0` → 定位引入问题的修改 → **ROLLBACK** 该修改 → 重新实施 → **GOTO** Step 3 该项
+5. **IF** 任务目录存在（编排模式）→ **WRITE** `08-ai-decisions.md` 每项修改的实施结果（反馈项 + 修改内容 + 测试结果）
 
 **验证协议**（步骤 3-4 声明"通过"前必须执行 `_team-rules/verification-protocol.md` 的 5 个步骤）
 
@@ -180,10 +186,12 @@ NO IMPLEMENTATION WITHOUT TECHNICAL VERIFICATION FIRST
 
 ## 自检门禁
 
-- [ ] **ASSERT** 每项反馈都经过技术验证（不是表演性同意）
-- [ ] **ASSERT** 不明确项已澄清后才实施
-- [ ] **ASSERT** 每项修改单独 **EXEC** `verify_cmd` 测试过
-- [ ] **ASSERT** 无回归（**EXEC** 全量测试确认）
+**GATE** 产出前自检（全部通过才放行）：
+
+- [ ] **ASSERT** `每项反馈.技术验证 == true`
+- [ ] **ASSERT** `不明确项 == 0`
+- [ ] **ASSERT** `每项修改.单独测试 == passed`
+- [ ] **ASSERT** `全量测试.exit_code == 0`
 - [ ] **IF** 反馈揭示 spec 遗漏 → 已 **ROUTE** `team-spec`
 - [ ] **IF** 反馈揭示架构问题 → 已触发 **H3**
 

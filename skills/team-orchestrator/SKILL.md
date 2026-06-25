@@ -51,7 +51,7 @@ flowchart TD
 
 **推理框架**：
 
-1. **当前状态**：上一个 Agent 产出质量？DONE 还是 DONE_WITH_CONCERNS？
+1. **当前状态**：上一个 Agent 产出质量？`DONE` 还是 `DONE_WITH_CONCERNS`？
 2. **路由选择**：调度哪个 Agent？有无需回退？
 3. **上下文传递**：下一个 Agent 需要哪些文件？传递完整吗？
 4. **门禁检查**：当前阶段门禁全部满足？有无被绕过？
@@ -203,7 +203,7 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 **IF** 编排器不确定当前流程位置（上下文被压缩后）：
 
 1. **READ** `docs/tasks/{slug}/.checkpoint.json` → 获取 `current_step` 和 `next_step`
-2. **EXEC** 扫描 slug 目录下已有文件 → 交叉验证阶段
+2. **EXEC** 扫描 slug 目录下已有文件 → **ASSERT** `exit_code == 0` → 交叉验证阶段
 3. 从 checkpoint 记录的位置恢复流程，不重复已完成的 Step
 
 ## 质量职责
@@ -288,7 +288,7 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
     "review→impl": 0,
     "review→spec": 0
   },
-  "status": "IN_PROGRESS|DONE|DONE_WITH_CONCERNS|NEEDS_CONTEXT|BLOCKED",
+  "status": "IN_PROGRESS | DONE | DONE_WITH_CONCERNS | NEEDS_CONTEXT | BLOCKED",
   "blocked_reason": null,
   "parent_slug": null
 }
@@ -297,10 +297,10 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 **`status` 字段使用规则**：
 
 - `IN_PROGRESS`：默认值。Step 1 到 Step 8 期间所有正常流转
-- **BLOCKED**：触发 **H3** 或 Kill Switch 时设置，必须同时填写 `blocked_reason`
-- **NEEDS_CONTEXT**：缺少关键上下文无法继续时设置
-- **DONE**：仅在 Step 8 质量检查全部通过后设置。执行过程中不得使用此值
-- **DONE_WITH_CONCERNS**：Step 8 通过但有保留意见时设置
+- `BLOCKED`：触发 H3 或 Kill Switch 时设置，必须同时填写 `blocked_reason`
+- `NEEDS_CONTEXT`：缺少关键上下文无法继续时设置
+- `DONE`：仅在 Step 8 质量检查全部通过后设置。执行过程中不得使用此值
+- `DONE_WITH_CONCERNS`：Step 8 通过但有保留意见时设置
 
 **恢复检测**：**IF** 用户执行 `/team-orchestrator {slug}`（已有 slug）→ **READ** `.checkpoint.json`：
 
@@ -318,12 +318,12 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 
 **MATCH** `existing_files`：
 
-- 仅有 `00-design-brief.md` → **GOTO** Step 1.5 或 Step 2
-- 有 `03-sdd.md` + `04-boundary.md`（或 01-05 齐全）→ **GOTO** Step 3
-- 有 `06-tdd-log.md` 但无 `09-test-matrix.md` → **GOTO** Step 4
-- 有 `09-10` 但无 `11-review.md` → **GOTO** Step 5
-- 有 `11-13` 但无 `14-team.md` → **GOTO** Step 6
-- 有 `14-team.md` + `15-brief.md` → **GOTO** Step 7
+- `仅有 00-design-brief.md` → **GOTO** Step 1.5 或 Step 2
+- `有 03-sdd.md + 04-boundary.md`（或 01-05 齐全）→ **GOTO** Step 3
+- `有 06-tdd-log.md 但无 09-test-matrix.md` → **GOTO** Step 4
+- `有 09-10 但无 11-review.md` → **GOTO** Step 5
+- `有 11-13 但无 14-team.md` → **GOTO** Step 6
+- `有 14-team.md + 15-brief.md` → **GOTO** Step 7
 - *none*（不符合任何模式）→ **H3**，展示已有/缺失文件清单，由用户决定
 
 **回退计数规则**：`rollback_counts` 按 `source→target` 对独立计数。计数仅在以下情况重置：(1) **H3** 后用户明确决定重试；(2) specAgent 重新产出规格后，重置所有下游计数。正常回退修复不重置。
@@ -336,10 +336,10 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
    2. **IF** 用户传入已有 slug 且 `docs/tasks/{slug}/00-design-brief.md` 存在 → 复用该 slug
    3. **IF** 分期任务（H4 后续分期触发）→ slug 包含 `-p{N}` 后缀，checkpoint 记录 `parent_slug`
    4. *default* → 取最大序号 +1（从 `0001` 起），拼接 `{NNNN}-{关键词}`（kebab-case，≤ 50 字符）
-3. **EXEC** 创建 `docs/tasks/{slug}/` 目录（**IF** 已存在 → 跳过）
+3. **EXEC** 创建 `docs/tasks/{slug}/` 目录（**IF** 已存在 → 跳过）→ **ASSERT** `exit_code == 0`
 4. **WRITE** checkpoint：`current_step=Step 1, next_step=H1, phase=init, status=IN_PROGRESS`
-5. **READ** `docs/tasks/progress.md`（**IF** 不存在 → 创建含表头）→ **ASSERT** `{slug}` 未被重复派发
-   - **IF** 已存在且状态 DONE → 提示用户，询问是否新建变体任务
+5. **READ** `docs/tasks/progress.md`（**IF** 不存在 → 创建含表头）→ **ASSERT** `{slug} 不在 progress.md 已完成列表中`
+   - **IF** 已存在且状态 `DONE` → 提示用户，询问是否新建变体任务
 
    > progress.md 是跨任务进度索引，位于 `docs/tasks/` 根目录，不在 slug 子目录中。
 
@@ -347,11 +347,12 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 7. **WRITE**（对话中）向用户展示：任务理解 + 初步方案 + 风险预判 + 分期建议
    - **IF** `00-design-brief.md` 存在 → **READ** 并将摘要纳入展示
 
-**GATE** H1 用户已确认
+**MATCH** `user_response`：
 
-- 用户确认 → **WRITE** checkpoint：`completed_steps 追加 H1` → **GOTO** Step 1.5
-- 用户不确认 → 根据反馈调整 → 重新展示
-- 任务明显不可行 → 向用户提出终止建议（Kill Switch 预检查）
+- `确认` → **WRITE** checkpoint：`completed_steps 追加 H1` → **GOTO** Step 1.5
+- `不确认` → 根据反馈调整 → 重新展示
+- `任务不可行` → 向用户提出终止建议（Kill Switch 预检查）
+- *default* → 请求用户明确回复
 
 ### Step 1.5：Git 分支初始化
 
@@ -362,17 +363,17 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 **RESOLVE** `base_branch`（首个命中即停）：
 
 1. **READ** `CLAUDE.md` / `.cursor/rules/` → 查找 `base_branch` 或 `default_branch` 配置项
-2. **EXEC** `git symbolic-ref refs/remotes/origin/HEAD` → 解析分支名；失败则 **EXEC** `git remote show origin`
-3. **FOR** `name` in [`main`, `master`, `develop`] → **EXEC** `git show-ref --verify refs/heads/{name}` 首个存在即停
+2. **EXEC** `git symbolic-ref refs/remotes/origin/HEAD` → **IF** `exit_code == 0` → 解析分支名；**ELSE** → **EXEC** `git remote show origin` → **IF** `exit_code == 0` → 解析分支名
+3. **FOR** each `name` in [`main`, `master`, `develop`]：**EXEC** `git show-ref --verify refs/heads/{name}` → **IF** `exit_code == 0` → 首个存在即停
 4. *none* → **H3**，请求用户指定基准分支
 
 #### 1.5.2 创建功能分支
 
-1. **EXEC** `git branch --show-current` → 获取当前分支名
-2. **EXEC** `git status --porcelain` → 检查未提交变更
+1. **EXEC** `git branch --show-current` → **ASSERT** `exit_code == 0` → 获取当前分支名
+2. **EXEC** `git status --porcelain` → **ASSERT** `exit_code == 0`
    - **IF** `output` 非空 → **GOTO** 1.5.2.1：处理未提交变更
 3. **EXEC** `git checkout -b {slug}`
-   - **ASSERT** `exit_code == 0`（分支已存在 → `git checkout {slug}`）
+   - **IF** `exit_code != 0`（分支已存在）→ **EXEC** `git checkout {slug}` → **ASSERT** `exit_code == 0`
 4. **WRITE** checkpoint：`current_step=Step 2, branch={slug}, base_branch={基准分支名}, completed_steps 追加 Step 1.5`
 
 #### 1.5.2.1：处理未提交变更
@@ -383,9 +384,10 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 
 **MATCH** `user_choice`：
 
-- (A) stash 后继续 → **EXEC** `git stash` → **GOTO** 1.5.2 步骤 3
-- (B) 先提交再继续 → 等待用户提交 → **GOTO** 1.5.2 步骤 3
-- (C) 取消 → **BLOCKED**
+- `stash 后继续` → **EXEC** `git stash` → **ASSERT** `exit_code == 0` → **GOTO** 1.5.2 步骤 3
+- `先提交再继续` → 等待用户提交 → **GOTO** 1.5.2 步骤 3
+- `取消` → **BLOCKED**
+- *default* → 请求用户从以上选项中选择
 
 不自动 stash 或丢弃。
 
@@ -394,7 +396,7 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 - **IF** 当前分支名 ≠ `base_branch` → 使用当前分支，checkpoint 中 `branch` 记录当前分支名
 - **IF** 用户指定 `--no-branch` → 直接在当前分支上工作
 
-**恢复场景**：**IF** 断点续传（checkpoint 已有 `branch` 字段）→ **ASSERT** 当前分支与 checkpoint 一致。不一致 → 提示用户切换分支，不自动切换。
+**恢复场景**：**IF** 断点续传（checkpoint 已有 `branch` 字段）→ **ASSERT** `当前分支 == checkpoint.branch`。不一致 → 提示用户切换分支，不自动切换。
 
 ### Step 2：调度 specAgent
 
@@ -422,8 +424,8 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 
 **完成验证**（产出门禁）：
 
-**IF** `mode == full` → **FOR** each file in [`01-plan.md`, `02-context.md`, `03-sdd.md`, `04-boundary.md`, `05-risk.md`, `prompt-template.md`]：
-**ELSE**（`mode == compact`）→ **FOR** each file in [`03-sdd.md`, `04-boundary.md`]：
+**IF** `mode == full` → **FOR** each `file` in [`01-plan.md`, `02-context.md`, `03-sdd.md`, `04-boundary.md`, `05-risk.md`, `prompt-template.md`]：
+**ELSE**（`mode == compact`）→ **FOR** each `file` in [`03-sdd.md`, `04-boundary.md`]：
 
 - **ASSERT** `文件存在`
 - **ASSERT** `有效行数 >= 5`
@@ -445,9 +447,10 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 
 **MATCH** `user_response`：
 
-- 用户确认 → **WRITE** checkpoint：`current_step=Step 3, completed_steps 追加 H2` → **GOTO** Step 3
-- 用户要求修改 → **GOTO** Step 2（根据反馈调整后重新调度 specAgent）
-- Kill Switch（用户认为不可行/范围不可接受）→ 终止流程
+- `用户确认` → **WRITE** checkpoint：`current_step=Step 3, completed_steps 追加 H2` → **GOTO** Step 3
+- `用户要求修改` → **GOTO** Step 2（根据反馈调整后重新调度 specAgent）
+- `Kill Switch`（用户认为不可行/范围不可接受）→ **WRITE** checkpoint：`status=BLOCKED` → **BLOCKED**
+- *default* → 请求用户明确回复
 
 ### Step 3：调度 implAgent
 
@@ -474,10 +477,10 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 
 **完成验证**（产出门禁）：
 
-**FOR** each file in [`06-tdd-log.md`, `07-prompt-log.md`, `08-ai-decisions.md`]：
+**FOR** each `file` in [`06-tdd-log.md`, `07-prompt-log.md`, `08-ai-decisions.md`]：
 
 - **ASSERT** `文件存在` && `有效行数 >= 5`
-- **ASSERT** `06-tdd-log.md` 至少包含一个 `RED` 段落标记
+- **ASSERT** `06-tdd-log.md 包含 RED 段落标记`
 - 任一不通过 → **ROLLBACK** implAgent，指明缺失文件名
 
 **测试/CI 门禁**：
@@ -495,7 +498,7 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 2. **ASSERT** `RED.失败输出` 非空 && `RED.失败输出` 包含 `FAIL|fail|Error|error|✗|FAILED`
 3. **ASSERT** `GREEN.通过输出` 非空 && `GREEN.通过输出` 包含 `PASS|pass|OK|✓|✅|passed`
 4. **ASSERT** `RED.时间 <= GREEN.时间` && `GREEN.时间 <= REFACTOR.时间`
-5. **EXEC** `git log --oneline` → **ASSERT** `test:` 提交数 >= `06-tdd-log.md` 功能点数
+5. **EXEC** `git log --oneline` → **ASSERT** `exit_code == 0` && `test: 提交数 >= 功能点数`
 
 任一项不通过 → **ROLLBACK** implAgent，附具体不合格项及期望修正行为。
 
@@ -523,10 +526,10 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 
 **完成验证**（产出门禁）：
 
-**FOR** each file in [`09-test-matrix.md`, `10-test-report.md`]：
+**FOR** each `file` in [`09-test-matrix.md`, `10-test-report.md`]：
 
 - **ASSERT** `文件存在` && `有效行数 >= 5`
-- **ASSERT** `10-test-report.md` 包含测试输出证据（含退出码）
+- **ASSERT** `10-test-report.md 包含测试输出证据（含退出码）`
 - 任一不通过 → **ROLLBACK** testAgent，指明缺失文件名
 
 **READ** `10-test-report.md` 中 testAgent 路由决策（→ reviewAgent / → implAgent / → specAgent / → **H3**）
@@ -539,11 +542,12 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 
 **MATCH** `test_issue`：
 
-- bug → **WRITE** checkpoint：`rollback_counts test→impl +1` → **ROLLBACK** implAgent（**GOTO** Step 3，附 bug 上下文）
-- spec 遗漏 → **WRITE** checkpoint：`rollback_counts test→spec +1` → **ROLLBACK** specAgent（**GOTO** Step 2，附遗漏上下文）
-- 同一对第 3 次回退 → **WRITE** checkpoint：`status=BLOCKED` → 强制 **H3**
-- Kill Switch（任务不可行）→ **WRITE** checkpoint：`status=BLOCKED` → **H3**
-- 人类需决策 → **WRITE** checkpoint：`status=BLOCKED` → **H3**
+- `bug` → **WRITE** checkpoint：`rollback_counts test→impl +1` → **ROLLBACK** implAgent（**GOTO** Step 3，附 bug 上下文）
+- `spec 遗漏` → **WRITE** checkpoint：`rollback_counts test→spec +1` → **ROLLBACK** specAgent（**GOTO** Step 2，附遗漏上下文）
+- `同一对第 3 次回退` → **WRITE** checkpoint：`status=BLOCKED` → 强制 **H3**
+- `Kill Switch`（任务不可行）→ **WRITE** checkpoint：`status=BLOCKED` → **H3**
+- `人类需决策` → **WRITE** checkpoint：`status=BLOCKED` → **H3**
+- *default* → 记录问题，继续下一步
 
 ### Step 5：调度 reviewAgent
 
@@ -568,10 +572,10 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 
 **完成验证**（产出门禁）：
 
-**FOR** each file in [`11-review.md`, `12-asset-update.md`, `13-retrospective.md`, `task-rules.md`]：
+**FOR** each `file` in [`11-review.md`, `12-asset-update.md`, `13-retrospective.md`, `task-rules.md`]：
 
 - **ASSERT** `文件存在` && `有效行数 >= 5`
-- **ASSERT** `13-retrospective.md` 包含"新规则"或"本次沉淀"关键词
+- **ASSERT** `13-retrospective.md 包含 "新规则" 或 "本次沉淀" 关键词`
 - 任一不通过 → **ROLLBACK** reviewAgent，指明缺失文件名
 
 **READ** `11-review.md` 中 reviewAgent 修复/回退决策
@@ -584,32 +588,33 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 
 **MATCH** `review_issue`：
 
-- bug → **WRITE** checkpoint：`rollback_counts review→impl +1` → **ROLLBACK** implAgent（**GOTO** Step 3，附 bug 上下文）
-- spec 遗漏 → **WRITE** checkpoint：`rollback_counts review→spec +1` → **ROLLBACK** specAgent（**GOTO** Step 2，附遗漏上下文）
-- 同一对第 3 次回退 → **WRITE** checkpoint：`status=BLOCKED` → 强制 **H3**
-- Kill Switch → **WRITE** checkpoint：`status=BLOCKED` → **H3**
-- 人类需决策 → **WRITE** checkpoint：`status=BLOCKED` → **H3**
+- `bug` → **WRITE** checkpoint：`rollback_counts review→impl +1` → **ROLLBACK** implAgent（**GOTO** Step 3，附 bug 上下文）
+- `spec 遗漏` → **WRITE** checkpoint：`rollback_counts review→spec +1` → **ROLLBACK** specAgent（**GOTO** Step 2，附遗漏上下文）
+- `同一对第 3 次回退` → **WRITE** checkpoint：`status=BLOCKED` → 强制 **H3**
+- `Kill Switch` → **WRITE** checkpoint：`status=BLOCKED` → **H3**
+- `人类需决策` → **WRITE** checkpoint：`status=BLOCKED` → **H3**
+- *default* → 记录问题，继续下一步
 
 ### Step 6：补全团队级证据
 
 **IF** `mode == compact` → 跳过此步，**GOTO** Step 7。checkpoint 中 `completed_steps` 不含 Step 6。
 
-> 由编排器自己执行以下检查并产出 2 个文件。
+> Step 6 的检查和产出由编排器自身完成，不调度子 Skill。
 
 #### 6.1 一致性自动化检查（先执行再写入 14-team.md）
 
-1. **READ** `02-context.md` → 提取术语表 → **EXEC** `grep` 检查任务目录下所有文件中的不一致别名
-2. **EXEC** 检查任务目录下所有文件是否遵循统一 Markdown 标题层级
-3. **EXEC** `git log --oneline` → **ASSERT** `commit_format` 遵循 `type: description`
-4. **READ** reviewAgent 新增规则 → **ASSERT** `新增规则` 与 `已有规则` 不矛盾
-5. **IF** 多个模块级 AI 规范文件存在 → **ASSERT** `结构一致`
-6. **READ** 任务目录下所有文件 → **ASSERT** 来源标签使用一致 + 表格格式统一 + 引用块风格统一
+1. **READ** `02-context.md` → 提取术语表 → **EXEC** `grep` 检查任务目录下所有文件中的不一致别名 → **ASSERT** `不一致别名数 == 0`
+2. **EXEC** 检查任务目录下所有文件是否遵循统一 Markdown 标题层级 → **ASSERT** `标题层级一致`
+3. **EXEC** `git log --oneline` → **ASSERT** `exit_code == 0` && `commit 消息格式 == type: description`
+4. **READ** reviewAgent 新增规则 → **ASSERT** `新增规则与已有规则无矛盾`
+5. **IF** 多个模块级 AI 规范文件存在 → **ASSERT** `规范文件结构一致`
+6. **READ** 任务目录下所有文件 → **ASSERT** `来源标签使用一致` && `表格格式统一` && `引用块风格统一`
 
 **IF** 发现不一致 → 立即修复。
 
 #### 6.2 确保每位成员有复盘
 
-**READ** `13-retrospective.md` → **EXEC** `git log --format='%an' | sort -u` → **IF** 多位贡献者 → **ASSERT** 每位成员有独立复盘段落或独立文件。
+**READ** `13-retrospective.md` → **EXEC** `git log --format='%an' | sort -u` → **ASSERT** `exit_code == 0` → **IF** 多位贡献者 → **ASSERT** `每位成员有独立复盘段落或独立文件`。
 
 #### 文件 14：`14-team.md`
 
@@ -645,9 +650,10 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 
 **MATCH** `finish_result`：
 
-- merge → **ASSERT** `merge_commit 存在`
-- PR → **ASSERT** `PR 已创建`
-- keep/discard → 记录用户决策
+- `merge` → **ASSERT** `merge_commit 存在`
+- `PR` → **ASSERT** `PR 已创建`
+- `keep` || `discard` → 记录用户决策
+- *default* → **H3**，请求用户选择分支处理方式
 
 **WRITE** checkpoint：`current_step=Step 7.3, next_step=Step 7.5, phase=finish, completed_steps 追加 Step 7`
 
@@ -662,21 +668,24 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 
 **MATCH** `user_decision`：
 
-- 验收通过 → **WRITE** checkpoint：`completed_steps 追加 H4` → **GOTO** Step 7.5
-- 验收不通过 → 根据反馈 **GOTO** 对应 Agent
-- 后续分期决策（**IF** `01-plan.md` §二 定义了后续分期候选）→ **GOTO** 7.3.1：后续分期启动
+- `验收通过` → **WRITE** checkpoint：`completed_steps 追加 H4` → **GOTO** Step 7.5
+- `验收不通过` → 根据反馈 **GOTO** 对应 Agent
+- `后续分期` → **IF** `01-plan.md` §二 定义了后续分期候选 → **GOTO** 7.3.1：后续分期启动
+- *default* → 请求用户明确决策
 
 #### 7.3.1：后续分期启动
 
 > 用户验收通过后，如 `01-plan.md` 定义了后续分期候选，启动下一期任务。
 
 1. **WRITE**（对话中）候选项 + 触发条件给用户
-2. **IF** 用户批准 →
+2. **IF** 用户批准：
    - **RESOLVE** 新 slug：取最大序号 +1，关键词追加 `-p{N}`
-   - **EXEC** 创建新目录 `docs/tasks/{新slug}/`
+   - **EXEC** 创建新目录 `docs/tasks/{新slug}/` → **ASSERT** `exit_code == 0`
    - **WRITE** 新 `.checkpoint.json`，含 `parent_slug` 指向上期
    - **GOTO** Step 1（H1 简化为单句确认）
    - specAgent 调度时额外传递上期 `01-plan.md` 候选表和 `03-sdd.md` 路径
+
+   **ELSE** → 记录用户决策，流程结束
 
 ### Step 7.5：归档与知识合并
 
@@ -689,7 +698,7 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 3. **WRITE** `docs/tasks/progress.md`（**注意是 `docs/tasks/` 根目录**）追加：
 
 ```markdown
-| {slug} | {YYYY-MM-DD} | {DONE/DONE_WITH_CONCERNS} | {起始commit..结束commit} | {一句话摘要} |
+| {slug} | {YYYY-MM-DD} | `DONE` / `DONE_WITH_CONCERNS` | {起始commit..结束commit} | {一句话摘要} |
 ```
 
 4. **IF** 本次变更影响 AGENTS.md 架构描述 → **WRITE** 同步更新
@@ -713,60 +722,60 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 
 **硬门槛（7 项全部必须通过）：**
 
-- [ ] G1: `[完整模式]` **ASSERT** `01-plan.md` 包含目标澄清、上下文、阶段拆分、修改范围、验证计划。`[精简替代]` **ASSERT** `03-sdd.md` 包含任务目标和关键设计决策
-- [ ] G2: **ASSERT** `04-boundary.md` 有 allow/deny 两个方向
-- [ ] G3: **ASSERT** `09-test-matrix.md` + `10-test-report.md` + 测试代码存在
+- [ ] G1: `[完整模式]` **ASSERT** `01-plan.md 包含目标澄清、上下文、阶段拆分、修改范围、验证计划`。`[精简替代]` **ASSERT** `03-sdd.md 包含任务目标和关键设计决策`
+- [ ] G2: **ASSERT** `04-boundary.md 有 allow/deny 两个方向`
+- [ ] G3: **ASSERT** `09-test-matrix.md 存在` && `10-test-report.md 存在` && `测试代码存在`
 - [ ] G4: **EXEC** 项目 CI 全量检查 → **ASSERT** `exit_code == 0` && `failures == 0`
-- [ ] G5: **ASSERT** 项目 AI 规范中每条规则包含「触发条件 + 可执行指令」
-- [ ] G6: `[完整模式]` **ASSERT** `05-risk.md` 有风险识别 + `11-review.md` §四 有剩余风险说明。`[精简替代]` **ASSERT** `11-review.md` §四 有剩余风险说明
-- [ ] G7: `[完整模式]` **ASSERT** `08-ai-decisions.md` 能解释关键决策 + `15-brief.md` 有决策解释表。`[精简替代]` **ASSERT** `08-ai-decisions.md` 能解释关键决策
+- [ ] G5: **ASSERT** `项目 AI 规范中每条规则包含触发条件 + 可执行指令`
+- [ ] G6: `[完整模式]` **ASSERT** `05-risk.md 有风险识别` && `11-review.md §四 有剩余风险说明`。`[精简替代]` **ASSERT** `11-review.md §四 有剩余风险说明`
+- [ ] G7: `[完整模式]` **ASSERT** `08-ai-decisions.md 能解释关键决策` && `15-brief.md 有决策解释表`。`[精简替代]` **ASSERT** `08-ai-decisions.md 能解释关键决策`
 
 **D1 AI 协作资产沉淀（25 分）：**
 
-- [ ] D1.1 **ASSERT** 分层组织：项目级 + 模块级 + task-rules.md 三层齐全
-- [ ] D1.2 **ASSERT** 8 类内容覆盖（业务术语/架构/代码结构/接口/编码规范/测试/Review/交付有对应文件）。不满足 → **ROLLBACK** reviewAgent 补建
-- [ ] D1.3 **ASSERT** `12-asset-update.md` 中每条规则有「触发条件 + 可执行指令 + 示例」
-- [ ] D1.4 **ASSERT** 工具适配 ≥ 2 类
-- [ ] D1.5 **ASSERT** 项目 AI 规范有「资产维护机制」段落
+- [ ] D1.1 **ASSERT** `分层组织：项目级 + 模块级 + task-rules.md 三层齐全`
+- [ ] D1.2 **ASSERT** `8 类内容覆盖`（业务术语/架构/代码结构/接口/编码规范/测试/Review/交付有对应文件）。不满足 → **ROLLBACK** reviewAgent 补建
+- [ ] D1.3 **ASSERT** `12-asset-update.md 中每条规则有触发条件 + 可执行指令 + 示例`
+- [ ] D1.4 **ASSERT** `工具适配 >= 2 类`
+- [ ] D1.5 **ASSERT** `项目 AI 规范有资产维护机制段落`
 
 **D2 AI 协作任务规划（25 分）：**
 
-- [ ] D2.1 `[完整模式]` **ASSERT** `01-plan.md` 有成功标准 ≥ 3 条 + 非目标 ≥ 2 条。`[精简替代]` **ASSERT** `03-sdd.md` §一 有明确目标
-- [ ] D2.2 `[完整模式]` **ASSERT** `02-context.md` 有必要引用 + 已排除上下文。`[精简替代]` 跳过
-- [ ] D2.3 `[完整模式]` **ASSERT** `01-plan.md` 有 ≥ 5 阶段拆分。`[精简替代]` 跳过
-- [ ] D2.4 **ASSERT** `04-boundary.md` 有 allow/deny + 依赖约束
-- [ ] D2.5 `[完整模式]` **ASSERT** `05-risk.md` 有验证计划 + 停下来问人条件 ≥ 3 个。`[精简替代]` 跳过
+- [ ] D2.1 `[完整模式]` **ASSERT** `01-plan.md 有成功标准 >= 3 条` && `非目标 >= 2 条`。`[精简替代]` **ASSERT** `03-sdd.md §一 有明确目标`
+- [ ] D2.2 `[完整模式]` **ASSERT** `02-context.md 有必要引用 + 已排除上下文`。`[精简替代]` 跳过
+- [ ] D2.3 `[完整模式]` **ASSERT** `01-plan.md 有 >= 5 阶段拆分`。`[精简替代]` 跳过
+- [ ] D2.4 **ASSERT** `04-boundary.md 有 allow/deny + 依赖约束`
+- [ ] D2.5 `[完整模式]` **ASSERT** `05-risk.md 有验证计划` && `停下来问人条件 >= 3 个`。`[精简替代]` 跳过
 
 **D3 AI 交付质量保障（27 分）：**
 
-- [ ] D3.1 **ASSERT** `03-sdd.md` 含输入/输出/边界/异常/验收 Checklist
-- [ ] D3.2 **READ** `06-tdd-log.md` → **ASSERT** RED 有失败输出在前 + GREEN 有通过输出在后 + `git log` 中 `test:` 提交早于 `feat:/fix:`
-- [ ] D3.3 **ASSERT** `09-test-matrix.md` 四维矩阵（功能/边界/异常/代码）+ `10-test-report.md` §八 回归验证存在
-- [ ] D3.4 **ASSERT** `06-tdd-log.md` + `11-review.md` 有修复记录
-- [ ] D3.5 **ASSERT** `11-review.md` 含五维度审查 + §四剩余风险
+- [ ] D3.1 **ASSERT** `03-sdd.md 含输入/输出/边界/异常/验收 Checklist`
+- [ ] D3.2 **READ** `06-tdd-log.md` → **ASSERT** `RED 失败输出在前` && `GREEN 通过输出在后` && `git log 中 test: 提交早于 feat:/fix:`
+- [ ] D3.3 **ASSERT** `09-test-matrix.md 四维矩阵存在` && `10-test-report.md §八 回归验证存在`
+- [ ] D3.4 **ASSERT** `06-tdd-log.md 有修复记录` && `11-review.md 有修复记录`
+- [ ] D3.5 **ASSERT** `11-review.md 含五维度审查` && `§四 剩余风险存在`
 
 **D4 AI 使用过程与复盘（13 分）：**
 
-- [ ] D4.1 **ASSERT** `07-prompt-log.md` 每条含五要素
-- [ ] D4.2 **ASSERT** `07-prompt-log.md` 每条含效果记录；**IF** 存在偏离 → 有纠偏前后对比
-- [ ] D4.3 **ASSERT** `07-prompt-log.md` + `08-ai-decisions.md` 有关键过程记录
-- [ ] D4.4 **ASSERT** `13-retrospective.md` 有「本次沉淀的新规则」
-- [ ] D4.5 `[完整模式]` **ASSERT** `15-brief.md` 有 Elevator Pitch + 决策解释 + 亮点 + 测试覆盖 + 风险。`[精简替代]` 跳过
+- [ ] D4.1 **ASSERT** `07-prompt-log.md 每条含五要素`
+- [ ] D4.2 **ASSERT** `07-prompt-log.md 每条含效果记录`；**IF** 存在偏离 → **ASSERT** `有纠偏前后对比`
+- [ ] D4.3 **ASSERT** `07-prompt-log.md 有关键过程记录` && `08-ai-decisions.md 有关键过程记录`
+- [ ] D4.4 **ASSERT** `13-retrospective.md 有「本次沉淀的新规则」`
+- [ ] D4.5 `[完整模式]` **ASSERT** `15-brief.md 有 Elevator Pitch + 决策解释 + 亮点 + 测试覆盖 + 风险`。`[精简替代]` 跳过
 
 **D5 团队协作表现（10 分）：**
 
-> 精简模式下 D5 整组跳过。
+**IF** `mode == compact` → D5 整组跳过。
 
-- [ ] D5.1 **ASSERT** `14-team.md` §一 有角色/负责人/职责/产出物
-- [ ] D5.2 **ASSERT** `14-team.md` §二 一致性检查全部 ✅ 或已修复
-- [ ] D5.3 **ASSERT** `14-team.md` §四 真实问题占比 > 0
-- [ ] D5.4 **ASSERT** `14-team.md` §三 每位贡献者有明确产出物和提交数
+- [ ] D5.1 **ASSERT** `14-team.md §一 有角色/负责人/职责/产出物`
+- [ ] D5.2 **ASSERT** `14-team.md §二 一致性检查全部通过或已修复`
+- [ ] D5.3 **ASSERT** `14-team.md §四 真实问题占比 > 0`
+- [ ] D5.4 **ASSERT** `14-team.md §三 每位贡献者有明确产出物和提交数`
 
 **IF** `unchecked_items > 0` → **GOTO** 对应 Agent 补全。
 
 全部通过 → **WRITE** checkpoint：`status=DONE, completed_steps 追加 Step 7.5 和 Step 8`。
 
-> 此时且仅此时 `status` 设为 **DONE**（如有保留意见则设为 **DONE_WITH_CONCERNS**）。
+此时且仅此时 `status` 设为 `DONE`（如有保留意见则设为 `DONE_WITH_CONCERNS`）。
 
 ## STOP Signals
 
@@ -786,21 +795,23 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 
 ## 自检门禁
 
-- [ ] **IF** 完整模式 → **ASSERT** 17 个文件已产出；**IF** 精简模式 → **ASSERT** 核心文件已产出
-- [ ] **ASSERT** H1 和 H4 经过人类确认（完整模式还需 H2；精简模式需 H2 单句确认）
-- [ ] **ASSERT** 回退计数未超上限（同一对 ≤ 2 次）
-- [ ] **ASSERT** Step 8 质量检查全部通过
-- [ ] **IF** reviewAgent 要求 → **ASSERT** CHANGELOG.md 已更新
-- [ ] **ASSERT** 进度账本已更新
+**GATE** 产出前自检（全部通过才可声明完成）：
+
+- [ ] **IF** `mode == full` → **ASSERT** `17 个文件已产出`；**IF** `mode == compact` → **ASSERT** `核心文件已产出`
+- [ ] **ASSERT** `H1 和 H4 经过人类确认`（完整模式还需 H2；精简模式需 H2 单句确认）
+- [ ] **ASSERT** `回退计数未超上限`（同一对 <= 2 次）
+- [ ] **ASSERT** `Step 8 质量检查全部通过`
+- [ ] **IF** reviewAgent 要求 → **ASSERT** `CHANGELOG.md 已更新`
+- [ ] **ASSERT** `进度账本已更新`
 
 ## 完成标志
 
 **MATCH** `result`：
 
-- 全流程完成 + 质量检查通过 → **DONE**（`模式: {完整/精简}`, `文件: {17/11}`, `质量检查: pass`）
-- 完成但有保留意见 → **DONE_WITH_CONCERNS**（`concerns: [...]`）
-- 缺少关键上下文 → **NEEDS_CONTEXT**
-- 被阻塞（Kill Switch / 人类决策）→ **BLOCKED** → **H3**
+- `全流程完成 + 质量检查通过` → **DONE**（`模式: {完整/精简}`, `文件: {17/11}`, `质量检查: pass`）
+- `完成但有保留意见` → **DONE_WITH_CONCERNS**（`concerns: [...]`）
+- `缺少关键上下文` → **NEEDS_CONTEXT**
+- `被阻塞`（Kill Switch / 人类决策）→ **BLOCKED** → **H3**
 
 ## 集成关系
 

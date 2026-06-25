@@ -57,8 +57,8 @@ NO BRANCH COMPLETION WITHOUT TEST VERIFICATION FIRST
 
 - 通过 → **GOTO** Step 2
 - 失败 → **MATCH** `mode`：
-  - 编排模式 → **ROLLBACK** 编排器，由编排器 **ROUTE** implAgent（附上失败输出）
-  - 独立使用 → **WRITE** 失败详情给用户，推荐 `team-debug`，修复后 **GOTO** Step 1
+  - `orchestrated` → **ROLLBACK** 编排器，由编排器 **ROUTE** implAgent（附上失败输出）
+  - *default* → **WRITE**（对话中）失败详情，推荐 `team-debug`，修复后 **GOTO** Step 1
 
 > 不可忽略失败继续展示选项（FP-4）。
 
@@ -69,16 +69,18 @@ NO BRANCH COMPLETION WITHOUT TEST VERIFICATION FIRST
 1. `READ("docs/tasks/{slug}/.checkpoint.json").base_branch`
 2. `READ("CLAUDE.md").base_branch` / `READ(".cursor/rules/").default_branch`
 3. `EXEC("git symbolic-ref refs/remotes/origin/HEAD")` → 解析分支名
-4. **FOR** `name` in [`main`, `master`, `develop`] → `EXEC("git show-ref --verify refs/heads/{name}")` 首个存在即停
+4. **FOR** each `name` in [`main`, `master`, `develop`] → `EXEC("git show-ref --verify refs/heads/{name}")` 首个存在即停
 5. *none* → **H3**：向用户展示 `git branch --list` 和 `git remote -v`，让用户指定
 
 **EXEC** `git merge-base HEAD {base_branch}` → 获取合并基点
 
-- **ASSERT** `exit_code == 0`（分支无公共祖先 → **BLOCKED**，触发 **H3**）
+**ASSERT** `exit_code == 0`
+
+- 失败（分支无公共祖先）→ **BLOCKED**，触发 **H3**
 
 ### Step 3：展示选项
 
-**WRITE** 选项列表（对话中）：
+**WRITE**（对话中）选项列表：
 
 ```
 实现完成。请选择后续操作：
@@ -95,44 +97,66 @@ NO BRANCH COMPLETION WITHOUT TEST VERIFICATION FIRST
 
 **MATCH** `user_choice`：
 
-- **Option 1**（本地合并）：
+- `Option 1`（本地合并）：
   1. **EXEC** `git checkout {base_branch} && git pull`
+     - **ASSERT** `exit_code == 0`
+       - 失败 → **WRITE**（对话中）错误信息，**BLOCKED**
   2. **EXEC** `git merge {branch} --no-ff`
-     - 合并冲突 → **WRITE**（对话中）冲突文件列表，**MATCH** `user_choice`：
-       - (A) 手动解决冲突后继续
-       - (B) 中止合并，改为创建 PR
-       - (C) 中止合并，保留分支
-     - 不自动解决冲突
-  3. **EXEC** 项目测试命令 → **ASSERT** 合并后无回归
+     - **IF** 合并冲突：
+       - **GOTO** 子步骤 4.1：冲突处理
+     - **ELSE**：
+       - 继续下一步
+  3. **EXEC** 项目测试命令（声明"通过"前须执行 `_team-rules/verification-protocol.md` 的 5 个步骤）
+     - **ASSERT** `exit_code == 0` && `failures == 0`
+       - 失败 → 记录回归详情 → **BLOCKED**
   4. **EXEC** `git branch -d {branch}`
      - **IF** `exit_code != 0` → **WRITE**（对话中）"分支未完全合并，需 -D 强制删除？"，等待用户确认
 
-  **验证协议**（步骤 3 声明"通过"前须执行 `_team-rules/verification-protocol.md` 的 5 个步骤）
-
-- **Option 2**（创建 PR）：
+- `Option 2`（创建 PR）：
   1. **EXEC** `git push -u origin {branch}`
-     - 推送失败（auth 错误、远程未配置）→ **WRITE**（对话中）错误信息给用户，暂停
-  2. **RESOLVE** `pr_cmd`：`READ("CLAUDE.md").pr_cmd` / *default* `gh pr create`
+     - **ASSERT** `exit_code == 0`
+       - 失败（auth 错误、远程未配置）→ **WRITE**（对话中）错误信息给用户，**BLOCKED**
+  2. **RESOLVE** `pr_cmd`（首个命中即停）：
+     1. `READ("CLAUDE.md").pr_cmd` / `READ(".cursor/rules/").pr_cmd`
+     2. *default* → `gh pr create`
   3. **EXEC** `{pr_cmd}`
-     - **ASSERT** `exit_code == 0` → **WRITE** PR URL 给用户
-     - `exit_code != 0` → **WRITE**（对话中）错误信息，暂停
+     - **ASSERT** `exit_code == 0`
+       - 通过 → **WRITE**（对话中）PR URL
+       - 失败 → **WRITE**（对话中）错误信息，**BLOCKED**
 
-- **Option 3**（保留分支）：
-  **WRITE** `保留分支 {branch}。`
+- `Option 3`（保留分支）：
+  **WRITE**（对话中）"保留分支 {branch}。"
 
-- **Option 4**（丢弃）：
-  **ASSERT** 用户已输入 "discard" 确认
+- `Option 4`（丢弃）：
+  **ASSERT** `user_input == "discard"`
   1. **EXEC** `git checkout {base_branch}`
+     - **ASSERT** `exit_code == 0`
   2. **EXEC** `git branch -D {branch}`
+     - **ASSERT** `exit_code == 0`
 
 - *default*（无效输入）→ **WRITE**（对话中）"请选择 1-4"，重新展示选项
 
+#### 子步骤 4.1：冲突处理
+
+**WRITE**（对话中）冲突文件列表（不自动解决冲突）
+
+**MATCH** `conflict_choice`：
+
+- `A` → 手动解决冲突后继续
+- `B` → 中止合并，改为创建 PR
+- `C` → 中止合并，保留分支
+- *default* → **WRITE**（对话中）"请选择 A/B/C"
+
 ### Step 5：清理工作目录
 
-**IF** `user_choice` in [Option 1, Option 2, Option 4]：
+**IF** `user_choice` in [`Option 1`, `Option 2`, `Option 4`]：
 
-1. **EXEC** `git worktree list` → 检查关联工作目录
-2. **IF** `worktree` 存在 → 移除工作目录
+1. **EXEC** `git worktree list`
+   - **IF** `output` 包含关联工作目录 → 移除工作目录
+
+**ELSE**：
+
+- 无需清理
 
 ## STOP Signals
 
@@ -151,21 +175,24 @@ NO BRANCH COMPLETION WITHOUT TEST VERIFICATION FIRST
 
 ## 自检门禁
 
-- [ ] **EXEC** 测试已验证通过（运行项目测试命令确认）
-- [ ] `base_branch` 已 **RESOLVE**
-- [ ] 用户已选择选项（不是自行决定）
-- [ ] **IF** 选择 discard → **ASSERT** 用户已输入 "discard" 确认
-- [ ] 工作目录已清理（如适用）
-- [ ] **IF** 选择 merge → 合并后测试已通过
+**GATE** 完成前自检（全部通过才放行）：
+
+- [ ] **ASSERT** `exit_code == 0` && `failures == 0`（测试已通过）
+- [ ] **ASSERT** `base_branch` 非空
+- [ ] **ASSERT** `user_choice` 非空（用户已选择，非自行决定）
+- [ ] `[Option 4]` **ASSERT** `user_input == "discard"`
+- [ ] **IF** `user_choice == Option 1` → **ASSERT** `merge_test_exit_code == 0`（合并后测试通过）
+- [ ] **IF** `user_choice` in [`Option 1`, `Option 2`, `Option 4`] → **ASSERT** `worktree` 已清理
 
 ## 完成标志
 
 **MATCH** `result`：
 
-- 操作成功执行 → **DONE**
-- 操作成功但有 warning → **DONE_WITH_CONCERNS**
-- 无法确定基准分支 → **NEEDS_CONTEXT**
-- 测试失败或合并冲突 → **BLOCKED**
+- `操作成功` → **DONE**
+- `操作成功但有 warning` → **DONE_WITH_CONCERNS**
+- `无法确定基准分支` → **NEEDS_CONTEXT**
+- `测试失败` || `合并冲突` → **BLOCKED**
+- *default* → **BLOCKED**，触发 **H3**
 
 ## 集成关系
 

@@ -91,7 +91,7 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 1. **READ** `git diff`（代码变更）+ 修改的文件完整内容
 2. **READ** `03-sdd.md`（规格对照）
 
-**FOR** 每个修改的文件，按以下 5 个维度审查：
+**FOR** each `modified_file`：按以下 5 个维度审查
 
 | 维度         | 检查内容                                                       |
 | ------------ | -------------------------------------------------------------- |
@@ -101,13 +101,13 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 | **安全**     | 是否有注入风险？是否有敏感信息泄露？是否有权限检查遗漏？       |
 | **测试覆盖** | 测试是否覆盖了所有边界？测试命名是否清晰？测试是否可重复？     |
 
-> 发现的问题使用下方"问题分级标准"统一分级（P0-P3），不按维度预设级别。
+发现的问题使用下方"问题分级标准"统一分级（P0-P3），不按维度预设级别。
 
 ### Phase 1.5：Constitutional 合规检查
 
-> **精简模式注意**：`--compact` 模式下 01-plan.md、02-context.md、05-risk.md 不存在。涉及这些文件的检查项改为检查 03-sdd.md 中是否有对应信息，或标注"精简模式豁免"。
+`[精简模式]` 01-plan.md、02-context.md、05-risk.md 不存在时，涉及这些文件的检查项改为检查 03-sdd.md 中是否有对应信息，或标注"精简模式豁免"。
 
-**FOR** 每条 Constitutional Rule，执行对应检查：
+**FOR** each `constitutional_rule`：执行对应检查
 
 | 规则             | 检查方式                                                                                 | 违规表现                     | 严重级别 |
 | ---------------- | ---------------------------------------------------------------------------------------- | ---------------------------- | -------- |
@@ -124,7 +124,7 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 
 **ASSERT** `constitutional_rules_checked == 9`
 
-- 存在未检查项 → 补充检查后继续
+- `constitutional_rules_checked < 9` → 补充检查后继续
 
 #### 问题分级标准
 
@@ -139,17 +139,17 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 
 **MATCH** `severity`：
 
-- `severity == P0` || `severity == P1`
+- `P0` || `P1`
   - `P0 实现 bug` && `spec 定义正确` → **ROUTE** implAgent（通过编排器）
   - `P0 设计/架构缺陷` → **ROUTE** specAgent（通过编排器）
   - `P0 安全漏洞` → **H3**（安全决策需要人类确认）
   - `P1 实现 bug` → **ROUTE** implAgent（通过编排器）
   - `P1 测试遗漏` → **ROUTE** implAgent（通过编排器，需要补写测试）
   - `P0/P1 spec 遗漏` → **ROUTE** specAgent（通过编排器）
-  - `需要人类决策` → **H3**（有多个可行方案需要选择）
-- `severity == P2` → 自行修复（**GOTO** Phase 3）
-- `severity == P3` → 记录但不处理
-- *no issues* → **GOTO** Phase 4
+  - 需要人类决策 → **H3**（有多个可行方案需要选择）
+- `P2` → 自行修复（**GOTO** Phase 3）
+- `P3` → 记录但不处理
+- *none* → **GOTO** Phase 4
 
 **回退时必须提供**：
 
@@ -165,6 +165,7 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 
 1. 直接修改代码/测试（**每个问题限 20 行以内的修改**——更大规模的重构记录为建议，不直接执行）
 2. **EXEC** 项目测试命令 — 确认修复正确
+   **ASSERT** `exit_code == 0` — 测试失败 → 回滚修改 → **GOTO** Phase 2
 3. **EXEC** 项目 CI 检查命令 — 确认无 lint 问题
 
 **验证协议**（步骤 2-3 声明"通过"前必须执行 `_team-rules/verification-protocol.md` 的 5 个步骤）
@@ -173,20 +174,20 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
    - 通过 → **WRITE** 修复详情（问题 ID + 修复内容 + 验证结果）到 `11-review.md` §三修复记录
    - 修复导致新测试失败或引入新问题 → 立即停止自修 → **ROLLBACK** implAgent（通过编排器），附带修复尝试的上下文和失败详情
 
-**IF** 问题路由到 implAgent/specAgent：
+**MATCH** `route_target`：
 
-1. **WRITE** 问题详情到 `11-review.md`
-2. 通过编排器传递上下文
-
-**IF** 问题需要人类决策：
-
-1. **WRITE** 问题详情到 `11-review.md`
-2. 向用户展示问题 + 选项 → **H3**，等待决策
-3. 根据决策执行修复
+- `implAgent` || `specAgent` →
+  1. **WRITE** 问题详情到 `11-review.md`
+  2. 通过编排器传递上下文
+- `human` →
+  1. **WRITE** 问题详情到 `11-review.md`
+  2. 向用户展示问题 + 选项 → **H3**，等待决策
+  3. 根据决策执行修复
+- *default* → 继续 Phase 4
 
 ### Phase 4：AI 协作资产维护（消费方契约）
 
-> **精简模式**：仅执行 4.1（任务规则）、4.6（CHANGELOG）、4.8（工具适配确认）。跳过 4.2、4.3、4.4、4.5、4.7、4.9。
+`[精简模式]` 仅执行 4.1（任务规则）、4.6（CHANGELOG）、4.8（工具适配确认）。跳过 4.2、4.3、4.4、4.5、4.7、4.9。
 
 **WRITE** 所有资产更新记录到 `12-asset-update.md`。
 
@@ -246,12 +247,16 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 
 → **READ** `AGENTS.md`（**IF** 不存在 → 创建）→ **WRITE** 在对应章节追加或修改，保持与代码实际结构一致。AGENTS.md 应包含：系统架构概览、模块职责清单、关键接口定义、目录结构说明。
 
+**ELSE**：跳过 AGENTS.md 更新
+
 #### 4.5 模块级 AI 规范
 
 **IF** 本次任务修改了特定模块（如 `frontend/`、`backend/`）：
 
 1. **READ** 该模块的 AI 规范文件（`CLAUDE.md` / `.cursor/rules/`）
 2. **IF** 需要更新（新增的 API/接口规范、测试约定、代码模式） → **WRITE** 追加到模块 AI 规范文件
+
+**ELSE**：跳过模块级规范更新
 
 #### 4.6 CHANGELOG.md
 
@@ -282,12 +287,12 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 1. **READ** `docs/{checklist_type}.md`
    - *not found* → **WRITE** 按模板 `references/{checklist_type}-template.md` 创建并填充实际内容
    - 已存在 → **IF** 本次发现新检查项 → **WRITE** 追加
-2. **ASSERT** `每项有检查对象` && `每项有通过标准`
-3. **IF** `checklist_type == delivery-checklist` && 完成交付 → 将已完成项标记为 `- [x]`
+2. **ASSERT** `items_without_check_target == 0` && `items_without_pass_criteria == 0`
+3. **IF** `checklist_type == delivery-checklist` && `交付完成` → 将已完成项标记为 `[x]`
 
 #### 4.8 工具适配产物确认（≥ 2 类）
 
-**ASSERT** `工具适配产物数 >= 2`：
+**ASSERT** `工具适配产物数 >= 2`
 
 | 类型                                    | 文件路径                             | 创建内容来源 | 状态  |
 | --------------------------------------- | ------------------------------------ | ------------ | ----- |
@@ -302,7 +307,7 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 
 **READ** 项目 AI 规范文件（CLAUDE.md 或 .cursor/rules/）
 
-**ASSERT** `资产维护机制段落` 存在
+**ASSERT** `资产维护机制段落 存在`
 
 - *not found* → **WRITE** 按 CLAUDE.md §七.2 消费方契约原则新增
 
@@ -315,10 +320,12 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 1. **本次任务回顾**：做得好的 + 可以改进的 + 意外发现（具体事例，不是泛泛而谈）
 2. **AI 协作经验**：提示词优化经验 + 团队协作改进建议
 3. **新规则沉淀**（§二.5）：列出可固化规则，注明写入位置。**固化门槛**：同类问题出现 ≥ 2 次（模式），或可在未来导致 P0/P1（严重性）。一次性 P2/P3 仅记录到 task-rules.md
-   - **FOR** 每条新规则 → **WRITE** 追加到目标文件（项目 AI 规范 / 模块 AI 规范 / task-rules.md）+ **WRITE** 变更记录到 `12-asset-update.md`
+   - **FOR** each `new_rule`：
+     1. **WRITE** 追加到目标文件（项目 AI 规范 / 模块 AI 规范 / task-rules.md）
+     2. **WRITE** 变更记录到 `12-asset-update.md`
 4. **改进承诺**（§三）：具体行动 + 预期效果
 
-> 重点：§二.5 的新规则沉淀是质量检查 D4.4 的关键证据，不可省略。"发现规则但未写入目标文件"视为未完成。
+**ASSERT** `新规则沉淀段落 存在` — §二.5 是质量检查 D4.4 的关键证据。"发现规则但未写入目标文件"视为未完成
 
 ## 产出文件
 
@@ -348,13 +355,15 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 
 ## 自检门禁
 
-- [ ] 五维度审查（正确性/可维护性/性能/安全/测试覆盖）全部完成
-- [ ] Constitutional 合规检查已执行 — **ASSERT** 每条 Rule 有检查结果
-- [ ] P0/P1 问题已 **ROUTE**（→ implAgent / → specAgent / → **H3**），未自行修复
-- [ ] 资产更新满足消费方契约 — **EXEC** `grep -cE '触发条件|可执行指令|示例' docs/tasks/{slug}/12-asset-update.md` → 每条规则均有三要素
-- [ ] 复盘文档包含新规则段落 — **EXEC** `grep -c '新规则\|本次沉淀' docs/tasks/{slug}/13-retrospective.md` → 输出 > 0
-- [ ] 8 类内容覆盖已检查 — **ASSERT** 业务术语/架构/代码结构/接口/编码规范/测试/Review/交付在项目 AI 规范（CLAUDE.md / .cursor/rules/）或子文件中有定义
-- [ ] 工具适配产物 ≥ 2 类 — **ASSERT** 以下文件存在数量 ≥ 2：CLAUDE.md / .cursor/rules/、review-checklist、delivery-checklist、prompt-template.md
+**GATE** 产出前自检（全部通过才放行）：
+
+- [ ] **ASSERT** `五维度审查 == 完成` — 正确性/可维护性/性能/安全/测试覆盖全部完成
+- [ ] **ASSERT** `constitutional_rules_checked == 9` — 每条 Rule 有检查结果
+- [ ] **ASSERT** `P0_P1_self_fixed == 0` — P0/P1 问题已 **ROUTE**（→ implAgent / → specAgent / → **H3**），未自行修复
+- [ ] **EXEC** `grep -cE '触发条件|可执行指令|示例' docs/tasks/{slug}/12-asset-update.md` → **ASSERT** `output >= 3` — 每条规则均有三要素
+- [ ] **EXEC** `grep -c '新规则\|本次沉淀' docs/tasks/{slug}/13-retrospective.md` → **ASSERT** `output > 0`
+- [ ] **ASSERT** `content_coverage_categories_checked == 8` — 业务术语/架构/代码结构/接口/编码规范/测试/Review/交付在项目 AI 规范中有定义
+- [ ] **ASSERT** `tool_asset_count >= 2` — CLAUDE.md / .cursor/rules/、review-checklist、delivery-checklist、prompt-template.md 中至少 2 类存在
 
 ## 完成标志
 

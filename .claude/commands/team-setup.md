@@ -13,9 +13,9 @@ argument-hint: [target-dir]
 
 | 组件 | 目标位置 | 说明 |
 |------|----------|------|
-| Agent Skills | `~/.agents/skills/{name}` | Cursor 自动发现 |
-| Skill 斜杠命令 | `~/.claude/commands/{name}.md` | Claude Code `/team-{name}` |
-| 共享规则 | `~/.agents/skills/_team-rules/` | 被所有 Skill 引用 |
+| Agent Skills (Cursor) | `~/.agents/skills/{name}` | Cursor 自动发现 |
+| Agent Skills (Claude) | `~/.claude/skills/{name}` | Claude Code 自动发现 |
+| 共享规则 | `~/.agents/skills/_team-rules/` + `~/.claude/skills/_team-rules/` | 被所有 Skill 引用 |
 | CLI 辅助命令 | 两端均安装 | team-setup/uninstall/pull/push |
 | Hooks（可选） | `~/.cursor/hooks/` | session-start 自动加载 |
 
