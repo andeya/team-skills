@@ -45,6 +45,11 @@ NO SKILL RECOMMENDATION WITHOUT SCENE ANALYSIS FIRST
 | 场景分析 | 推荐 Skill（对话中） |
 | 推荐理由 | 推荐说明（对话中） |
 
+## 输入
+
+- 用户的场景描述或需求（对话中）
+- 当前项目的 `CLAUDE.md` / `.cursor/rules/`（确认可用的 Skill 集合）
+
 ## Skill 选择矩阵
 
 | 场景 | 推荐 Skill |

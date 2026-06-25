@@ -88,9 +88,9 @@ NO CODE WITHOUT SPEC FIRST
 
 1. **READ** 用户需求 → 提取核心问题
 2. **READ** 项目规范：`CLAUDE.md` / `.cursor/rules/`（必读）；`AGENTS.md`、`CONTRIBUTING.md`、`docs/architecture.md`、`docs/pm-truth-ledger.yaml`（存在则读，不存在跳过）
-3. **EXEC** `grep` / `find` → 定位 3-5 个最相关源文件（探索性命令，失败不阻塞），精读后按依赖关系向外扩展
+3. **EXEC** `grep` / `find` [探索性] → 定位 3-5 个最相关源文件，精读后按依赖关系向外扩展
 4. **READ** 任务涉及的接口、数据结构、已有测试
-5. 影响范围分析（**EXEC** `grep` + `git log` 定位三类依赖，探索性命令，失败不阻塞）：
+5. 影响范围分析（**EXEC** `grep` + `git log` [探索性] 定位三类依赖）：
    - 直接依赖（import/require/use）
    - 反向依赖（导出符号被谁引用）
    - 时序耦合（`git log --follow` 常一起改的文件）
@@ -267,7 +267,7 @@ NO CODE WITHOUT SPEC FIRST
 | 上下文 | 术语表 ≥ 3 个（标注模块）、引用 ≥ 3 文件、排除 ≥ 1 文件 |
 | 风险 | 风险 ≥ 2 条（含缓解措施）、Kill Switch ≥ 2 个、停下来问人 ≥ 3 条 |
 | 架构 | SDD 含 ASCII 数据流图 |
-| 工具 | prompt-template.md 独立产出（五要素）、pm-truth-ledger 已追加（**IF** EXISTS） |
+| 工具 | prompt-template.md 独立产出（五要素）、pm-truth-ledger 已追加（`IF` EXISTS） |
 
 ## STOP Signals
 
