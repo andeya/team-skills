@@ -81,7 +81,7 @@ NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST
 3. **EXEC** 项目测试命令 — 确认修复通过且无回归
    - **IF** `exit_code != 0` → 修复引入新的测试失败 → 回到步骤 2 定位新问题
 4. **IF** 编排模式（任务目录存在）→ **WRITE** 修复循环到 `06-tdd-log.md` + 决策到 `08-ai-decisions.md`
-5. 修复成功 → **GOTO** Phase 6
+5. 修复成功 → **GOTO** 自检门禁
 
 - *repeat exhausted* → **BLOCKED**，触发 **H3**，提交以下信息：
   - 已尝试的 3 种修复方案 + 每种的失败原因
@@ -117,16 +117,6 @@ NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST
 | "想想根本原因" | 你在修症状不是根因 | 质疑你的假设，回到根因分析 |
 | "我们卡住了？"（沮丧） | 你的方法不对 | 暂停，重新评估策略 |
 
-## 自检门禁
-
-**GATE** 产出前自检（全部通过才放行）：
-
-- [ ] **ASSERT** `根因描述` 非空（不是"可能是 X"而是"根因是 `{X}`"）
-- [ ] **ASSERT** `失败测试` 存在 — 修复前已 **WRITE** 失败测试
-- [ ] **ASSERT** `exit_code == 0` — 修复后 **EXEC** 验证通过
-- [ ] **ASSERT** `修复失败次数 < 3` || `H3 已触发`
-- [ ] **ASSERT** `同时修改变量数 <= 1`
-
 ## STOP Signals
 
 - **跳过**根因调查直接写修复代码
@@ -142,6 +132,16 @@ NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST
 - **Rule #3 产出必须验证**：修复完成后必须执行 `_team-rules/verification-protocol.md` 的 5 个步骤（FP-4）
 - **Rule #7 回退次数上限**：3 次修复失败必须触发 **H3**，不可无限重试（FP-1）
 - **Rule #2 有向图回退**：调试发现根源在 spec 歧义/遗漏 → **ROLLBACK** specAgent（FP-4）
+
+## 自检门禁
+
+**GATE** 产出前自检（全部通过才放行）：
+
+- [ ] **ASSERT** `根因描述` 非空（不是"可能是 X"而是"根因是 `{X}`"）
+- [ ] **ASSERT** `失败测试` 存在 — 修复前已 **WRITE** 失败测试
+- [ ] **ASSERT** `exit_code == 0` — 修复后 **EXEC** 验证通过
+- [ ] **ASSERT** `修复失败次数 < 3` || `H3 已触发`
+- [ ] **ASSERT** `同时修改变量数 <= 1`
 
 ## 完成标志
 
