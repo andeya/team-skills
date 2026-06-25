@@ -61,6 +61,7 @@ NO SKILL RECOMMENDATION WITHOUT SCENE ANALYSIS FIRST
 | 声明完成，需验证门禁 | team-verify |
 | 实现完成，需处理分支 | team-finish |
 | 评估项目 AI 协作成熟度 | team-score |
+| AI 使用涉及安全合规 | team-security |
 | 需完整交付流水线 | team-orchestrator |
 
 ## 执行步骤
@@ -81,8 +82,9 @@ NO SKILL RECOMMENDATION WITHOUT SCENE ANALYSIS FIRST
 8. 声明完成，需验证 → `team-verify`
 9. 实现完成，需处理分支 → `team-finish`
 10. 评估 AI 协作成熟度 → `team-score`
-11. 需完整流水线 → `team-orchestrator`
-12. *none* → **NEEDS_CONTEXT**：请用户描述当前阶段和目标
+11. AI 使用涉及敏感数据 / 外部 AI 服务 / 自动化 Agent → `team-security`
+12. 需完整流水线 → `team-orchestrator`
+13. *none* → **NEEDS_CONTEXT**：请用户描述当前阶段和目标
 
 ### Step 2：推荐并说明理由
 
@@ -145,3 +147,4 @@ NO SKILL RECOMMENDATION WITHOUT SCENE ANALYSIS FIRST
 
 - `team-brainstorm` — 需求模糊时先讨论
 - `team-orchestrator` — 需要完整流水线时使用
+- `team-security` — AI 使用涉及安全合规时使用

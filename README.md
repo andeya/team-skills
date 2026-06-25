@@ -122,8 +122,8 @@ npx team-skills@latest update
 
 | 内容 | 位置 | 说明 |
 |------|------|------|
-| 12 个 Agent Skills | `~/.agents/skills/` | Cursor 自动发现（team-score 需 `--with-score`） |
-| 12 个 Skill 斜杠命令 | `~/.claude/commands/` | Claude Code `/team-{name}` |
+| 13 个 Agent Skills | `~/.agents/skills/` | Cursor 自动发现（team-score 需 `--with-score`） |
+| 13 个 Skill 斜杠命令 | `~/.claude/commands/` | Claude Code `/team-{name}` |
 | 共享规则 | `~/.agents/skills/_team-rules/` | 被所有 Skill 引用 |
 | CLI 辅助命令 | 两端均安装 | team-setup/uninstall/pull/push |
 | Hooks（可选） | `~/.cursor/hooks/` | session-start 自动加载 |
@@ -180,6 +180,7 @@ npx team-skills@latest update
 | 这个 bug 怎么回事？ | `/team-debug` |
 | 测试真的过了吗？ | `/team-verify` |
 | 代码写完了 | `/team-finish` |
+| AI 安全合规检查 | `/team-security` |
 | 项目做得好不好？ | `/team-score` |
 | 不知道用哪个 | `/using-team-skills` |
 
@@ -261,6 +262,7 @@ graph TD
     Q -->|"声称完成"| VERIFY[✅ team-verify<br/>→ 验证证据链]:::skill
     Q -->|"实现完成，准备合并"| FINISH[🏁 team-finish<br/>→ 合并/PR/清理]:::skill
     Q -->|"项目做得好不好"| SCORE[📊 team-score<br/>→ 量化评分报告]:::skill
+    Q -->|"AI 安全合规检查"| SECURITY[🔒 team-security<br/>→ 安全审计报告]:::skill
     Q -->|"不知道用哪个"| USING[🧭 using-team-skills<br/>→ Skill 推荐]:::skill
     Q -->|"需要完整交付流水线"| ORCH[⚙️ team-orchestrator<br/>→ 全自动编排]:::orch
 
@@ -269,13 +271,14 @@ graph TD
     ORCH -.->|自动调度| TEST
     ORCH -.->|自动调度| REVIEW
     ORCH -.->|自动调度| FINISH
+    SCORE -.->|评分时调度| SECURITY
 ```
 
 > 实线 = 你主动调用；虚线 = 编排器自动调度。每个节点下方标注了产出物。
 
 ---
 
-## 📦 包含 12 个可独立使用的 Skill
+## 📦 包含 13 个可独立使用的 Skill
 
 | Skill | 一句话说明 | 使用场景 |
 |-------|-----------|----------|
@@ -290,9 +293,10 @@ graph TD
 | `team-finish` | 分支完成处理（合并/PR/保留/丢弃） | "代码写完了" |
 | `team-orchestrator` | 有向图流程编排 + 分支管理，4 个人类介入点 | "我要完整交付流水线" |
 | `team-score` | 7 硬门禁 + 24 项五维度评分（100 分制） | "项目做得好不好？" |
+| `team-security` | AI 安全红线合规检查（6+4 红线 + 6 场景） | "AI 使用安全吗？" |
 | `using-team-skills` | Meta-skill，自动引导你选正确的 Skill | "我该用哪个？" |
 
-> 每个 Skill 可独立使用，也可通过 `team-orchestrator` 串联成完整流水线。`team-score` 为可选评估工具，安装时需 `--with-score`。
+> 每个 Skill 可独立使用，也可通过 `team-orchestrator` 串联成完整流水线。`team-score` 和 `team-security` 为可选评估工具，安装时需 `--with-score`。
 
 ---
 
@@ -329,6 +333,7 @@ docs/
 │
 ├── review-checklist.md             # Review 检查清单（项目级，跨任务累积）
 ├── delivery-checklist.md           # 交付检查清单（项目级，跨任务累积）
+├── security-audit.md               # AI 安全红线合规审计报告（team-security 产出）
 └── specs/                          # SDD 归档（任务验收通过后存档）
 ```
 
@@ -340,6 +345,7 @@ docs/
 | **任务文档** | `tasks/{slug}/` | 随任务创建 | 每个任务独立目录，slug 格式 `{NNNN}-{keyword}` |
 | **项目级清单** | `review-checklist.md` | 跨任务累积 | 每次 Review 发现新检查项后追加，持续积累 |
 | **项目级清单** | `delivery-checklist.md` | 跨任务累积 | 每次交付发现新检查项后追加，持续积累 |
+| **安全审计** | `security-audit.md` | 每次重写 | team-security 产出的 AI 安全红线合规审计报告 |
 | **规格归档** | `specs/` | 验收后存档 | SDD 快照归档，供后续任务参考 |
 
 ### 任务文档产出阶段
@@ -351,6 +357,7 @@ docs/
 | TDD 实现 | `06-tdd-log.md` ~ `08-ai-decisions.md` | `team-impl` |
 | 测试审计 | `09-test-matrix.md` ~ `10-test-report.md` | `team-test` |
 | 代码审查 | `11-review.md` ~ `13-retrospective.md` + `task-rules.md` | `team-review` |
+| 安全审计 | `docs/security-audit.md` | `team-security` |
 | 团队交付 | `14-team.md` + `15-brief.md` | `team-orchestrator` |
 
 ---
