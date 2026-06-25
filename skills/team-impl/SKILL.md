@@ -283,6 +283,8 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 - [ ] **EXEC** 项目测试命令 → **ASSERT** `failures == 0`
 - [ ] **EXEC** 项目 lint 命令 → **ASSERT** `exit_code == 0`
 - [ ] **EXEC** `git diff --name-only` → **ASSERT** `未修改 04-boundary.md deny 文件`
+- [ ] **EXEC** `grep -rn -E '(AK|SK|access[_-]?key|secret[_-]?key|api[_-]?key|password|passwd|credential)\s*[:=]' .` → **ASSERT** 无真实凭证硬编码（RL-2，排除占位符/测试值/注释）
+- [ ] **IF** 代码调用外部 AI 服务 → **ASSERT** `输入数据已脱敏或确认为非敏感`（RL-1）
 - [ ] **ASSERT** `实际消耗 <= 01-plan.md 自我约束预算`
 - [ ] **ASSERT** `所有困惑已显式记录于 06-tdd-log.md 审计段落`
 - [ ] **IF** 发现 spec 问题 → **ASSERT** `已 ROLLBACK specAgent`

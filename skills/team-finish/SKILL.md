@@ -55,12 +55,19 @@ NO BRANCH COMPLETION WITHOUT TEST VERIFICATION FIRST
 
 **ASSERT** `exit_code == 0` && `failures == 0`
 
-- 通过 → **GOTO** Step 2
+- 通过 → **GOTO** Step 1.5
 - 失败 → **MATCH** `mode`：
   - `orchestrated` → **ROLLBACK** 编排器，由编排器 **ROUTE** implAgent（附上失败输出）
   - *default* → **WRITE**（对话中）失败详情，推荐 `team-debug`，修复后 **GOTO** Step 1
 
 > 不可忽略失败继续展示选项（FP-4）。
+
+### Step 1.5：凭证泄露扫描
+
+**EXEC** `grep -rn -E '(AK|SK|access[_-]?key|secret[_-]?key|api[_-]?key|token|password|passwd|credential)\s*[:=]' .` — 推送前凭证扫描（RL-2）
+
+- **IF** `exit_code == 0` → 逐条排除占位符/测试值/注释 → 真实凭证 → **BLOCKED**，**WRITE**（对话中）凭证位置，要求修复后重新验证
+- **ELSE** → **GOTO** Step 2
 
 ### Step 2：确定基准分支
 

@@ -176,6 +176,9 @@ NO CODE WITHOUT SPEC FIRST
 - [ ] **ASSERT** `来源标签（{extracted}/{inferred}/{ambiguous}）标注数 >= 1`
 - [ ] **ASSERT** `修改类任务用 Delta Spec` || `新建类任务用完整 SDD`
 - [ ] **ASSERT** `"TBD"/"TODO"/"待补充" 匹配数 == 0`
+- [ ] **IF** SDD 涉及外部 AI 服务调用 → **ASSERT** `§五 输入/输出规格中标注数据分类和脱敏策略`（RL-1）
+- [ ] **IF** SDD 涉及高风险操作（资金/权限/数据删除/对外发布）→ **ASSERT** `§二 业务规则中包含人工确认机制设计`（RL-3）
+- [ ] **IF** SDD 引入新的外部 AI 模型/服务 → **ASSERT** `§三 关键设计决策中记录审批状态`（RL-4）
 
 **完整模式附加项**（精简模式跳过）：
 
