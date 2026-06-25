@@ -19,7 +19,6 @@
 - `skills/` — 所有 SKILL.md 文件，项目的核心
 - `skills/_team-rules/` — 被所有 Skill 引用的共享规则文件
 - `skills/*/references/` — 任务文档模板
-- `.claude/commands/` — Claude Code 的斜杠命令
 - `hooks/` — Session hook 配置
 
 ### 添加新 Skill
@@ -27,7 +26,6 @@
 1. 按照 `skills/CLAUDE.md` 定义的结构创建 `skills/你的-skill/SKILL.md`
 2. 更新 `README.md` 中的 Skills 清单表格
 3. 如果该 Skill 应被自动发现，更新 `using-team-skills/SKILL.md`
-4. 如有需要，在 `.claude/commands/` 中添加斜杠命令
 
 ### 修改已有 Skill
 

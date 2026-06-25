@@ -61,6 +61,11 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 | P2   | 两个文件中有相似的格式化逻辑，可以提取公共函数                     | 代码重复，建议重构           |
 | P3   | 使用 `const` 而不是 `let`（变量未被重新赋值）                      | 风格偏好，不影响正确性       |
 
+> GOOD：`P1：src/api/user.ts:87 — getUserById 未处理 id 为空字符串的情况。SDD §二.3 要求空字符串返回 400，当前代码会查询数据库返回 null 导致下游 TypeError。建议：添加 id 空值守卫。`
+> BAD：`P2：getUserById 可能有问题。` — 没有行号、没有 SDD 引用、没有复现路径、严重级别偏低。
+
+> SIGNAL：Finding 中出现"可能有问题""也许会出错"但没有复现步骤或具体输入 → 未验证的猜测，不是有效 finding。回去读代码确认后再定级。
+
 ## 质量职责
 
 | 质量维度        | 产出文件              |
@@ -88,10 +93,16 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 
 ### Phase 1：五维度代码 Review
 
+> 找到代码中"会在什么条件下失败"，而非确认"能不能工作"。每个改动逐行读，不扫一眼就过。
+
+> TRAP：测试全绿时最容易橡皮图章——"测试都过了，代码应该没问题"。测试覆盖的是 testAgent 想到的场景，不是所有场景。
+
+> TRAP：容易沉迷风格细节（命名、空格、import 顺序）而忽略逻辑 bug。先完成正确性和安全维度，再看可维护性和风格。审查标准是 SDD 要求，不是个人偏好。
+
 1. **READ** `git diff`（代码变更）+ 修改的文件完整内容
 2. **READ** `03-sdd.md`（规格对照）
 
-**FOR** each `modified_file`：按以下 5 个维度审查
+**FOR** `modified_file`：按以下 5 个维度审查
 
 | 维度         | 检查内容                                                       |
 | ------------ | -------------------------------------------------------------- |
@@ -118,9 +129,13 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 
 ### Phase 1.5：Constitutional 合规检查
 
+> 验证流程纪律，不依赖 Agent 自我声明（FP-4）。每条 Rule 要有具体证据，不是"看起来遵守了"。
+
+> TRAP：容易对 Constitutional 检查走过场——逐条打勾但不去看实际文件内容。特别是 TDD Iron Law（Rule #9），必须打开 06-tdd-log.md 确认 RED 在 GREEN 之前且有失败输出。
+
 `[精简模式]` 01-plan.md、02-context.md、05-risk.md 不存在时，涉及这些文件的检查项改为检查 03-sdd.md 中是否有对应信息，或标注"精简模式豁免"。
 
-**FOR** each `constitutional_rule`：执行对应检查
+**FOR** `constitutional_rule`：执行对应检查
 
 | 规则             | 检查方式                                                                                 | 违规表现                     | 严重级别 |
 | ---------------- | ---------------------------------------------------------------------------------------- | ---------------------------- | -------- |
@@ -150,15 +165,22 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 
 ### Phase 2：问题路由决策
 
+> 把问题送到正确的人手里。级别判定对照 SDD 要求，不凭个人偏好。
+
+> TRAP：严重级别通胀（全标 P0 制造恐慌）和通缩（把真实 bug 标为 P2 避免回退开销）同样有害。对照"问题分级标准"表和"严重级别校准示例"逐条比对。
+
+> SIGNAL：Review 结果 0 findings → 要么代码完美，要么审查流于表面。回到 Phase 1 重审至少 boundary handling。
+> 所有 finding 都是 P2/P3 → 可疑。至少复查边界处理和异常路径。
+
 **MATCH** `severity`：
 
 - `P0` || `P1`
-  - `P0 实现 bug` && `spec 定义正确` → **ROUTE** implAgent（通过编排器）
-  - `P0 设计/架构缺陷` → **ROUTE** specAgent（通过编排器）
+  - `P0 实现 bug` && `spec 定义正确` → **ROUTE** `team-impl`（通过编排器）
+  - `P0 设计/架构缺陷` → **ROUTE** `team-spec`（通过编排器）
   - `P0 安全漏洞` → **H3**（安全决策需要人类确认）
-  - `P1 实现 bug` → **ROUTE** implAgent（通过编排器）
-  - `P1 测试遗漏` → **ROUTE** implAgent（通过编排器，需要补写测试）
-  - `P0/P1 spec 遗漏` → **ROUTE** specAgent（通过编排器）
+  - `P1 实现 bug` → **ROUTE** `team-impl`（通过编排器）
+  - `P1 测试遗漏` → **ROUTE** `team-impl`（通过编排器，需要补写测试）
+  - `P0/P1 spec 遗漏` → **ROUTE** `team-spec`（通过编排器）
   - 需要人类决策 → **H3**（有多个可行方案需要选择）
 - `P2` → 自行修复（**GOTO** Phase 3）
 - `P3` → 记录但不处理
@@ -174,7 +196,9 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 
 ### Phase 3：执行路由决策
 
-> 对于路由到自己的问题（P2 及以下）。
+> 对于路由到自己的问题（P2 及以下），快速修复并验证。修复范围严格限制，超出即记录不执行。
+
+> TRAP：自修时容易越界——"顺手"改了超过 20 行或触及了不在自己职责内的逻辑。超范围修改应回退 implAgent。
 
 1. 直接修改代码/测试（**每个问题限 20 行以内的修改**——更大规模的重构记录为建议，不直接执行）
 2. **EXEC** 项目测试命令 — 确认修复正确
@@ -199,6 +223,8 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 - *default* → 继续 Phase 4
 
 ### Phase 4：AI 协作资产维护（消费方契约）
+
+> 把本次审查中发现的规则、模式、教训固化到项目资产中，让下一个 Agent 不再重蹈覆辙。
 
 `[精简模式]` 仅执行 4.1（任务规则）、4.6（CHANGELOG）、4.8（工具适配确认）。跳过 4.2、4.3、4.4、4.5、4.7、4.9。
 
@@ -236,7 +262,7 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 | 交付要求    | docs/delivery-checklist.md                          | ✅/需补充 |
 
 **IF** 存在「需补充」项 → **WRITE** 内容到项目 AI 规范文件（CLAUDE.md / .cursor/rules/）对应章节
-**IF** `docs/review-checklist.md` 或 `docs/delivery-checklist.md` 不存在 → 创建之
+**IF** `docs/review-checklist.md` 或 `docs/delivery-checklist.md` NOT_EXISTS → 创建之
 **IF** 项目类型不适用的类别 → 标注 N/A（如 CLI 工具无需"系统架构"文档）
 
 #### 4.3 项目级 AI 规范（CLAUDE.md / .cursor/rules/）
@@ -258,7 +284,7 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 - **接口签名变更**：公共 API、RPC 接口、事件定义的签名变更
 - **模块职责变更**：模块边界调整、依赖关系变化
 
-→ **READ** `AGENTS.md`（**IF** 不存在 → 创建）→ **WRITE** 在对应章节追加或修改，保持与代码实际结构一致。AGENTS.md 应包含：系统架构概览、模块职责清单、关键接口定义、目录结构说明。
+→ **READ** `AGENTS.md`（**IF** NOT_EXISTS → 创建）→ **WRITE** 在对应章节追加或修改，保持与代码实际结构一致。AGENTS.md 应包含：系统架构概览、模块职责清单、关键接口定义、目录结构说明。
 
 **ELSE**：跳过 AGENTS.md 更新
 
@@ -295,7 +321,7 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 
 #### 4.7 Checklist 维护
 
-**FOR** each `checklist_type` in [`review-checklist`, `delivery-checklist`]：
+**FOR** `checklist_type` **IN** [`review-checklist`, `delivery-checklist`]：
 
 1. **READ** `docs/{checklist_type}.md`
    - *not found* → **WRITE** 按模板 `references/{checklist_type}-template.md` 创建并填充实际内容
@@ -320,7 +346,7 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 
 **READ** 项目 AI 规范文件（CLAUDE.md 或 .cursor/rules/）
 
-**ASSERT** `资产维护机制段落 存在`
+**ASSERT** `资产维护机制段落 EXISTS`
 
 - *not found* → **WRITE** 按 CLAUDE.md §七.2 消费方契约原则新增
 
@@ -328,17 +354,19 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 
 ### Phase 5：个人复盘
 
+> 提炼具体教训，不泛泛而谈。"做得不错"不是复盘，"发现 X 场景的边界检查被遗漏，根因是 SDD 未定义空值行为"才是。
+
 **WRITE** `13-retrospective.md`（按模板），记录以下内容：
 
 1. **本次任务回顾**：做得好的 + 可以改进的 + 意外发现（具体事例，不是泛泛而谈）
 2. **AI 协作经验**：提示词优化经验 + 团队协作改进建议
 3. **新规则沉淀**（§二.5）：列出可固化规则，注明写入位置。**固化门槛**：同类问题出现 ≥ 2 次（模式），或可在未来导致 P0/P1（严重性）。一次性 P2/P3 仅记录到 task-rules.md
-   - **FOR** each `new_rule`：
+   - **FOR** `new_rule`：
      1. **WRITE** 追加到目标文件（项目 AI 规范 / 模块 AI 规范 / task-rules.md）
      2. **WRITE** 变更记录到 `12-asset-update.md`
 4. **改进承诺**（§三）：具体行动 + 预期效果
 
-**ASSERT** `新规则沉淀段落 存在` — §二.5 是质量检查 D4.4 的关键证据。"发现规则但未写入目标文件"视为未完成
+**ASSERT** `新规则沉淀段落 EXISTS` — §二.5 是质量检查 D4.4 的关键证据。"发现规则但未写入目标文件"视为未完成
 
 ## 产出文件
 
@@ -349,6 +377,73 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 | `13-retrospective.md` | `references/13-retrospective-template.md` | 个人复盘 |
 | `docs/review-checklist.md` | `references/review-checklist-template.md` | Review 检查清单（项目级，跨任务累积） |
 | `docs/delivery-checklist.md` | `references/delivery-checklist-template.md` | 交付检查清单（项目级，跨任务累积） |
+
+### 关键产出骨架
+
+**WRITE** `11-review.md`：
+
+```markdown
+# 代码审查报告
+
+> reviewAgent 产出 | {slug} | {日期}
+
+## 一、审查范围
+
+| 项 | 内容 |
+|----|------|
+| 审查文件数 | {N} |
+| 变更行数 | +{N} / -{N} |
+| 对照规格 | 03-sdd.md §{sections} |
+
+## 二、问题清单
+
+| ID | 级别 | 维度 | 文件:行号 | 问题描述 | SDD 引用 | 处理方式 |
+|----|------|------|-----------|----------|----------|----------|
+| R1 | P{0-3} | {维度} | {file}:{line} | {具体描述} | §{ref} | ROUTE/自修/记录 |
+
+## 三、修复记录（P2 自修）
+
+| 问题 ID | 修复内容 | 验证结果（exit_code + output 摘要） |
+|---------|----------|--------------------------------------|
+| R{N} | {修改描述} | ✅ `exit_code == 0`，{N} tests passed |
+
+## 四、Constitutional 合规检查
+
+| Rule | 检查方式 | 证据 | 结果 |
+|------|----------|------|------|
+| {rule_name} | {how_checked} | {evidence} | ✅/❌ P{N} |
+
+## 五、审查结论
+
+状态：{DONE / DONE_WITH_CONCERNS / NEEDS_CONTEXT / BLOCKED}
+```
+
+**WRITE** `12-asset-update.md`：
+
+```markdown
+# AI 协作资产更新记录
+
+> reviewAgent 产出 | {slug} | {日期}
+
+## 更新清单
+
+| 序号 | 资产文件 | 更新类型 | 触发条件 | 可执行指令 | 示例（✅/❌） |
+|------|----------|----------|----------|------------|--------------|
+| 1 | {file_path} | 新增/修改 | {when} | {do_what} | ✅ ... / ❌ ... |
+
+## 内容覆盖度
+
+| 类别 | 位置 | 状态 |
+|------|------|------|
+| 业务术语 | {path} | ✅/需补充/N/A |
+| ... | ... | ... |
+
+## 版本记录
+
+| 日期 | 更新者 | 更新内容 | 关联任务 |
+|------|--------|----------|----------|
+| {日期} | reviewAgent | {summary} | {slug} |
+```
 
 ## STOP Signals
 
@@ -364,7 +459,7 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 - **Rule #3 产出必须验证**：审查结论必须基于代码 diff 和测试运行结果，不可仅凭 Agent 自我声明（FP-4）
 - **Rule #2 有向图回退**：P0/P1 问题必须回退 implAgent 或 specAgent，不可降级处理（FP-4）
 - **Rule #9 TDD 顺序不可逆**：Phase 1.5 中必须验证 06-tdd-log.md 的 RED→GREEN 时间序（FP-2）
-- **Rule #1 人类介入是一等公民**：安全漏洞和多方案决策必须触发 H3（FP-1）
+- **Rule #1 人类介入是一等公民**：安全漏洞和多方案决策必须触发 `H3`（FP-1）
 
 ## 自检门禁
 
@@ -377,6 +472,8 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 - [ ] **EXEC** `grep -c '新规则\|本次沉淀' docs/tasks/{slug}/13-retrospective.md` → **ASSERT** `output > 0`
 - [ ] **ASSERT** `content_coverage_categories_checked == 8` — 业务术语/架构/代码结构/接口/编码规范/测试/Review/交付在项目 AI 规范中有定义
 - [ ] **ASSERT** `tool_asset_count >= 2` — CLAUDE.md / .cursor/rules/、review-checklist、delivery-checklist、prompt-template.md 中至少 2 类存在
+- [ ] 我是否真的逐行读了每个改动，还是扫了一眼就觉得"看起来没问题"？
+- [ ] 如果这段代码出了线上 bug，我的 review 是否覆盖了可能的故障点？
 
 ## 完成标志
 
@@ -404,3 +501,8 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 - `team-feedback` — 审查反馈应对
 - `team-finish` — 分支完成处理
 - `team-orchestrator` — REQUIRED：审查完成后必须交付
+
+## 下一步
+
+- 审查通过 → 使用 `team-feedback` 处理审查反馈，然后 `team-finish` 合并分支
+- 审查发现 P0/P1 → 回退 `team-impl` 修复后重新提交

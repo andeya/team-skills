@@ -281,6 +281,7 @@ H3 触发时，编排器 **MUST** 向用户展示以下结构化信息：
 | 2026-06-25 | Andeya | 5 轮 LLM 消费者视角审查：R1 ASSERT 表达式化 + 关键词粗体化、R2 执行流歧义修复、R3 术语一致性、R4 跨文件结构对齐、R5 LLM 模拟执行终审（test_cmd 排序修复 + AP#4 残留清零） | 全量 SKILL.md 打磨 |
 | 2026-06-25 | Andeya | 逐字符 3 轮打磨（12 skills）：R1 结构/逻辑、R2 语言/信噪比、R3 韵律/优雅 + 跨 skill 流转连接 3 轮：集成关系修正 + RESOLVE 链一致性 + 完成→下游衔接验证 | 诗级打磨 |
 | 2026-06-25 | Andeya | Score+AI-consumer 双审查 3 轮：R1 业务规则GWT门禁+TDD commit数量验证+测试覆盖量化+风格一致性检查+功能点数交叉验证+模板阈值提升（5文件8处）、R2 SDD七部分ASSERT准确化、R3 24项AI稳定性验证全通过 | 双审查迭代修复 |
+| 2026-06-26 | Andeya | skill-spec 重设计：删除 BNF/变量作用域/类型系统（-30%行数），新增引用块子类型（TRAP/SIGNAL/GOOD-BAD）+ 输出骨架 + GATE 自我审问 + Step 意图 + 错误处理；20 条 DP 设计原则；EACH/MAX 关键词移除 | LLM 执行质量优化 |
 
 ### 7.5 内容覆盖索引
 
@@ -307,7 +308,7 @@ H3 触发时，编排器 **MUST** 向用户展示以下结构化信息：
 | `skills/_team-rules/verification-protocol.md` | 5 步验证协议 + Iron Law + 常见失败模式 |
 | `skills/_team-rules/four-state-protocol.md` | 四态完成状态（DONE / DONE_WITH_CONCERNS / NEEDS_CONTEXT / BLOCKED） |
 | `skills/_team-rules/first-principles.md` | 4 条第一性原理（FP-1 ~ FP-4）+ 使用指南 |
-| `skills/_team-rules/skill-spec.md` | Markdown Skill Language v1.0：执行模型 + 形式语法（BNF）+ 约定/模式/反模式 |
+| `skills/_team-rules/skill-spec.md` | Skill Spec：格式约定 + 关键词参考 + 引用块子类型（TRAP/SIGNAL/GOOD-BAD）+ 错误处理 + 20 条设计原则（DP-1~DP-20） |
 
 ## 八、完成状态协议
 
@@ -392,7 +393,7 @@ H3 触发时，编排器 **MUST** 向用户展示以下结构化信息：
 
 | 工具        | 调用方式                | 自动发现              |
 | ----------- | ----------------------- | --------------------- |
-| Claude Code | `/team-{name}` 斜杠命令 | `~/.claude/commands/` |
+| Claude Code | `/team-{name}` 斜杠命令 | `~/.claude/skills/` |
 | Cursor      | Skill 机制              | `~/.agents/skills/`   |
 
 ### 12.2 工具无关性原则

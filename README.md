@@ -122,10 +122,8 @@ npx team-skills@latest update
 
 | 内容 | 位置 | 说明 |
 |------|------|------|
-| 13 个 Agent Skills | `~/.agents/skills/` | Cursor 自动发现（team-score 需 `--with-score`） |
-| 13 个 Skill 斜杠命令 | `~/.claude/commands/` | Claude Code `/team-{name}` |
-| 共享规则 | `~/.agents/skills/_team-rules/` | 被所有 Skill 引用 |
-| CLI 辅助命令 | 两端均安装 | team-setup/uninstall/pull/push |
+| 13 个 Agent Skills | `~/.agents/skills/` + `~/.claude/skills/` | Cursor / Claude Code 自动发现（team-score 需 `--with-score`） |
+| 共享规则 | `~/.agents/skills/_team-rules/` + `~/.claude/skills/_team-rules/` | 被所有 Skill 引用 |
 | Hooks（可选） | `~/.cursor/hooks/` | session-start 自动加载 |
 
 ### 验证
@@ -142,7 +140,7 @@ npx team-skills@latest update
 | `team-skills setup` | symlink 安装到全局目录 | `--with-score` `--no-hooks` `--force` |
 | `team-skills init [dir]` | 复制到项目 IDE 目录 | `--ide <claude\|cursor\|both>` `--with-score` |
 | `team-skills update [dir]` | 升级包 + 更新项目副本 | `--skip-self` `--ide` `--with-score` |
-| `team-skills uninstall` | 移除所有全局 symlink | `--no-hooks` `--no-commands` |
+| `team-skills uninstall` | 移除所有全局 symlink | `--no-hooks` |
 | `team-skills list` | 查看全局安装状态 | `--json` |
 
 所有命令支持 `--dry-run`。

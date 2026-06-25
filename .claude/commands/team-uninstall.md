@@ -16,9 +16,7 @@ argument-hint: [target-dir]
 | Cursor Skills | `~/.agents/skills/team-*` |
 | Claude Code Skills | `~/.claude/skills/team-*` |
 | 共享规则 | `~/.agents/skills/_team-rules/` + `~/.claude/skills/_team-rules/` |
-| CLI 辅助命令 | 两端均移除 |
 | Hooks | `~/.cursor/hooks/`、`~/.claude/hooks/` |
-| 旧路径（向后兼容） | `~/.claude/commands/team-*.md`（如存在） |
 
 ## 使用方式
 
@@ -28,9 +26,6 @@ team-skills uninstall
 
 # 保留 Hooks
 team-skills uninstall --no-hooks
-
-# 保留 CLI 辅助命令
-team-skills uninstall --no-commands
 
 # 预览不执行
 team-skills uninstall --dry-run
@@ -44,7 +39,6 @@ team-skills uninstall /path/to/target
 | 选项 | 说明 |
 |------|------|
 | `--no-hooks` | 跳过移除 Hooks |
-| `--no-commands` | 跳过移除 CLI 辅助命令 |
 | `--dry-run` | 只显示操作，不实际执行 |
 
 ## 安全机制

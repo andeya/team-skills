@@ -57,10 +57,18 @@ flowchart TD
 4. **门禁检查**：当前阶段门禁全部满足？有无被绕过？
 5. **人类介入**：需要触发 H3 吗？回退次数接近上限？
 
+> SIGNAL：任务已经历 2 次以上非计划回退 → 可能是范围蔓延或任务分解不当，考虑触发 `H3` 让用户重新评估任务边界。
+
 **对抗自检**：
 
 - [ ] 下一个 Agent 有足够信息开始工作吗？
 - [ ] 回退上下文是否足够让目标 Agent 一次修好？
+
+> GOOD：`testAgent 报告 DONE_WITH_CONCERNS（concerns: "SDD §二.3 未定义空列表行为"）。编排器将 concerns 完整展示给用户，等待用户决定是否回退 specAgent 补充规格。`
+> BAD：`testAgent 报告 DONE_WITH_CONCERNS。编排器判断"concerns 不严重"，自动继续到 reviewAgent。`
+
+> GOOD：`回退 implAgent 时附上：问题（第 42 行空指针）、复现步骤（npm test 输出）、期望行为（SDD §二.3）、建议修复方向（加空值检查）。`
+> BAD：`回退 implAgent 时附上："测试失败，请修复。"`
 
 ## Iron Law
 
@@ -206,6 +214,8 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 2. **EXEC** 扫描 slug 目录下已有文件 → **ASSERT** `exit_code == 0` → 交叉验证阶段
 3. 从 checkpoint 记录的位置恢复流程，不重复已完成的 Step
 
+**ELSE** → 继续当前流程
+
 ## 质量职责
 
 | 质量维度       | 产出                              |
@@ -256,6 +266,15 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 | 团队证据 14-15 | ✅ | ❌ |
 | 归档合并 | ✅ | ✅ |
 
+## 输入
+
+| 来源 | 必需 | 说明 |
+|------|------|------|
+| 用户任务描述 | **required** | 自然语言任务请求 |
+| `00-design-brief.md` | 可选 | team-brainstorm 产出的设计概要 |
+| `.checkpoint.json` | 可选 | 断点续传状态（恢复中断的任务） |
+| 项目 CLAUDE.md | 自动 | 项目级规则和验证命令 |
+
 ## 执行步骤
 
 ### 执行模型
@@ -297,7 +316,7 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 **`status` 字段使用规则**：
 
 - `IN_PROGRESS`：默认值。Step 1 到 Step 8 期间所有正常流转
-- `BLOCKED`：触发 H3 或 Kill Switch 时设置，必须同时填写 `blocked_reason`
+- `BLOCKED`：触发 `H3` 或 Kill Switch 时设置，必须同时填写 `blocked_reason`
 - `NEEDS_CONTEXT`：缺少关键上下文无法继续时设置
 - `DONE`：仅在 Step 8 质量检查全部通过后设置。执行过程中不得使用此值
 - `DONE_WITH_CONCERNS`：Step 8 通过但有保留意见时设置
@@ -310,7 +329,7 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 - `DONE` || `DONE_WITH_CONCERNS` → 提示用户"该任务已完成"，询问是否新建变体任务
 - `BLOCKED` → 触发 **H3** 展示 `blocked_reason`
 - `NEEDS_CONTEXT` → 展示缺失信息，请求用户补充
-- *not found*（checkpoint 不存在）→ **GOTO** 恢复：文件推断阶段
+- *not found*（checkpoint 不存在）→ **GOTO** 恢复
 
 #### 恢复：文件推断阶段
 
@@ -330,24 +349,28 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 
 ### Step 1：初始化 + H1 人类确认
 
+> 确保任务目标被准确理解，用户对方案方向有明确确认。跳过 H1 是编排器最危险的错误——后续所有 Agent 的工作都建立在这个确认之上。
+
 1. **READ** 用户参数 → 提取任务描述
-2. **RESOLVE** `slug`：
-   1. **READ** `docs/tasks/` 已有目录（**IF** 不存在 → 创建）
-   2. **IF** 用户传入已有 slug 且 `docs/tasks/{slug}/00-design-brief.md` 存在 → 复用该 slug
+2. **RESOLVE** `slug`（首个命中即停）：
+   1. **READ** `docs/tasks/` 已有目录（**IF** NOT_EXISTS → 创建）
+   2. **IF** 用户传入已有 slug 且 `docs/tasks/{slug}/00-design-brief.md EXISTS` → 复用该 slug
    3. **IF** 分期任务（H4 后续分期触发）→ slug 包含 `-p{N}` 后缀，checkpoint 记录 `parent_slug`
    4. *default* → 取最大序号 +1（从 `0001` 起），拼接 `{NNNN}-{关键词}`（kebab-case，≤ 50 字符）
 3. **EXEC** 创建 `docs/tasks/{slug}/` 目录（**IF** 已存在 → 跳过）→ **ASSERT** `exit_code == 0`
 4. **WRITE** checkpoint：`current_step=Step 1, next_step=H1, phase=init, status=IN_PROGRESS`
-5. **READ** `docs/tasks/progress.md`（**IF** 不存在 → 创建含表头）→ **ASSERT** `{slug} 不在 progress.md 已完成列表中`
+5. **READ** `docs/tasks/progress.md`（**IF** NOT_EXISTS → 创建含表头）→ **ASSERT** `{slug} 不在 progress.md 已完成列表中`
    - **IF** 已存在且状态 `DONE` → 提示用户，询问是否新建变体任务
 
    > progress.md 是跨任务进度索引，位于 `docs/tasks/` 根目录，不在 slug 子目录中。
 
 6. **WRITE** checkpoint：`current_step=H1, next_step=Step 1.5, status=IN_PROGRESS, pending_decision=确认目标理解`
 7. **WRITE**（对话中）向用户展示：任务理解 + 初步方案 + 风险预判 + 分期建议
-   - **IF** `00-design-brief.md` 存在 → **READ** 并将摘要纳入展示
+   - **IF** `00-design-brief.md EXISTS` → **READ** 并将摘要纳入展示
 
 **MATCH** `user_response`：
+
+> TRAP：任务看起来简单时（"就改个文案"），你会倾向于简化 H1 确认。即使是 `--compact` 模式，H1 也需要单句确认，不可自动跳过。
 
 - `确认` → **WRITE** checkpoint：`completed_steps 追加 H1` → **GOTO** Step 1.5
 - `不确认` → 根据反馈调整 → 重新展示
@@ -356,7 +379,7 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 
 ### Step 1.5：Git 分支初始化
 
-> H1 确认后、specAgent 启动前，创建功能分支隔离本次任务的所有变更。
+> 在 specAgent 启动前隔离变更，确保任务失败时可干净回退。分支存在性和工作区状态都要处理。
 
 #### 1.5.1 确定基准分支
 
@@ -364,14 +387,14 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 
 1. **READ** `CLAUDE.md` / `.cursor/rules/` → 查找 `base_branch` 或 `default_branch` 配置项
 2. **EXEC** `git symbolic-ref refs/remotes/origin/HEAD` → **IF** `exit_code == 0` → 解析分支名；**ELSE** → **EXEC** `git remote show origin` → **IF** `exit_code == 0` → 解析分支名
-3. **FOR** each `name` in [`main`, `master`, `develop`]：**EXEC** `git show-ref --verify refs/heads/{name}` → **IF** `exit_code == 0` → 首个存在即停
+3. **FOR** `name` **IN** [`main`, `master`, `develop`]：**EXEC** `git show-ref --verify refs/heads/{name}` → **IF** `exit_code == 0` → 首个存在即停
 4. *none* → **H3**，请求用户指定基准分支
 
 #### 1.5.2 创建功能分支
 
 1. **EXEC** `git branch --show-current` → **ASSERT** `exit_code == 0` → 获取当前分支名
 2. **EXEC** `git status --porcelain` → **ASSERT** `exit_code == 0`
-   - **IF** `output` 非空 → **GOTO** 1.5.2.1：处理未提交变更
+   - **IF** `output` NOT_EMPTY → **GOTO** 1.5.2.1
 3. **EXEC** `git checkout -b {slug}`
    - **IF** `exit_code != 0`（分支已存在）→ **EXEC** `git checkout {slug}` → **ASSERT** `exit_code == 0`
 4. **WRITE** checkpoint：`current_step=Step 2, branch={slug}, base_branch={基准分支名}, completed_steps 追加 Step 1.5`
@@ -400,6 +423,8 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 
 ### Step 2：调度 specAgent
 
+> 规格是所有下游 Agent 的唯一输入源。规格质量直接决定 impl/test/review 的返工率。宁可在此多花时间，不可带着模糊规格进入实现。
+
 **ROUTE** `team-spec`
 
 调用方式取决于工具能力：
@@ -424,16 +449,18 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 
 **完成验证**（产出门禁）：
 
-**IF** `mode == full` → **FOR** each `file` in [`01-plan.md`, `02-context.md`, `03-sdd.md`, `04-boundary.md`, `05-risk.md`, `prompt-template.md`]：
-**ELSE**（`mode == compact`）→ **FOR** each `file` in [`03-sdd.md`, `04-boundary.md`]：
+**IF** `mode == full` → **FOR** `file` **IN** [`01-plan.md`, `02-context.md`, `03-sdd.md`, `04-boundary.md`, `05-risk.md`, `prompt-template.md`]：
+**ELSE**（`mode == compact`）→ **FOR** `file` **IN** [`03-sdd.md`, `04-boundary.md`]：
 
-- **ASSERT** `文件存在`
+- **ASSERT** `{file} EXISTS`
 - **ASSERT** `有效行数 >= 5`
 - 任一不通过 → **ROLLBACK** specAgent，指明缺失文件名
 
 **WRITE** checkpoint：`current_step=H2, next_step=Step 3, phase=spec, completed_steps 追加 Step 2`
 
 ### Step 2.5：H2 人类确认规格 + Kill Switch 检查
+
+> 规格确认是最后的低成本纠偏机会。H2 之后进入实现，纠偏成本指数级上升。
 
 **IF** `mode == compact`：
 
@@ -453,6 +480,10 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 - *default* → 请求用户明确回复
 
 ### Step 3：调度 implAgent
+
+> 确保实现严格遵循 SDD 规格和 TDD 纪律。编排器的价值不在于自己写代码，而在于验证 implAgent 的 TDD 证据链完整且真实。
+
+> TRAP：你会倾向于信任 implAgent 的 `DONE` 状态而跳过 TDD 证据验证。`DONE` 只表示"自认为完成"——必须验证 `06-tdd-log.md` 中 RED→GREEN 顺序和失败输出。
 
 **ROUTE** `team-impl`
 
@@ -477,10 +508,10 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 
 **完成验证**（产出门禁）：
 
-**FOR** each `file` in [`06-tdd-log.md`, `07-prompt-log.md`, `08-ai-decisions.md`]：
+**FOR** `file` **IN** [`06-tdd-log.md`, `07-prompt-log.md`, `08-ai-decisions.md`]：
 
-- **ASSERT** `文件存在` && `有效行数 >= 5`
-- **ASSERT** `06-tdd-log.md 包含 RED 段落标记`
+- **ASSERT** `{file} EXISTS` && `有效行数 >= 5`
+- **ASSERT** `06-tdd-log.md CONTAINS "RED 段落标记"`
 - 任一不通过 → **ROLLBACK** implAgent，指明缺失文件名
 
 **测试/CI 门禁**：
@@ -492,11 +523,11 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 
 **TDD 证据验证**（Constitutional Rule #9 门禁）：
 
-**READ** `06-tdd-log.md` → **FOR** each `feature_block`：
+**READ** `06-tdd-log.md` → **FOR** `feature_block`：
 
 1. **ASSERT** `RED 位置 < GREEN 位置`
-2. **ASSERT** `RED.失败输出` 非空 && `RED.失败输出` 包含 `FAIL|fail|Error|error|✗|FAILED`
-3. **ASSERT** `GREEN.通过输出` 非空 && `GREEN.通过输出` 包含 `PASS|pass|OK|✓|✅|passed`
+2. **ASSERT** `RED.失败输出` NOT_EMPTY && `RED.失败输出` CONTAINS `FAIL|fail|Error|error|✗|FAILED`
+3. **ASSERT** `GREEN.通过输出` NOT_EMPTY && `GREEN.通过输出` CONTAINS `PASS|pass|OK|✓|✅|passed`
 4. **ASSERT** `RED.时间 <= GREEN.时间` && `GREEN.时间 <= REFACTOR.时间`
 5. **EXEC** `git log --oneline` → **ASSERT** `exit_code == 0` && `test: 提交数 >= 功能点数`
 
@@ -505,6 +536,10 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 **WRITE** checkpoint：`current_step=Step 4, next_step=Step 5, phase=impl, completed_steps 追加 Step 3`
 
 ### Step 4：调度 testAgent
+
+> 测试审计是独立于实现的质量验证。编排器必须完整传递 testAgent 的路由决策（回退 implAgent/回退 specAgent），不可自行过滤或降级。
+
+> SIGNAL：testAgent 报告 `spec 遗漏` 通常意味着 SDD 的边界条件或异常场景章节不完整，不是 implAgent 的问题——回退到 specAgent 而非 implAgent。
 
 **ROUTE** `team-test`
 
@@ -526,10 +561,10 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 
 **完成验证**（产出门禁）：
 
-**FOR** each `file` in [`09-test-matrix.md`, `10-test-report.md`]：
+**FOR** `file` **IN** [`09-test-matrix.md`, `10-test-report.md`]：
 
-- **ASSERT** `文件存在` && `有效行数 >= 5`
-- **ASSERT** `10-test-report.md 包含测试输出证据（含退出码）`
+- **ASSERT** `{file} EXISTS` && `有效行数 >= 5`
+- **ASSERT** `10-test-report.md CONTAINS 测试输出证据（含退出码）`
 - 任一不通过 → **ROLLBACK** testAgent，指明缺失文件名
 
 **READ** `10-test-report.md` 中 testAgent 路由决策（→ reviewAgent / → implAgent / → specAgent / → **H3**）
@@ -549,7 +584,15 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 - `人类需决策` → **WRITE** checkpoint：`status=BLOCKED` → **H3**
 - *default* → 记录问题，继续下一步
 
+**ELSE** → 测试全部通过，继续下一步
+
+> SIGNAL：同一 `source→target` 对回退达到 2 次时，第 3 次不是"再试一次"——是系统性问题（SDD 不完整、架构不适配等），必须触发 `H3` 让用户介入。
+
 ### Step 5：调度 reviewAgent
+
+> 代码审查是交付前最后的质量门禁。编排器必须确认 reviewAgent 的五维度审查全部完成，且 P0/P1 问题已触发回退而非被标记为"后续处理"。
+
+> TRAP：reviewAgent 返回 `DONE_WITH_CONCERNS` 时，你会倾向于视为"基本完成"而继续流程。必须将 concerns 完整展示给用户，由用户决定是否继续。
 
 **ROUTE** `team-review`
 
@@ -572,10 +615,10 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 
 **完成验证**（产出门禁）：
 
-**FOR** each `file` in [`11-review.md`, `12-asset-update.md`, `13-retrospective.md`, `task-rules.md`]：
+**FOR** `file` **IN** [`11-review.md`, `12-asset-update.md`, `13-retrospective.md`, `task-rules.md`]：
 
-- **ASSERT** `文件存在` && `有效行数 >= 5`
-- **ASSERT** `13-retrospective.md 包含 "新规则" 或 "本次沉淀" 关键词`
+- **ASSERT** `{file} EXISTS` && `有效行数 >= 5`
+- **ASSERT** `13-retrospective.md CONTAINS "新规则" || CONTAINS "本次沉淀"`
 - 任一不通过 → **ROLLBACK** reviewAgent，指明缺失文件名
 
 **READ** `11-review.md` 中 reviewAgent 修复/回退决策
@@ -595,7 +638,11 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 - `人类需决策` → **WRITE** checkpoint：`status=BLOCKED` → **H3**
 - *default* → 记录问题，继续下一步
 
+**ELSE** → 审查全部通过，继续下一步
+
 ### Step 6：补全团队级证据
+
+> 团队级证据是协作可追溯性的保障。一致性检查必须在写入 14-team.md 之前完成，否则是"先写结论再找证据"。
 
 **IF** `mode == compact` → 跳过此步，**GOTO** Step 7。checkpoint 中 `completed_steps` 不含 Step 6。
 
@@ -618,13 +665,63 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 
 #### 文件 14：`14-team.md`
 
-**WRITE** `14-team.md`（模板见 `references/14-team-template.md`）。
+**WRITE** `14-team.md`（模板见 `references/14-team-template.md`）：
+
+```markdown
+## §一 角色分工
+| 角色 | 负责人 | 职责 | 产出物 |
+|------|--------|------|--------|
+| {role} | {person} | {responsibility} | {deliverable} |
+
+## §二 一致性检查
+| 检查项 | 结果 | 修复动作 |
+|--------|------|---------|
+| 术语一致性 | ✅/❌ | {action} |
+| 标题层级一致性 | ✅/❌ | {action} |
+| commit 消息格式 | ✅/❌ | {action} |
+
+## §三 个人贡献
+| 贡献者 | 产出物 | 提交数 |
+|--------|--------|--------|
+| {contributor} | {deliverables} | {count} |
+
+## §四 质量审查数据
+| 维度 | 真实问题数 | P0 | P1 | P2 |
+|------|-----------|----|----|-----|
+| {dimension} | {count} | {n} | {n} | {n} |
+```
 
 **IF** 仅 1 位人类作者 → §一 角色分工填写"用户 + AI Agent 团队"，§三 将用户审查/确认决策也计入贡献，§四 正常填写 reviewAgent 审查数据。
 
 #### 文件 15：`15-brief.md`
 
-**WRITE** `15-brief.md`（模板见 `references/15-brief-template.md`），填写方式：
+**WRITE** `15-brief.md`（模板见 `references/15-brief-template.md`）：
+
+```markdown
+## §一 Elevator Pitch
+{3 句话：问题 → 方案 → 结果}
+
+## §二 关键决策
+| 决策点 | 选择 | 拒绝方案 | 理由 |
+|--------|------|---------|------|
+| {decision} | {chosen} | {rejected} | {why} |
+
+## §三 AI 协作亮点
+- {highlight_from_prompt_log_or_tdd_log}
+
+## §四 测试覆盖概要
+| 维度 | 用例数 | 通过 | 覆盖率 |
+|------|--------|------|--------|
+| {dimension} | {n} | {n} | {pct} |
+
+## §五 遗留风险
+- {risk_from_review}
+
+## §六 改进承诺
+- {commitment_from_retrospective}
+```
+
+填写方式：
 
 - §一 Elevator Pitch：从 `01-plan.md` + `03-sdd.md` + `10-test-report.md` 提炼 3 句话
 - §二 关键决策：从 `08-ai-decisions.md` 挑选 2-3 个最重要决策
@@ -637,7 +734,7 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 
 ### Step 7：分支完成处理
 
-> 在人类验收前完成分支处理，确保用户验收时所有技术工作已就绪。
+> 确保所有技术工作在人类验收前就绪。用户验收时看到的应该是可交付状态，不是半成品。
 
 **READ** `12-asset-update.md` → **IF** CHANGELOG.md 需要更新但尚未更新 → 补全。
 
@@ -650,7 +747,7 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 
 **MATCH** `finish_result`：
 
-- `merge` → **ASSERT** `merge_commit 存在`
+- `merge` → **ASSERT** `merge_commit EXISTS`
 - `PR` → **ASSERT** `PR 已创建`
 - `keep` || `discard` → 记录用户决策
 - *default* → **H3**，请求用户选择分支处理方式
@@ -659,18 +756,20 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 
 ### Step 7.3：H4 人类验收 + 分期决策
 
+> H4 是用户对整个交付物的最终确认，不可省略。展示内容必须让用户在不读代码的情况下做出有效判断。
+
 **WRITE**（对话中）向用户展示：交付物清单 + 代码 diff 摘要。
 
 - **IF** `mode == full` → 还展示 `14-team.md` 和 `15-brief.md` 核心内容
 - **IF** `mode == compact` → 展示 `11-review.md` 审查结论 + `13-retrospective.md` 改进承诺
 
-**IF** `docs/delivery-checklist.md` 存在 → **READ** 检查 `- [ ]` 项完成情况 → 未完成项列入 H4 展示，供用户判断。
+**IF** `docs/delivery-checklist.md EXISTS` → **READ** 检查 `- [ ]` 项完成情况 → 未完成项列入 H4 展示，供用户判断。
 
 **MATCH** `user_decision`：
 
 - `验收通过` → **WRITE** checkpoint：`completed_steps 追加 H4` → **GOTO** Step 7.5
-- `验收不通过` → 根据反馈 **GOTO** 对应 Agent
-- `后续分期` → **IF** `01-plan.md` §二 定义了后续分期候选 → **GOTO** 7.3.1：后续分期启动
+- `验收不通过` → 根据反馈回退对应 Step（spec 问题 → **GOTO** Step 2；实现问题 → **GOTO** Step 3；测试问题 → **GOTO** Step 4；审查问题 → **GOTO** Step 5）
+- `后续分期` → **IF** `01-plan.md` §二 定义了后续分期候选 → **GOTO** 7.3.1
 - *default* → 请求用户明确决策
 
 #### 7.3.1：后续分期启动
@@ -689,7 +788,7 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 
 ### Step 7.5：归档与知识合并
 
-> 用户验收通过后执行知识沉淀。
+> 知识沉淀是任务的长期价值。可泛化规则必须合并到项目级规范，否则下个任务会重复踩坑。
 
 1. **READ** `docs/tasks/{slug}/task-rules.md` → **WRITE** 标记为"可泛化"的规则到项目级/模块级 AI 规范文件
 2. **IF** 项目维护 `docs/specs/` 目录 → **WRITE** 本次 `03-sdd.md` 关键规格合并进去
@@ -716,17 +815,30 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 
 ### Step 8：最终质量检查
 
-**RESOLVE** `mode`：**READ** `.checkpoint.json` 模式字段。**IF** `mode == compact` → `[完整模式]` 项跳过，`[精简替代]` 项替换原项，D5 整组跳过。
+> 最终质量检查是流程的守门员。所有检查项必须基于新鲜执行结果，不可引用之前步骤的缓存输出。
+
+> SIGNAL：`unchecked_items > 3` 通常意味着某个 Agent 被跳过或产出不完整——不是逐条补全的问题，而是需要回退对应 Agent 重新执行。
+
+**RESOLVE** `mode`（首个命中即停）：
+
+1. `READ("docs/tasks/{slug}/.checkpoint.json").mode`
+2. *default* → `full`
+
+**IF** `mode == compact`：
+
+- `[完整模式]` 项跳过
+- `[精简替代]` 项替换原项
+- D5 整组跳过
 
 **GATE** 全部检查项通过才可声明质量检查通过：
 
 **硬门槛（7 项全部必须通过）：**
 
-- [ ] G1: `[完整模式]` **ASSERT** `01-plan.md 包含目标澄清、上下文、阶段拆分、修改范围、验证计划`。`[精简替代]` **ASSERT** `03-sdd.md 包含任务目标和关键设计决策`
+- [ ] G1: `[完整模式]` **ASSERT** `01-plan.md CONTAINS 目标澄清、上下文、阶段拆分、修改范围、验证计划`。`[精简替代]` **ASSERT** `03-sdd.md CONTAINS 任务目标和关键设计决策`
 - [ ] G2: **ASSERT** `04-boundary.md 有 allow/deny 两个方向`
-- [ ] G3: **ASSERT** `09-test-matrix.md 存在` && `10-test-report.md 存在` && `测试代码存在`
+- [ ] G3: **ASSERT** `09-test-matrix.md EXISTS` && `10-test-report.md EXISTS` && `测试代码 EXISTS`
 - [ ] G4: **EXEC** 项目 CI 全量检查 → **ASSERT** `exit_code == 0` && `failures == 0`
-- [ ] G5: **ASSERT** `项目 AI 规范中每条规则包含触发条件 + 可执行指令`
+- [ ] G5: **ASSERT** `项目 AI 规范中每条规则 CONTAINS 触发条件 + 可执行指令`
 - [ ] G6: `[完整模式]` **ASSERT** `05-risk.md 有风险识别` && `11-review.md §四 有剩余风险说明`。`[精简替代]` **ASSERT** `11-review.md §四 有剩余风险说明`
 - [ ] G7: `[完整模式]` **ASSERT** `08-ai-decisions.md 能解释关键决策` && `15-brief.md 有决策解释表`。`[精简替代]` **ASSERT** `08-ai-decisions.md 能解释关键决策`
 
@@ -750,9 +862,9 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 
 - [ ] D3.1 **ASSERT** `03-sdd.md 含输入/输出/边界/异常/验收 Checklist`
 - [ ] D3.2 **READ** `06-tdd-log.md` → **ASSERT** `RED 失败输出在前` && `GREEN 通过输出在后` && `git log 中 test: 提交早于 feat:/fix:`
-- [ ] D3.3 **ASSERT** `09-test-matrix.md 四维矩阵存在` && `10-test-report.md §八 回归验证存在`
+- [ ] D3.3 **ASSERT** `09-test-matrix.md 四维矩阵 EXISTS` && `10-test-report.md §八 回归验证 EXISTS`
 - [ ] D3.4 **ASSERT** `06-tdd-log.md 有修复记录` && `11-review.md 有修复记录`
-- [ ] D3.5 **ASSERT** `11-review.md 含五维度审查` && `§四 剩余风险存在`
+- [ ] D3.5 **ASSERT** `11-review.md 含五维度审查` && `§四 剩余风险 EXISTS`
 
 **D4 AI 使用过程与复盘（13 分）：**
 
@@ -771,7 +883,7 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 - [ ] D5.3 **ASSERT** `14-team.md §四 真实问题占比 > 0`
 - [ ] D5.4 **ASSERT** `14-team.md §三 每位贡献者有明确产出物和提交数`
 
-**IF** `unchecked_items > 0` → **GOTO** 对应 Agent 补全。
+**IF** `unchecked_items > 0` → 回退对应 Step 补全（D1/D3 缺失 → **GOTO** Step 5；D2 缺失 → **GOTO** Step 2；D4 缺失 → **GOTO** Step 3；D5 缺失 → **GOTO** Step 6）。
 
 全部通过 → **WRITE** checkpoint：`status=DONE, completed_steps 追加 Step 7.5 和 Step 8`。
 
@@ -789,8 +901,8 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 引用 `_team-rules/constitutional-rules.md`。编排阶段尤其注意：
 
 - **Rule #1 人类介入是一等公民**：H1-H4 不可被任何 Agent 自动确认，"用户没回复就默认同意"是违规（FP-1）
-- **Rule #2 有向图回退**：testAgent/reviewAgent 发现问题必须 **ROLLBACK** 对应 Agent，不可"先记着后面一起修"（FP-4）
-- **Rule #7 回退次数上限**：同一 source→target 对回退 ≤ 2 次，第 3 次强制触发 **H3**（FP-1）
+- **Rule #2 有向图回退**：testAgent/reviewAgent 发现问题必须 `ROLLBACK` 对应 Agent，不可"先记着后面一起修"（FP-4）
+- **Rule #7 回退次数上限**：同一 source→target 对回退 ≤ 2 次，第 3 次强制触发 `H3`（FP-1）
 - **Rule #9 TDD 顺序不可逆**：implAgent 完成后必须验证 `06-tdd-log.md` 中 RED 在 GREEN 之前（FP-2）
 
 ## 自检门禁
@@ -803,6 +915,9 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 - [ ] **ASSERT** `Step 8 质量检查全部通过`
 - [ ] **IF** reviewAgent 要求 → **ASSERT** `CHANGELOG.md 已更新`
 - [ ] **ASSERT** `进度账本已更新`
+- [ ] 我是否因为"这步很简单"而跳过了某个人类介入点？
+- [ ] 我是否把所有 Agent 的 concerns 都传达给了用户，还是悄悄忽略了某些？
+- [ ] 我是否在回退时传递了完整的四要素上下文（问题、位置、期望、建议），还是只说了"有 bug"？
 
 ## 完成标志
 
@@ -826,3 +941,8 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 - `team-test` — REQUIRED：编排流程中必须调度测试审计
 - `team-review` — REQUIRED：编排流程中必须调度代码审查
 - `team-finish` — 分支完成处理
+
+## 下一步
+
+- 编排完成 → 使用 `team-finish` 合并分支
+- 需要协作评分 → 使用 `team-score` 获取质量评分

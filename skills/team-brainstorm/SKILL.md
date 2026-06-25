@@ -67,6 +67,8 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 ## 执行步骤
 
 ### Phase 1：探索
+>
+> 理解用户要解决的真实问题和项目现状。不要急于构思方案——先确认"问题是什么"比"答案是什么"更重要。
 
 1. **READ** 用户需求，提取核心目标和关键词
 2. **READ** 项目规范：`CLAUDE.md`（或 `.cursor/rules/`）、`README.md`
@@ -79,11 +81,16 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
    1. 从用户需求提取核心关键词（kebab-case）
    2. 从项目上下文推断关键词
    3. *none* → **NEEDS_CONTEXT**：请用户提供任务关键词
-6. **IF** `docs/tasks/` 不存在 → 创建 `docs/tasks/`
+6. **IF** `docs/tasks/ NOT_EXISTS` → 创建 `docs/tasks/`
 7. **READ** `docs/tasks/` 已有目录列表 → 取最大序号 +1（从 `0001` 起）→ 拼接 `slug` = `{序号}-{keyword}`（整体 ≤ 50 字符）
-8. 创建 `docs/tasks/{slug}/` 目录
+8. **EXEC** 创建 `docs/tasks/{slug}/` 目录（**IF** 已存在 → 跳过）→ **ASSERT** `exit_code == 0`
 
 ### Phase 2：需求澄清（一次性提问）
+>
+> 挖出用户未说出的假设和隐性约束。好问题比好答案更有价值——问错问题意味着后续全部方向偏移。
+
+> TRAP：你会倾向于接受用户的初始框架，不质疑其前提假设。
+> 用户说"我需要一个缓存层"——但也许问题根源是查询太慢，缓存只是用户想到的第一个方案。
 
 > 一次最多 3 个问题，优先用选项形式降低用户认知负担（FP-1）。
 
@@ -102,6 +109,14 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 - 整合用户回复，进入 Phase 3
 
 ### Phase 3：方案设计
+>
+> 探索根本不同的解决路径，不是同一个想法的三种措辞。每个方案应从不同的设计取舍出发（如性能 vs 简洁、侵入式 vs 非侵入式）。
+
+> TRAP：锚定偏差——你会倾向于围绕第一个想到的方案展开变体，而非探索本质不同的路径。
+> 如果三个方案都是"用不同库实现同一架构"，那不是三个方案，是一个方案的三个实现细节。
+
+> SIGNAL：所有方案都是同一思路的变体 → 锚定偏差发作，退回重新从问题本质出发。
+> SIGNAL：没有被拒绝的备选方案 → 探索不充分，至少一个方案应该是"为什么不用更简单的做法"。
 
 提出 2-3 个不同方案，含优缺点对比和推荐理由：
 
@@ -121,6 +136,8 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 ```
 
 ### Phase 4：展示设计
+>
+> 逐段确认而非一次倾倒，每段确认后再展示下一段。目标是让用户在每个维度上做出知情决策，而非被信息量压垮后草率同意。
 
 > 逐段展示而非一次倾倒，降低用户认知负荷（FP-1）。
 
@@ -146,6 +163,13 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 - *default* → 向用户澄清确认意图
 
 ### Phase 5：产出 00-design-brief.md
+>
+> 将讨论共识固化为结构化文档。这是下游 Skill 的唯一输入——口头讨论不算数，写下来的才算数。
+
+> SIGNAL：方案缺少具体下一步行动 → brainstorm 停留在空想层面，补充可执行的交付物定义。
+
+> GOOD：`## 方案对比` 中每个方案从不同设计维度出发（如"方案 A：API 层缓存，低侵入"vs"方案 B：数据库物化视图，零代码变更"vs"方案 C：前端虚拟滚动，不改后端"），优缺点具体到可验证的技术事实。
+> BAD：三个方案都是"用 Redis / 用 Memcached / 用本地缓存"——本质相同，只是实现选型不同，不构成方案对比。
 
 **WRITE** `docs/tasks/{slug}/00-design-brief.md`：
 
@@ -156,13 +180,20 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 
 ## 背景与目标
 
-{1-3 段描述}
+{1-3 段：用户要解决的底层问题、当前痛点、期望达成的状态}
 
 ## 方案对比
 
-| 方案 | 优点 | 缺点 | 推荐 |
-| ---- | ---- | ---- | ---- |
-| ...  | ...  | ...  | ...  |
+| 方案 | 设计思路 | 优点 | 缺点 | 复杂度 | 推荐 |
+| ---- | -------- | ---- | ---- | ------ | ---- |
+| A: {名称} | {核心设计取舍} | {具体优点} | {具体缺点} | 低/中/高 | ✅/— |
+| B: {名称} | {核心设计取舍} | {具体优点} | {具体缺点} | 低/中/高 | —/✅ |
+
+## 关键设计决策
+
+| 决策 | 选择方案 | 拒绝方案 | 拒绝理由 |
+| ---- | -------- | -------- | -------- |
+| {决策点} | {选择} | {拒绝} | {具体理由} |
 
 ## 分期建议
 
@@ -191,6 +222,8 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 - 残留占位符 → 替换为实际值后重新 **WRITE**
 
 ### Phase 6：Handoff
+>
+> 确保 brainstorm 成果顺滑传递给下游 Skill，不丢失上下文。
 
 **WRITE**（对话中）slug 目录路径 `docs/tasks/{slug}/`。
 
@@ -223,9 +256,11 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 - [ ] 已 **READ** 代码库和现有实现（不是凭空设计）
 - [ ] **ASSERT** `方案数 >= 2`（不是只有一个选项）
 - [ ] **ASSERT** `用户已确认设计方案`（不是自行决定）
-- [ ] **ASSERT** `00-design-brief.md 存在`（已 **WRITE** 到 `docs/tasks/{slug}/`）
+- [ ] **ASSERT** `00-design-brief.md EXISTS`（已 **WRITE** 到 `docs/tasks/{slug}/`）
 - [ ] **ASSERT** `00-design-brief.md 无占位符残留`
-- [ ] **ASSERT** `01-plan.md 不存在`（那是 team-spec 的职责）
+- [ ] **ASSERT** `01-plan.md NOT_EXISTS`（那是 team-spec 的职责）
+- [ ] 我是否真的探索了不同方向，还是只是同一个想法的变体？
+- [ ] 如果用户的前提假设是错的，我的方案还成立吗？
 
 ## 完成标志
 
@@ -246,3 +281,9 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 
 - `team-spec` — REQUIRED：讨论完成后必须进行规格定义
 - `team-impl` — 仅当用户明确要求跳过规格阶段时可直接实现
+
+## 下一步
+
+- 方案确定后 → 使用 `team-spec` 编写完整 SDD
+- 需要技术验证 → 使用 `team-debug` 进行原型验证
+- 直接进入全流程 → 使用 `team-orchestrator`，将 `00-design-brief.md` 作为输入

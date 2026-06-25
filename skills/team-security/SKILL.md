@@ -21,10 +21,10 @@ description: Use when AI usage involves sensitive data, external services, or au
 6. 验证人机协同机制是否到位
 7. 产出合规审计报告到 docs/tasks/{slug}/
 约束：
-- 一级红线违规 = 立即 BLOCKED，触发 H3，不可自行降级
+- 一级红线违规 = 立即 `BLOCKED`，触发 `H3`，不可自行降级
 - 二级红线需验证控制条件是否满足
 - 风险等级判定按最高维度执行
-- 违规发现须 ROLLBACK 到 specAgent（spec 层安全缺失）或 implAgent（实现层红线违规）
+- 违规发现须 `ROLLBACK` 到 specAgent（spec 层安全缺失）或 implAgent（实现层红线违规）
 ```
 
 ### 推理检查点
@@ -119,6 +119,8 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
 
 ### Phase 0：上下文解析
 
+> 确定审查范围和模式。完成时应能回答：审查哪个任务、哪些文件是输入、用什么模式执行。
+
 1. **RESOLVE** `slug`（首个命中即停）：
    1. 调用方传入的 slug 参数
    2. `READ(".checkpoint.json").slug`
@@ -128,10 +130,10 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
 2. **RESOLVE** `mode`（首个命中即停）：
    1. `READ("docs/tasks/{slug}/.checkpoint.json").mode`
    2. 调用方传入的 mode 参数
-   3. `docs/tasks/{slug}/01-plan.md` 存在 → `full`
+   3. `docs/tasks/{slug}/01-plan.md EXISTS` → `full`
    4. *default* → `compact`
 
-3. **IF** `docs/tasks/{slug}/` 存在：
+3. **IF** `docs/tasks/{slug}/ EXISTS`：
    - **READ** `docs/tasks/{slug}/03-sdd.md` — 提取 AI 使用场景
    - **READ** `docs/tasks/{slug}/04-boundary.md` — 提取修改边界
    - `[完整模式]` **READ** `docs/tasks/{slug}/05-risk.md` — 提取风险项
@@ -141,14 +143,16 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
 
 ### Phase 1：场景识别与风险定级
 
+> 识别所有 AI 使用场景并按最高风险维度定级。遗漏一个场景比误判一个等级更危险——宁可多列不可漏列。
+
 1. **READ** 待审查内容（代码变更 / Agent 配置 / Prompt 模板 / Workflow 定义 / 用户描述）
-2. **RESOLVE** `ai_usage_scenarios`（从以下来源提取 AI 使用场景）：
+2. **RESOLVE** `ai_usage_scenarios`（首个命中即停，从以下来源提取 AI 使用场景）：
    1. `git diff`（代码中的 AI 调用、模型接入、Prompt 构造）
    2. `docs/tasks/{slug}/03-sdd.md`（规格中的 AI 使用方式）
    3. 用户描述（口头/文字描述的 AI 使用场景）
    4. *none* → **NEEDS_CONTEXT**：请用户提供 AI 使用场景描述
 
-3. **FOR** each `scenario`：
+3. **FOR** `scenario`：
 
    **MATCH** `scenario.risk_dimension`（按最高维度取级）：
 
@@ -168,9 +172,13 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
 
 ### Phase 2：一级红线检查（绝对禁止）
 
+> 逐条检查 6 条绝对禁止红线。任何一条违规立即 `BLOCKED`，不等待后续检查完成。
+
+> TRAP：你会倾向于只检查 OWASP Top 10 等已知漏洞类型，而忽略项目特有的攻击面。先理解这个项目的数据流和信任边界，再对照红线检查。
+
 > 以下 6 条红线绝对禁止，不受业务需求、紧急程度或管理层级影响。
 
-**FOR** each `red_line` in `[RL-1, RL-2, RL-3, RL-4, RL-5, RL-6]`：
+**FOR** `red_line` **IN** [`RL-1`, `RL-2`, `RL-3`, `RL-4`, `RL-5`, `RL-6`]：
 
 #### RL-1：敏感数据输入外部 AI
 
@@ -185,6 +193,8 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
 
 #### RL-2：凭证泄露
 
+> SIGNAL：`grep` 命中硬编码凭证 → 立即 P0，不等其他检查完成。凭证一旦入库（即使后续 commit 删除），git history 中永久存在。
+
 1. **EXEC** `grep -rn -E '(AK|SK|access[_-]?key|secret[_-]?key|api[_-]?key|token|password|passwd|credential)\s*[:=]' .` — 检测硬编码凭证
    - **IF** `exit_code == 0` → 检查是否为真实凭证（排除占位符、测试值、注释）
 2. **READ** AI 生成的代码/配置 — 检查是否明文使用凭证
@@ -196,13 +206,15 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
 
 #### RL-3：AI 直接执行高风险操作
 
+> TRAP："内部 API 不需要授权检查"是最常见的安全假设错误。内部 ≠ 可信——横向移动攻击正是利用这一点。
+
 1. **READ** AI 执行链路中的操作列表
-2. **FOR** each `operation`：
+2. **FOR** `operation`：
    **MATCH** `operation.type`：
-   - 资金划转 → **ASSERT** `人工确认记录 存在`
-   - 权限变更 → **ASSERT** `人工确认记录 存在`
-   - 数据删除 → **ASSERT** `人工确认记录 存在`
-   - 对外发布 → **ASSERT** `人工确认记录 存在`
+   - 资金划转 → **ASSERT** `人工确认记录 EXISTS`
+   - 权限变更 → **ASSERT** `人工确认记录 EXISTS`
+   - 数据删除 → **ASSERT** `人工确认记录 EXISTS`
+   - 对外发布 → **ASSERT** `人工确认记录 EXISTS`
    - *default* → 继续下一项
 3. **IF** 任一高风险操作无人工确认 → 标记 `RL-3 VIOLATION` → **GOTO** Phase 7
 
@@ -231,9 +243,13 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
 
 ### Phase 3：二级红线检查（高风险限制）
 
+> 验证高风险操作的控制条件是否到位。二级红线不是"禁止"而是"有条件允许"——关键是条件是否真正满足，不是形式上存在。
+
+> TRAP：你会倾向于看到"有配置文件"就标记合规。配置存在 ≠ 配置生效——检查运行时是否真正加载和执行了控制逻辑。
+
 > 以下 4 条为高风险操作，必须满足控制条件后方可执行。
 
-**FOR** each `high_risk` in `[HR-1, HR-2, HR-3, HR-4]`：
+**FOR** `high_risk` **IN** [`HR-1`, `HR-2`, `HR-3`, `HR-4`]：
 
 #### HR-1：AI 自动化执行
 
@@ -279,6 +295,10 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
 
 ### Phase 4：分场景安全控制检查
 
+> 按场景逐项验证安全控制措施。每个 `ASSERT` 要有证据支撑，不是"看起来没问题"。
+
+> TRAP：你会倾向于将输入验证标记为"充分"而不测试绕过向量。框架默认配置不等于安全——检查是否有自定义覆盖、是否禁用了默认保护、是否存在绕过路径。
+
 > 根据 Phase 1 识别的场景，选择性执行以下子检查。`[精简模式]` 仅执行与 `03-sdd.md` 直接相关的子场景，跳过无关场景并标注 N/A。
 
 #### 4.1 数据与隐私安全
@@ -296,6 +316,8 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
 **ELSE**：标注 `§4.1 N/A`
 
 #### 4.2 代码与系统安全
+
+> SIGNAL：测试矩阵（`09-test-matrix.md`）中无安全相关测试用例 → 安全未被测试覆盖，实现层安全控制形同虚设。
 
 **IF** 场景涉及 AI 生成代码：
 
@@ -320,7 +342,7 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
 
 **IF** 场景涉及 Agent / Skills / Workflow：
 
-**FOR** each `control_dimension` in `[沙箱运行, 步数限制, 权限隔离, 全链路日志, 异常终止机制]`：
+**FOR** `control_dimension` **IN** [`沙箱运行`, `步数限制`, `权限隔离`, `全链路日志`, `异常终止机制`]：
 
 | 控制维度 | 检查项 |
 | -------- | ------ |
@@ -358,23 +380,31 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
 
 ### Phase 5：人机协同机制验证
 
+> 验证高风险操作的人工确认不是形式审查而是实质性审核。"有审批记录"和"审批人真正理解并判断了风险"是两回事。
+
 > 以下操作类型必须插入人工确认环节。
 
-**FOR** each `operation_type` in `[数据写操作, 权限变更, 对外发布, 资金操作]`：
+**FOR** `operation_type` **IN** [`数据写操作`, `权限变更`, `对外发布`, `资金操作`]：
 
 **IF** 场景涉及 `operation_type`：
 
 **MATCH** `operation_type`：
 
-- `数据写操作` → **ASSERT** `数据负责人确认记录 存在`
-- `权限变更` → **ASSERT** `安全负责人确认记录 存在`
-- `对外发布` → **ASSERT** `业务负责人审核确认记录 存在`
-- `资金操作` → **ASSERT** `财务授权人员双人确认记录 存在`
+- `数据写操作` → **ASSERT** `数据负责人确认记录 EXISTS`
+- `权限变更` → **ASSERT** `安全负责人确认记录 EXISTS`
+- `对外发布` → **ASSERT** `业务负责人审核确认记录 EXISTS`
+- `资金操作` → **ASSERT** `财务授权人员双人确认记录 EXISTS`
 
 **IF** 确认记录存在 → **ASSERT** `确认为实质性审核` — 非形式审查
 **ELSE** → 标记 `HITL_MISSING:{operation_type}`
 
+**ELSE**：→ 跳过，继续下一个 `operation_type`
+
 ### Phase 6：产出合规审计报告
+
+> 将所有检查结果汇聚为结构化审计报告。每个判定须有证据链支撑——合规项说明为什么合规，违规项说明具体违规行为和位置。
+
+> SIGNAL：首轮扫描"未发现漏洞" → 大概率是扫描不充分，不是代码真的无懈可击。回头检查是否覆盖了项目特有的攻击面。
 
 **WRITE** `docs/security-audit.md`（每次重写，只保留最终结果）：
 
@@ -450,7 +480,13 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
 - **人机协同要求**：{从 Phase 5 提取的必须插入人工确认的操作列表}
 ```
 
+> GOOD：`RL-2 ✅ 合规 — grep 扫描 src/ 和 config/ 共 3 处命中：(1) config/example.env 为占位符 "YOUR_API_KEY"，(2) src/auth.ts:12 从环境变量读取 process.env.SECRET_KEY 未硬编码，(3) tests/mock.ts:5 为测试 mock 值。逐一排查后确认无真实凭证泄露。`
+> BAD：`RL-2 ✅ 合规 — 未发现硬编码凭证。`
+> （缺少扫描范围、命中数量、逐条排查过程——无法判断是真合规还是扫描不充分）
+
 ### Phase 7：违规路由与回退
+
+> 将违规发现路由到正确的上游修复。一级红线违规是阻塞性的——不可在违规基础上继续后续工作。
 
 > 一级红线违规立即触发本 Phase，不可等待全部检查完成。
 
@@ -458,7 +494,16 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
 
 - `RL-*`（一级红线违规）：
   1. **WRITE** `docs/security-audit.md` — 写入已完成的检查结果 + 违规详情
-  2. **WRITE**（对话中）违规详情：红线编号 + 具体行为 + 涉及文件/代码行
+  2. **WRITE**（对话中）违规详情：
+
+     ```
+     🚨 红线违规：{RL-N} {红线名称}
+     违规行为：{具体行为描述}
+     涉及位置：{文件路径:行号}
+     证据：{grep/代码片段}
+     影响评估：{数据泄露范围 / 权限影响 / 操作不可逆性}
+     ```
+
   3. **MATCH** `violation_source`：
      - 实现层问题（代码中硬编码凭证、未脱敏数据输入）→ **ROLLBACK** implAgent，附：红线编号 + 违规位置 + 整改要求
      - 规格层问题（SDD 设计违反安全原则、缺少安全约束）→ **ROLLBACK** specAgent，附：缺失的安全要求 + 建议补充内容
@@ -480,7 +525,7 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
 
 ## STOP Signals
 
-- **降级**一级红线违规为"建议整改"而不立即 BLOCKED
+- **降级**一级红线违规为"建议整改"而不立即 `BLOCKED`
 - **跳过**任何一条红线检查（"这条明显不涉及"需有证据支撑）
 - **接受**"业务紧急""领导同意""影响很小"作为红线豁免理由
 - **省略**人机协同机制的实质性审核验证（确认记录存在 ≠ 确认有效）
@@ -489,8 +534,8 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
 
 引用 `_team-rules/constitutional-rules.md`。安全审计阶段尤其注意：
 
-- **Rule #1 人类介入是一等公民**：一级红线违规必须触发 H3 人类介入，不可自行处置（FP-1）
-- **Rule #2 有向图回退**：违规发现须 ROLLBACK 到对应上游 Agent（specAgent / implAgent），不可降级忽略（FP-4）
+- **Rule #1 人类介入是一等公民**：一级红线违规必须触发 `H3` 人类介入，不可自行处置（FP-1）
+- **Rule #2 有向图回退**：违规发现须 `ROLLBACK` 到对应上游 Agent（specAgent / implAgent），不可降级忽略（FP-4）
 - **Rule #4 Kill Switch**：发现一级红线违规立即暂停，不可在违规基础上继续工作（FP-1 + FP-3）
 - **Rule #8 验证先行**：每项合规判定基于当次检查的完整输出，不引用历史检查结果（FP-4）
 
@@ -503,9 +548,11 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
 - [ ] **ASSERT** `red_line_checked == 6` — 6 条一级红线全部检查（含 N/A 标注）
 - [ ] **ASSERT** `high_risk_checked == 4` — 4 条二级红线全部检查（含 N/A 标注）
 - [ ] **ASSERT** `RL_violation == 0` || `H3 已触发` — 一级红线违规已触发人类介入
-- [ ] **ASSERT** `docs/security-audit.md` 存在且包含八个章节（含 §八 安全约束参考）
+- [ ] **ASSERT** `docs/security-audit.md EXISTS` && CONTAINS 八个章节（含 §八 安全约束参考）
 - [ ] **EXEC** `grep -cE 'RL-[1-6]|HR-[1-4]' docs/security-audit.md` → **ASSERT** `output >= 10` — 红线编号均已记录
-- [ ] **ASSERT** `整改清单` 非空（如有不合规项）|| `全部合规`
+- [ ] **ASSERT** `整改清单` NOT_EMPTY（如有不合规项）|| `全部合规`
+- [ ] 我是否只检查了已知漏洞类型，而忽略了这个项目特有的攻击面？
+- [ ] 如果我是攻击者，我会从哪里入手？我检查了那里吗？
 
 ## 完成标志
 
@@ -551,7 +598,7 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
 - `team-score` — REQUIRED 上游：评分时主动调用本 Skill 获取安全合规证据
 - `team-review` — 推荐：reviewAgent 安全维度可引用审计结论（如已存在）
 
-**team-score 调度协议（ROUTE 模板）：**
+**team-score 调度协议（`ROUTE` 模板）：**
 
 > team-score Step 1 扫描维度 6 使用以下模板调度。
 
@@ -562,7 +609,7 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
 模式：{完整 / --compact 精简}
 输入目录：docs/tasks/{slug}/（读取 03-sdd.md、04-boundary.md、05-risk.md（如存在））
 代码变更：git diff（如有）
-约束：遵守 team-security Skill 的 Phase 0-7 步骤；产出到 docs/security-audit.md（每次重写）；L1 场景写入豁免声明后即可 DONE。
+约束：遵守 team-security Skill 的 Phase 0-7 步骤；产出到 docs/security-audit.md（每次重写）；L1 场景写入豁免声明后即可 `DONE`。
 
 读取 skills/team-security/SKILL.md 获取完整执行步骤。
 ```

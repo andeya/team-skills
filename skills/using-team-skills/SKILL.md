@@ -5,9 +5,7 @@ description: Use when starting any conversation with Team Skills - establishes h
 
 # Using Team Skills
 
-<SUBAGENT-STOP>
-If you were dispatched as a subagent to execute a specific task, skip this skill.
-</SUBAGENT-STOP>
+> If you were dispatched as a subagent to execute a specific task, skip this skill.
 
 ## 角色定位
 
@@ -67,6 +65,15 @@ NO SKILL RECOMMENDATION WITHOUT SCENE ANALYSIS FIRST
 ## 执行步骤
 
 ### Step 1：分析用户场景
+>
+> 精准识别用户当前工程阶段，而非表面关键词匹配。错误分诊比慢分诊代价更高。
+
+> TRAP：你会倾向于推荐 `team-orchestrator`（最完整的流水线），即使用户只需要一个单点 Skill。
+> 问自己："用户的问题是否真的需要完整流水线，还是一个 Skill 就能解决？"
+
+> SIGNAL：用户描述 bug / 报错 / 异常行为 → `team-debug` 优先，不是 `team-orchestrator`。
+> SIGNAL：用户说"quick fix""小改动""顺手改一下" → 大概率不需要完整 SDD 流程。
+> SIGNAL：用户提到"安全""合规""敏感数据""外部 AI" → `team-security` 应出现在推荐链中。
 
 **READ** 用户输入 → 提取阶段信号（需求/规格/实现/测试/审查/调试/完成）
 
@@ -74,7 +81,7 @@ NO SKILL RECOMMENDATION WITHOUT SCENE ANALYSIS FIRST
 
 1. 需求模糊 / 用户不确定要做什么 → `team-brainstorm`
 2. 需求明确但无规格 → `team-spec`
-3. 规格已有（`03-sdd.md` 存在）→ `team-impl`
+3. 规格已有（`03-sdd.md EXISTS`）→ `team-impl`
 4. 实现已有，需测试审计 → `team-test`
 5. 代码 + 测试已有，需审查 → `team-review`
 6. 收到审查反馈 → `team-feedback`
@@ -87,10 +94,22 @@ NO SKILL RECOMMENDATION WITHOUT SCENE ANALYSIS FIRST
 13. *none* → **NEEDS_CONTEXT**：请用户描述当前阶段和目标
 
 ### Step 2：推荐并说明理由
+>
+> 推荐的核心是"最短路径"——从用户当前状态到目标状态经过最少的 Skill。过度推荐等于浪费用户时间。
+
+> GOOD：`用户报告登录接口 500 错误。当前阶段：调试。推荐：team-debug。理由：已有明确错误现象，需先定位根因再决定是否修改规格或实现。启动方式：/team-debug`
+> BAD：`用户报告登录接口 500 错误。推荐：team-orchestrator。理由：需要完整流水线来解决问题。`
+> BAD 原因：500 错误是调试场景，用完整流水线是杀鸡用牛刀。
+
+> GOOD：`用户想给现有功能加一个选项。已有代码和测试。推荐：team-impl（增量修改）。如果改动涉及接口变更，建议先 team-spec 补充 Delta Spec。`
+> BAD：`用户想加一个选项。推荐：team-spec → team-impl → team-test → team-review。`
+> BAD 原因：小改动不需要完整流水线，应评估规模后给出最简路径。
 
 **WRITE**（对话中）推荐结果：推荐 Skill + 推荐理由 + 启动方式
 
 ### Step 3：可选 — 展示流程图
+>
+> 仅在用户主动需要全貌时展示，不主动展开——信息过载是另一种误导。
 
 **IF** 用户需要了解全貌 → 展示 Mermaid 流程图
 
@@ -125,6 +144,8 @@ NO SKILL RECOMMENDATION WITHOUT SCENE ANALYSIS FIRST
 - [ ] `target_skill` 已 **RESOLVE** 且推荐理由与场景匹配
 - [ ] **IF** 场景模糊 → 已推荐 `team-brainstorm`
 - [ ] **IF** 用户需要完整流水线 → 已推荐 `team-orchestrator`
+- [ ] 我推荐的 Skill 组合是否是完成这个任务的最简路径？
+- [ ] 我是否因为熟悉某个 Skill 而忽略了更合适的选择？
 
 ## 完成标志
 
@@ -148,3 +169,7 @@ NO SKILL RECOMMENDATION WITHOUT SCENE ANALYSIS FIRST
 - `team-brainstorm` — 需求模糊时先讨论
 - `team-orchestrator` — 需要完整流水线时使用
 - `team-security` — AI 使用涉及安全合规时使用
+
+## 下一步
+
+- 根据推荐结果，调用对应的 Skill 开始工作

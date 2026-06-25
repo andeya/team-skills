@@ -1,321 +1,244 @@
-# Markdown Skill Language v1.0
+# Skill Spec
 
-> 共享规则文件。所有 SKILL.md 的执行步骤、门禁、状态声明须遵循本规范。
+> 本文件定义 SKILL.md 的格式规范——Markdown 之上的结构化指令协议，供 LLM 解析和逐步执行。
+> 所有 Skill 的执行步骤、门禁、状态声明须遵循本规范。
 
 ## 设计原则
 
-1. **Markdown 原生** — 仅使用 Markdown 已有语法构造（标题、粗体、反引号、列表、引用块、表格），不引入任何自定义符号或标签
-2. **零歧义** — 每个 Markdown 构造在 Skill 上下文中有且仅有一个语义解释
-3. **LLM 可执行** — 控制流、变量、门禁可被 LLM 机械提取并逐步执行，无需"读懂段落"
-4. **有执行模型** — 顺序流、跳转、循环终止、分支穷尽性有明确定义（§执行模型）
-5. **有变量模型** — 变量声明、引用、作用域、表达式语法有明确定义（§变量模型）
-6. **有组合模型** — Skill 间调用、回退、状态持久化有明确协议（§组合模型）
+> **DP-1 视觉锚定** — `**粗体大写**` 关键词是 LLM 扫描文档的注意力锚点。一切可执行指令以关键词开头，一眼可识别于正文。
+> *源自 FP-3：降低解析复杂度。*
 
-## 12 条语义约定
+> **DP-2 模式驱动** — LLM 从示例中识别模式，不从形式语法中推导规则。每个构造用示例定义而非 BNF。
+> *源自 FP-1：降低认知负荷。*
+
+> **DP-3 显式优先** — 命令、集合、条件首选反引号表达式。描述性形式仅在无法形式化时使用。
+> *源自 FP-4：声明不等于事实。*
+
+> **DP-4 Markdown 原生** — 仅使用标准 Markdown 语法（标题、粗体、反引号、列表、引用块、表格），不引入自定义标记。
+> *源自 FP-3：零基础设施成本。*
+
+> **DP-5 最小充分** — 关键词和约定取覆盖 95% 场景的最小集。LLM 已具备的语言理解能力不重复规定。
+> *源自 FP-1 + FP-3。*
+
+> **DP-6 信噪分离** — 规范每一行都是 LLM 执行 SKILL.md 时真正需要的信息。设计解释放在 `>` 引用块中，不混入执行规则。
+> *源自 FP-1：保护 context window。*
+
+---
+
+## §1 格式约定
+
+### 1.1 Markdown ↔ Skill 语义映射
 
 | # | Markdown 构造 | Skill 语义 | 示例 |
 |---|---------------|-----------|------|
-| 1 | `###` 标题 | Step / Phase 作用域边界 | `### Step 1：确定验证命令` |
-| 2 | `**全大写词**` | 语义关键词（指令动词 / 状态） | `**RESOLVE**` `**ASSERT**` `**DONE**` |
-| 3 | `` `反引号` `` | 标识符 / 可求值表达式 | `` `exit_code == 0` `` `` `verify_cmd` `` |
-| 4a | `1. 2. 3.` 有序列表 | 顺序执行（默认语义） | 步骤 1 → 步骤 2 → 步骤 3 |
-| 4b | `**RESOLVE**` + `1. 2. 3.` | 优先级链（首个命中即停） | `**RESOLVE** \`var\``：1. 尝试 A  2. 尝试 B  3. *none* |
-| 5 | `-` 无序列表 + 缩进 | 条件分支（顶层=条件，缩进子项=动作） | 二级缩进 = 二层嵌套 |
-| 6 | `→` | 则（then）— 前面是条件/动作，后面是后续动作 | `失败 → 记录详情 → **GOTO** Step 2` |
-| 7 | `- [ ]` 复选框 | **GATE** 断言条目（必须逐条验证，全部通过才放行） | `- [ ] exit_code == 0` |
-| 8 | `>` 引用块 | WHY / 设计意图（不参与执行，不含关键词指令） | 解释规则存在的工程理由 |
-| 9 | `*斜体*` | 兜底 / 缺省 / 空值 | `*none*` `*not found*` `*default*` |
-| 10 | 表格 | 结构化映射（状态机、类型表、路由表） | 失败模式表、严重级别表 |
-| 11 | `####` 四级标题 | 命名子步骤（用于拆分超过 2 层的嵌套） | `#### 子步骤 4.1：回退路由` |
-| 12 | `[标签]` 方括号 | 条件注解（标记该指令的适用条件） | `[完整模式]` `[精简替代]` |
+| 1 | `###` 标题 | Step / Phase 边界 | `### Phase 1：根因调查` |
+| 2 | `**全大写词**` | 执行关键词 | `**READ**` `**ASSERT**` `**DONE**` |
+| 3 | `` `反引号` `` | 标识符 / 可求值表达式 | `` `exit_code == 0` `` `` `03-sdd.md` `` |
+| 4 | `1. 2. 3.` 有序列表 | 顺序执行 | 步骤 1 → 2 → 3，全部执行 |
+| 5 | `-` 无序列表 + 缩进 | 条件分支 | 顶层 = 条件，缩进子项 = 动作 |
+| 6 | `→` | 则（then） | `失败 → **GOTO** Step 2` |
+| 7 | `>` 引用块 | 非执行注解（不参与控制流） | 设计意图、认知陷阱、诊断信号、校准示例 |
+| 8 | `*斜体*` | 兜底标签 | `*none*` `*default*` `*not found*` `*repeat exhausted*` |
 
-## 关键词词表
+> **DP-7 单义映射** — 每个 Markdown 构造在 Skill 中有且仅有一个语义。唯一例外：有序列表在 `**RESOLVE**` 之后为优先级链，其他场景为顺序执行（见 §2.1 RESOLVE）。例外数量为 1 是可控的；不应增加。
 
-所有关键词以 `**全大写粗体**` 标记，分 5 类。**仅**以下词为关键词——其他粗体词（如概念名称 **YAGNI**、章节强调）不是关键词，LLM 不按指令解析。
+**引用块子类型**（约定 #7 展开）：
 
-| 类别 | 关键词 | 语义 |
-|------|--------|------|
-| 数据操作 | `**READ**` `**WRITE**` `**RESOLVE**` `**EXEC**` | 读取文件或输入、写入文件或展示给用户、按优先级链解析变量、执行 shell 命令 |
-| 控制流 | `**IF**` `**ELSE**` `**MATCH**` `**FOR**` `**REPEAT**` `**GOTO**` | 条件、否则、模式匹配分发、遍历集合、有限重试、跳转 |
-| 门禁 | `**ASSERT**` `**GATE**` | 单条件断言（失败则执行 fallback）、多条件检查点（全部通过才放行） |
-| 状态 | `**DONE**` `**BLOCKED**` `**NEEDS_CONTEXT**` `**DONE_WITH_CONCERNS**` | 四态完成状态 |
-| 路由 | `**ROLLBACK**` `**ROUTE**` `**H3**` | 回退到上游 Agent、路由到下游 Skill、触发人类介入 |
+引用块不参与控制流，但以下前缀为 LLM 提供不同类型的校准信号：
 
-### ASSERT 与 GATE 的区分
+| 前缀 | 含义 | 何时使用 |
+|------|------|---------|
+| 无前缀 / `> WHY：` | 设计意图 | 解释规则或步骤存在的工程理由 |
+| `> TRAP：` | 认知陷阱 | 命名 LLM 在此步骤最可能犯的具体错误 |
+| `> SIGNAL：` | 诊断信号 | 将 output 特征映射到可能原因，帮助 LLM 解读结果 |
+| `> GOOD：` / `> BAD：` | 校准示例 | 好产出 vs 坏产出的具体对比，校准质量标准 |
 
-| 维度 | **ASSERT** | **GATE** |
-|------|-----------|----------|
-| 条件数 | 单条件（可用 `&&` 组合） | 多条件（复选框列表） |
-| 失败行为 | 执行 fallback 动作（→ GOTO / ROLLBACK / BLOCKED） | 阻塞——全部通过才放行，不通过则补全后重检 |
-| 典型场景 | 执行步骤中的即时检查 | 阶段转换前的准入门禁、自检清单 |
-| 格式 | `**ASSERT** \`expression\`` + fallback 分支 | `**GATE** 描述` + `- [ ]` 复选框列表 |
+```markdown
+> TRAP：你会倾向于在 GREEN 阶段过度实现。记住：让当前测试通过的最小代码量。
+> 三行重复优于过早抽象。
 
-### WRITE 的目标区分
+> SIGNAL：`output CONTAINS "0 tests found"` 通常意味着测试文件路径配置错误，不是真的没有测试。
+> 先检查 test pattern glob 再下结论。
 
-`**WRITE**` 后面的目标决定动作类型：
+> GOOD：`exit_code = 1。npm test 输出 TypeError: Cannot read property id of undefined at src/user.ts:42。`
+> `根据 SDD §二.3，user.id 应始终存在。疑似缺少空值检查。→ GOTO Phase 2。`
+> BAD：`测试失败了。→ GOTO Phase 2`
+```
 
-| 写法 | 含义 | 示例 |
-|------|------|------|
-| `**WRITE** \`filepath\`` | 写入磁盘文件 | `**WRITE** \`06-tdd-log.md\`` |
-| `**WRITE**（对话中）` | 展示给用户，不写文件 | `**WRITE**（对话中）推荐结果` |
-| `**WRITE** checkpoint` | 更新 checkpoint 文件 | `**WRITE** checkpoint：...` |
+> **DP-17 对抗认知偏差** — LLM 的失败模式可预测：跳过验证、模糊产出、忽略 warning、不质疑先前假设。TRAP/SIGNAL/GOOD-BAD 不是装饰——它们在 LLM 即将犯错的精确位置触发自我审视。规则保证下限，校准信号提升上限。
+> *源自 FP-2：实现偏见污染验证。LLM 写完代码后的"应该没问题"和人类一样不可信。*
 
-## 执行模型
+**补充构造**：
 
-### 顺序流
+- `####` 四级标题 = 命名子步骤（嵌套超过 2 层时提取使用）
+- `A / B`（两个关键词语句间的 `/`）= 二选一，LLM 根据上下文选择。`/` 连接两个**完整**关键词语句，不是目标内的二选一
+- `[标签]` 方括号 = 条件注解，标记指令的适用条件（如 `[完整模式]` / `[精简替代]`）。同一行多个注解互斥，匹配当前上下文的第一个生效
+- `*斜体*` 兜底标签限定为以上四个值。其他 `*斜体*` 为普通 Markdown 强调
 
-`###` Step/Phase 按文档顺序执行。前一个 Step 的最后一条指令完成后，自动进入下一个 Step。
+### 1.2 关键词视觉格式
 
-以下关键词中断顺序流：
+关键词**永远全大写**。Markdown 格式由上下文角色决定：
+
+| 出现位置 | 格式 | 含义 |
+|----------|------|------|
+| Step 内的指令行 | `**KEYWORD**`（粗体） | "执行我" |
+| 引用块 / 表格 / 描述文本 | `` `KEYWORD` ``（反引号） | "谈论我" |
+| 代码块 / 模板 | 纯大写 | 技术约束 |
+
+**规则**：`>` 引用块中**不出现** `**粗体大写**` 关键词——引用块不含指令（约定 #7）。
+
+> **DP-8 格式即角色** — 粗体锚定"这是指令"的视觉信号。引用块出现粗体关键词会误导 LLM 尝试执行设计注释。三条格式规则是 DP-1 在不同上下文中的自然推论，无需单独记忆。
+
+### 1.3 文档结构与执行顺序
+
+```
+---
+name: skill-name
+description: one-line description
+---
+# Skill Title
+## 声明性章节（角色 / Iron Law / 输入 ...）
+## 执行步骤
+### Phase 1：标题       ← Step 边界（###）
+1. **READ** ...          ← 顺序执行
+2. **EXEC** ...
+#### 子步骤 1.1：标题   ← 命名子步骤（####）
+### Phase 2：标题
+## 收尾章节（自检门禁 / 完成标志 ...）
+```
+
+**顺序流**：`###` Step 按文档顺序执行。以下关键词中断顺序流：
+
+**Step 意图**：每个 `###` 标题后可紧跟一行 `>` 引用块声明该步骤的意图——不是"做什么"（指令已经说了），而是"为什么做"和"做到什么程度算好"：
+
+```markdown
+### Phase 2：模式分析
+> 找到工作代码和失败代码之间的**每个**差异。"那个差异可能不重要"是最危险的假设。
+```
+
+> **DP-20 意图赋予自主纠偏能力** — 指令告诉 LLM 做什么，意图告诉 LLM 为什么。当指令不完全覆盖当前情况时，理解意图的 LLM 能自主补全；只知道指令的 LLM 要么停下来（BLOCKED），要么猜（可能猜错）。意图是 LLM 的"指南针"——指令是路线，意图是方向。
+> *源自 FP-1：人类不可能预见所有情况并写出完美指令。意图让 LLM 代替人类在边缘情况做合理判断。*
 
 | 关键词 | 效果 |
 |--------|------|
-| `**GOTO** Step N` | 无条件跳转到目标 Step/子步骤 |
-| `**DONE**` / `**DONE_WITH_CONCERNS**` | 终止整个 Skill 执行 |
-| `**BLOCKED**` / `**NEEDS_CONTEXT**` | 终止执行，等待外部输入 |
-| `**ROLLBACK** agent` | 终止执行，回退到上游 |
+| `**GOTO** Step N` | 跳转（匹配标签部分如 `Step 2`，不含冒号后标题） |
+| `**DONE**` / `**DONE_WITH_CONCERNS**` | 正常终止 |
+| `**BLOCKED**` / `**NEEDS_CONTEXT**` | 异常终止 |
+| `**ROLLBACK** agent` | 终止，回退上游 |
+| `**H3**` | 暂停，等待人类决策后继续或终止 |
 
-### `####` 子步骤的返回行为
+**子步骤返回**：`####` 执行完后回到父 `###` 的下一条指令。被 `**GOTO**` 跳入的子步骤执行完后向下继续（不返回跳出点）；如需返回应显式 `**GOTO**`。
 
-`####` 子步骤执行完后回到父 `###` 的下一条指令——除非子步骤以 GOTO/DONE/BLOCKED/ROLLBACK 结尾。被 GOTO 跳入的 `####` 同理：执行完后不自动返回跳出点。
+---
 
-### GOTO 目标约束
+## §2 关键词参考
 
-目标必须是当前文件中存在的 `###` 或 `####` 标题名称。跨文件跳转使用 `**ROUTE**`。
+> **DP-9 关键词即 API** — 关键词集是语言的完整 API。下表之外的粗体词不是关键词，不触发执行。判断标准：全大写粗体 = 关键词；小写粗体（**required**）或概念名（**YAGNI**）= 文档标注。
 
-### MATCH 穷尽性
+| 类别 | 关键词 | 语义 |
+|------|--------|------|
+| 动作 | `READ` `WRITE` `EXEC` `RESOLVE` | 读取、写入、执行命令、按优先级解析变量 |
+| 控制流 | `IF` `ELSE` `MATCH` `FOR` `IN` `REPEAT` `GOTO` | 条件、否则、多路分发、遍历、集合/成员、有限重试、跳转 |
+| 验证 | `ASSERT` `GATE` | 单条件断言（失败执行 fallback）、多条件门禁（全部通过才放行） |
+| 状态 | `DONE` `DONE_WITH_CONCERNS` `NEEDS_CONTEXT` `BLOCKED` | 四态完成状态 |
+| 组合 | `ROUTE` `ROLLBACK` `H3` | 调用 Skill、回退上游、人类介入 |
 
-**MATCH** 的分支必须覆盖所有可能的值：
+表达式运算符（反引号内使用，不加粗）：`EXISTS` `NOT_EXISTS` `NOT_EMPTY` `CONTAINS`
 
-- 提供 `*default*` / `*none*` 兜底分支，或
-- 枚举变量值域的全部值（适用于有限集合如四态状态）
+### 2.1 动作关键词
 
-未覆盖的值 = 未定义行为。
-
-### FOR / REPEAT 终止
-
-- **FOR**：遍历完集合后回到 FOR 块后的下一条指令
-- **REPEAT** max=N：重试 N 次后触发 `*repeat exhausted*` 兜底（必须提供）
-- FOR/REPEAT 内的 GOTO 立即跳出循环
-
-### 有序列表语义消歧
-
-有序列表（`1. 2. 3.`）在两种上下文中语义不同：
-
-| 上下文 | 语义 | 行为 |
-|--------|------|------|
-| 默认 | 顺序执行 | 步骤 1 完成 → 步骤 2 → 步骤 3，全部执行 |
-| `**RESOLVE**` 引导 | 优先级链 | 步骤 1 命中 → 停止；未命中 → 步骤 2；`*none*` = 全未命中 |
-
-判定规则：有序列表前的最近关键词是 `**RESOLVE**` → 优先级链语义。其他情况 → 顺序执行语义。
-
-## 变量模型
-
-### 变量引入
-
-变量通过以下关键词引入：
-
-| 引入方式 | 产生的变量 | 作用域 | 示例 |
-|----------|-----------|--------|------|
-| `**RESOLVE** \`var\`` | 命名变量 `var` | Step 作用域 | `**RESOLVE** \`verify_cmd\`` |
-| `**FOR** each \`item\`` | 循环变量 `item` | FOR 块内 | `**FOR** each \`feature_point\`` |
-| `**MATCH** \`var\`` | 匹配目标 `var` | MATCH 块内 | `**MATCH** \`result\`` |
-| `**EXEC** cmd` | 隐式 `exit_code` + `output` | 到下一个 EXEC | `**EXEC** \`git status\`` |
-| `**READ** source` | 隐式读取内容 | 紧随的指令 | `**READ** \`03-sdd.md\`` |
-
-### 作用域规则
-
-- **RESOLVE 变量**：从声明点到所属 `###` 末尾。`###` 之前声明的变量可见到文件末尾
-- **FOR 循环变量**：仅在 FOR 块（包括其缩进子项）内可见
-- **EXEC 隐式变量**（`exit_code`、`output`）：仅在紧随的条件/断言中有效。下一个 EXEC 覆盖前值
-- **同名覆盖**：后声明覆盖前声明，无警告
-
-### 表达式语法
-
-反引号内可使用以下运算。运算符两侧为标识符或字面值：
-
-| 运算 | 写法 | 示例 |
-|------|------|------|
-| 相等 | `==` `!=` | `` `mode == compact` `` |
-| 比较 | `>=` `<=` `>` `<` | `` `failures == 0` `` |
-| 逻辑 | `&&` &#124;&#124; | `` `exit_code == 0` && `failures == 0` `` |
-| 存在性 | `X 存在` `X 不存在` | `` `docs/specs/` 存在 `` |
-| 属性访问 | `.` | `` `READ("file").field` `` |
-| 否定 | `非` `!` | `` `output` 非空 `` |
-| 多值 | &#124;&#124; 在 MATCH 分支 | `` `DONE` \|\| `DONE_WITH_CONCERNS` `` |
-
-逻辑运算 `&&` 的多个反引号子表达式可以分别用独立反引号包裹：`` `exit_code == 0` && `failures == 0` ``。
-
-### 常用变量约定
-
-以下变量名跨 Skill 统一使用（非关键词，是命名约定）：
-
-| 名称 | 含义 | 典型引入方式 |
-|------|------|-------------|
-| `mode` | `full` / `compact` | RESOLVE |
-| `slug` | 任务标识符 `{NNNN}-{keyword}` | RESOLVE |
-| `exit_code` | 命令退出码 | EXEC 隐式 |
-| `output` | 命令标准输出 | EXEC 隐式 |
-| `verify_cmd` | 项目验证命令 | RESOLVE |
-| `base_branch` | 基准分支名 | RESOLVE |
-| `result` | 完成状态匹配目标 | MATCH |
-
-## 组合模型
-
-### ROUTE 协议
-
-`**ROUTE** skill-name` 调用另一个 Skill。调用约定：
-
-1. ROUTE 后跟代码块 = 提示模板，传递给目标 Skill 的执行上下文
-2. 模板中 `{var}` = 当前作用域变量插值
-3. ROUTE 后的"完成验证"段落 = 目标 Skill 返回后的后置条件检查
+**READ** — 读取文件或输入源
 
 ```markdown
-**ROUTE** `team-test`
-
-\`\`\`
-任务 slug：{slug}
-模式：{mode}
-输入：docs/tasks/{slug}/ 下的文件
-\`\`\`
-
-**完成验证**（产出门禁）：
-**FOR** each file in [`09-test-matrix.md`, `10-test-report.md`]：
-- **ASSERT** 文件存在且有效行数 ≥ 5
+**READ** `03-sdd.md`                        ← 读取文件
+**READ** `03-sdd.md` §二 业务规则           ← 读取指定章节
+**READ** 完整错误信息                        ← 描述性来源（无法预知路径时使用）
 ```
 
-### ROLLBACK 协议
-
-`**ROLLBACK** agent-name` 回退到上游 Agent。必须携带四要素：
-
-| 要素 | 必须 | 示例 |
-|------|------|------|
-| 问题描述 | 是 | "`exit_code != 0`，测试失败 3 个" |
-| 位置 | 是 | "Step 4 产出门禁" |
-| 期望行为 | 是 | "引用 SDD §二.3 条目" |
-| 建议修复 | 是 | "检查边界条件处理" |
-
-ROLLBACK 可附带跳转目标：`**ROLLBACK** implAgent（**GOTO** Step 3，附 bug 上下文）`。
-
-### Checkpoint 模型
-
-`**WRITE** checkpoint：...` 持久化跨步骤状态，用于断点续传。
-
-标准字段约定：
-
-| 字段 | 类型 | 含义 |
-|------|------|------|
-| `current_step` | string | 当前执行到的 Step |
-| `next_step` | string | 下一个待执行 Step |
-| `phase` | string | 当前阶段名 |
-| `completed_steps` | string[] | 已完成的 Step 列表 |
-| `status` | 四态之一 | 任务整体状态 |
-| `rollback_counts` | object | `{source→target: count}` 回退计数 |
-
-Checkpoint 在每个 Step 完成后更新，在恢复时通过 `**READ** checkpoint` → `**MATCH** \`checkpoint.status\`` 决定继续点。
-
-## 常见模式
-
-### 模式 1：RESOLVE 优先级链
-
-按优先级依次查找，首个命中即停，末尾 `*none*` 为兜底。
+**WRITE** — 写入文件、展示给用户或更新断点
 
 ```markdown
-**RESOLVE** `verify_cmd`（首个命中即停）：
+**WRITE** `06-tdd-log.md`                   ← 写入磁盘文件
+**WRITE**（对话中）推荐结果                   ← 展示给用户，不写文件
+**WRITE** checkpoint：{...}                  ← 更新断点状态（JSON 格式）
+**WRITE** 失败测试到测试文件                  ← 描述性目标（路径由上下文确定）
+```
+
+**输出骨架**（Output Shape）：`**WRITE**` 后可附带缩进的结构模板，定义产出的骨架。LLM 按骨架填充内容，消除"写什么"的猜测空间：
+
+```markdown
+**WRITE** `06-tdd-log.md`：
+
+| 功能点 | RED 测试 | GREEN 实现 | 通过？ | Commit |
+|--------|----------|------------|--------|--------|
+| {name} | {test_desc} | {impl_desc} | ✅/❌ | {hash} |
+```
+
+> **DP-18 骨架消灭模糊** — LLM 产出质量差异的最大来源不是"不理解"而是"不知道精确到什么程度"。输出骨架将质量标准从抽象要求（"写一份 TDD 日志"）变成具体结构（"每行包含功能点名、RED 测试描述、GREEN 实现描述、通过状态、commit hash"）。结构即标准。
+> *源自 FP-4：声明不等于事实。"写了一份日志"不等于"写了一份有用的日志"。*
+
+Checkpoint 标准字段：`current_step`、`next_step`、`status`（四态之一）、`completed_steps`、`rollback_counts`。恢复时 `**READ** checkpoint` → `**MATCH** \`checkpoint.status\``。
+
+**EXEC** — 执行 shell 命令。隐式产生 `exit_code` 和 `output`（见 §3）
+
+```markdown
+**EXEC** `git status`                        ← 确切命令（首选）
+**EXEC** 项目测试命令                         ← 描述性命令（通常由 RESOLVE 预解析）
+```
+
+EXEC 后**必须**检查结果：`**ASSERT** \`exit_code == 0\``。
+
+豁免：探索性命令（`grep` / `find` / `git log`）的 `exit_code != 0` 仅表示"未找到"，标注 `[探索性]` 免除 ASSERT：
+
+```markdown
+**EXEC** `grep -r "pattern" src/` [探索性]
+```
+
+> **DP-10 描述性形式是退路** — `READ` / `WRITE` / `EXEC` 后首选反引号（确切路径/命令），描述性目标仅在路径或命令取决于运行时上下文时使用。这确保可机械复现（FP-4），而非依赖 LLM 的"常识"推断。
+
+**RESOLVE** — 按优先级链解析变量，首个命中即停。**必须**以 `*none*` / `*default*` 结尾
+
+```markdown
+**RESOLVE** `verify_cmd`：
 
 1. `READ("05-risk.md", "§一验证计划")`
-2. `READ("CLAUDE.md").test_cmd` / `READ(".cursor/rules/")`
-3. `READ("package.json").scripts.test` / `READ("Makefile")`
+2. `READ("CLAUDE.md").verify_cmd`
+3. `READ("package.json").scripts.test`
 4. *none* → **NEEDS_CONTEXT**：请用户提供验证命令
 ```
 
-**规则**：每个 RESOLVE 链必须有 `*none*` / `*default*` / `*not found*` 兜底项。
+> **DP-11 RESOLVE 是唯一的语义切换标记** — `**RESOLVE**` 后紧跟的有序列表 = 优先级链（首命中即停）。其他有序列表 = 顺序执行（全部执行）。这是约定 #4 的唯一例外（见 DP-7）。用显式标记取代了 v1.0 中脆弱的"最近关键词"消歧规则——列表的语义由前置标记唯一确定，不依赖跨行距离判断。
 
-### 模式 2：ASSERT 单条件断言
+### 2.2 控制流关键词
 
-断言必须为真，否则执行 fallback 动作。
+**IF / ELSE** — 条件分支，两种形式：
 
-```markdown
-**ASSERT** `exit_code == 0` && `failures == 0`
-- `exit_code != 0` → 记录失败 → **GOTO** Step N
-- warning && `exit_code == 0` → **WRITE** warning 到报告，不阻塞
-```
-
-### 模式 3：GATE 多条件检查点
-
-多个条件组成的准入门禁，全部通过才放行。
+守卫形式（单行，条件不满足时跳过继续下一步，无需 `**ELSE**`）：
 
 ```markdown
-**GATE** 产出前自检（全部通过才放行）：
-
-- [ ] `06-tdd-log.md` 存在且有效行数 ≥ 5
-- [ ] 每个功能点有 RED → GREEN 序列
-- [ ] `exit_code == 0` && `failures == 0`
+**IF** `mode == compact` → 跳过详细产出
+**IF** `docs/specs/ EXISTS` → **WRITE** 合并规格
 ```
 
-### 模式 4：MATCH 状态分发
-
-根据变量值分发到不同动作。`**MATCH**` 后必须跟反引号变量名。
-
-```markdown
-**MATCH** `result`：
-
-- 全部通过 → **DONE**
-- 通过但有 warning → **DONE_WITH_CONCERNS**
-- 验证失败 → 记录失败详情
-- 工具失败 → **BLOCKED**，触发 **H3**
-```
-
-**规则**：`**MATCH**` 后必须跟 `` `变量名` ``（反引号包裹），不用自然语言描述。
-
-### 模式 5：FOR 遍历
-
-遍历集合中的每个元素，对每个执行相同操作。
-
-```markdown
-**FOR** each `feedback_item`：
-
-1. **READ** 实际代码 → 验证技术正确性
-2. **ASSERT** 验证基于代码证据
-3. **IF** 技术正确 → 标记待实施
-   **ELSE** → 用技术理由推回
-```
-
-### 模式 6：IF / ELSE 条件
-
-#### 条件的两种合法形式
-
-| 形式 | 写法 | 适用场景 | 示例 |
-|------|------|---------|------|
-| 反引号 | `**IF** \`expr\`` | 可求值变量/表达式（mode、exit_code、文件是否存在） | `**IF** \`mode == compact\`` |
-| 描述 | `**IF** 描述条件` | 上下文判断、需要人类/LLM 感知的场景 | `**IF** 多组件系统 →` |
-
-描述条件须简短（≤15 字）且可判定。如判定方式不明显，加括号注明：`**IF** 编排模式（任务目录存在）→`
-
-#### 守卫 IF vs 分支 IF
-
-| 类型 | 形式 | ELSE 要求 | 隐含语义 |
-|------|------|----------|---------|
-| 守卫 IF | `**IF** cond → action`（单行） | 不需要 ELSE | 条件不满足时继续下一步 |
-| 分支 IF | `**IF** cond：` + 缩进子项（多行） | 需要 `**ELSE**` 或 `*default*` | 两条路径都有明确动作 |
-
-**守卫 IF**（单行，不需要 ELSE）：
-
-```markdown
-**IF** `docs/specs/` 存在 → **WRITE** 合并规格
-```
-
-**分支 IF**（多行，需要 ELSE）：
+分支形式（多行，`**ELSE**` 必须存在）：
 
 ```markdown
 **IF** `mode == compact`：
-- 精简产出，跳过 01-plan 等文件
+- 精简产出
 
 **ELSE**：
-- 完整产出，包含全部 17 个文件
+- 完整产出
 ```
 
-**嵌套形式**（无序列表 + 缩进表达多层条件，最多 2 层）：
+条件支持两种形式：反引号表达式（`` **IF** `exit_code == 0` ``，首选）和描述性条件（`**IF** 多组件系统`，≤15 字且可判定）。
+
+内联守卫（附加在主指令上的前置检查）：
+
+```markdown
+**EXEC** 创建目录（**IF** 已存在 → 跳过）
+```
+
+嵌套形式（无序列表 + 缩进，最多 2 层语义深度；超出提取为 `####` 子步骤）：
 
 ```markdown
 - `severity == P0` || `severity == P1`
@@ -325,161 +248,240 @@ Checkpoint 在每个 Step 完成后更新，在恢复时通过 `**READ** checkpo
 - *default* → 记录但不处理
 ```
 
-### 模式 7：REPEAT 重试
-
-有限次重试，`*repeat exhausted*` 为兜底。
+**MATCH** — 多路分发。后**必须**跟 `` `变量名` ``（反引号）。分支**必须**穷尽：提供 `*default*` 兜底，或枚举全部值域（仅限有限集合）
 
 ```markdown
-**REPEAT** max=2：
+**MATCH** `result`：
 
-1. 记录失败原因
-2. 修复 → **EXEC** `verify_cmd`
-   - 通过 → **GOTO** Step N
+- `DONE` || `DONE_WITH_CONCERNS` → 继续下一步
+- `BLOCKED` → 触发 **H3**
+- *default* → 记录异常
+```
+
+`||` 合并同一分支的多个匹配值。
+
+**FOR ... IN** — 遍历集合
+
+显式集合（首选，`**IN** [...]` 指定）：
+
+```markdown
+**FOR** `file` **IN** [`09-test-matrix.md`, `10-test-report.md`]：
+- **ASSERT** `{file} EXISTS`
+```
+
+隐式集合（集合由上下文确定，仅在来源显而易见时使用）：
+
+```markdown
+**FOR** `feedback_item`：
+1. **READ** 实际代码 → 验证技术正确性
+2. **IF** 技术正确 → 标记待实施
+```
+
+单行形式（遍历 + 内联动作）：
+
+```markdown
+**FOR** `name` **IN** [`main`, `master`] → **EXEC** `git show-ref refs/heads/{name}`
+```
+
+> **DP-12 显式集合优先** — 隐式集合依赖 LLM 推断，不同模型可能推断不同集合（FP-4）。仅在集合由上一步骤输出自然确定、且显式枚举不可行时使用隐式形式。
+
+**REPEAT** MAX=N — 有限重试。`*repeat exhausted*` 兜底**必须**提供
+
+```markdown
+**REPEAT** MAX=2：
+
+1. 修复 → **EXEC** `verify_cmd`
+   - 通过 → **GOTO** Phase 4
    - 仍失败 → 继续 REPEAT
 
 - *repeat exhausted* → **BLOCKED**，触发 **H3**
 ```
 
-### 模式 8：GOTO 跳转
-
-显式跳转到指定 Step/Phase，避免隐式流转。目标必须是当前文件中存在的 `###` 或 `####` 标题名称。
+**GOTO** — 跳转到当前文件内的 `###` 或 `####` 标题标签
 
 ```markdown
-修复完成 → **GOTO** Step 2（重新执行验证）
+修复完成 → **GOTO** Step 2（重新验证）
 ```
 
-### 模式 9：WRITE 目标区分
+目标匹配 Step/Phase 的标签部分（如 `Step 2`、`Phase 1`、`子步骤 4.1`），不含冒号后的标题文本。
 
-`**WRITE**` 的目标决定动作类型：
+### 2.3 验证关键词
 
-| 写法 | 含义 | 示例 |
+**ASSERT** — 单条件断言，失败时执行 fallback 分支
+
+```markdown
+**ASSERT** `exit_code == 0` && `failures == 0`
+- `exit_code != 0` → 记录失败 → **GOTO** Step 2
+- `output CONTAINS "warning"` → **WRITE** warning 到报告，不阻塞
+```
+
+**GATE** — 多条件检查点，全部通过才放行。不通过则补全后重检一次，仍不通过 → `**BLOCKED**`
+
+```markdown
+**GATE** 产出前自检：
+
+- [ ] **ASSERT** `06-tdd-log.md EXISTS`            ← 形式断言（首选）
+- [ ] 每个功能点有 RED → GREEN 序列                 ← 描述性断言
+- [ ] **IF** 存在回退 → **ASSERT** `回退次数 <= 2`  ← 条件检查
+- [ ] 如果有人现在审查我的产出，我会为哪部分心虚？  ← 自我审问
+- [ ] 我是否因为"应该没问题"跳过了任何 EXEC？       ← 偷懒检测
+```
+
+**检查项四种形式**（优先级从高到低）：
+
+| 形式 | 写法 | 适用场景 |
+|------|------|---------|
+| 形式断言 | `**ASSERT** \`expr\`` | 可机械验证的条件（首选） |
+| 条件检查 | `**IF** cond → **ASSERT** ...` | 有前置条件的检查 |
+| 描述性断言 | 自然语言陈述 | 需 LLM 判断的客观条件 |
+| 自我审问 | 第一人称问句 | 检测 LLM 自身的偷懒和偏见 |
+
+> **DP-19 门禁要审问，不只检查** — 形式断言（`exit_code == 0`）检测客观错误，但 LLM 最常见的失败不是客观错误——是偷懒：跳过验证、模糊产出、忽略 warning。自我审问（"我心虚吗？""我跳过了什么？"）迫使 LLM 在提交前直面自己的捷径。GATE 中至少包含一条自我审问。
+> *源自 FP-2：实现偏见污染验证。做完工作后的自我感觉不可信。*
+
+> **DP-13 ASSERT ≠ GATE** — 本质区别是失败语义，不是条件数量。ASSERT 失败后执行 fallback 动作（修复、跳转、回退）——"出了问题怎么办"。GATE 失败后阻塞等待补全——"没准备好不许过"。ASSERT 保护单个操作，GATE 守卫阶段转换。
+
+`- [ ]` 复选框仅在 `**GATE**` 块内有门禁语义。`**GATE**` 外的 `- [ ]` 是普通 Markdown 复选框（如推理检查点），不阻塞执行。
+
+### 2.4 终止状态
+
+Skill 执行结束时**必须**声明以下状态之一：
+
+| 状态 | 含义 | 编排器动作 |
+|------|------|-----------|
+| `**DONE**` | 全部完成，无遗留 | 继续下一步 |
+| `**DONE_WITH_CONCERNS**` | 已完成但有保留 | 展示担忧，用户决定 |
+| `**NEEDS_CONTEXT**` | 缺少关键上下文 | 回退或触发 `H3` |
+| `**BLOCKED**` | 被阻塞 | 触发 `H3` |
+
+### 2.5 组合关键词
+
+**ROUTE** — 调用另一个 Skill。后跟代码块作为提示模板，`{var}` 插值当前变量
+
+```markdown
+**ROUTE** `team-test`
+```
+
+````markdown
+任务 slug：{slug}
+模式：{mode}
+````
+
+```markdown
+**GATE** ROUTE 产出门禁：
+- [ ] `09-test-matrix.md EXISTS`
+- [ ] `10-test-report.md EXISTS`
+```
+
+**ROLLBACK** — 回退到上游 Agent。必须携带四要素：
+
+```markdown
+**ROLLBACK** specAgent
+- 问题：`exit_code != 0`，3 个测试失败
+- 位置：Phase 3 验证步骤
+- 期望：SDD §二.3 定义的边界行为
+- 建议：补充空值处理规格
+```
+
+可附带跳转目标：`**ROLLBACK** implAgent（**GOTO** Step 3，附 bug 上下文）`。
+
+**H3** — 暂停执行，触发人类介入
+
+框架定义了四个人类介入点（H1 初始化确认 / H2 规格确认 / H3 阻塞决策 / H4 验收交付，见 CLAUDE.md §六）。其中 H1、H2、H4 由编排器在固定阶段触发，不是 Skill 语言关键词；`**H3**` 是唯一可被任意 Skill 在执行中主动触发的介入关键词。
+
+`**H3**` 不接收参数。触发后由编排器按 H3 结构化协议（CLAUDE.md §六.3）向用户展示选项。人类决策后按选择继续或终止。
+
+---
+
+## §3 变量与表达式
+
+> **DP-14 变量是名字，不是声明** — LLM 有上下文记忆，无需形式作用域或类型系统。变量通过关键词隐式产生，通过反引号引用。以下仅列出隐式产生约定和表达式运算符。
+
+### 隐式变量
+
+| 产生方式 | 变量 | 有效期 |
+|----------|------|--------|
+| `**EXEC**` | `exit_code`、`output` | 到下一个 `**EXEC**` |
+| `**RESOLVE** \`var\`` | `var`（解析结果） | 当前 Step 及后续 |
+| `**READ**` | 读取内容进入 LLM 上下文 | 后续指令可自然引用 |
+
+### 表达式运算符
+
+反引号内可使用以下运算。运算符为英文大写，反引号内不加粗（Markdown 技术约束）：
+
+| 运算 | 写法 | 示例 |
 |------|------|------|
-| `**WRITE** \`filepath\`` | 写入磁盘文件 | `**WRITE** \`06-tdd-log.md\`` |
-| `**WRITE**（对话中）` | 展示给用户，不写文件 | `**WRITE**（对话中）推荐结果` |
-| `**WRITE** checkpoint` | 更新 checkpoint 状态 | `**WRITE** checkpoint：...` |
+| 相等 / 比较 | `==` `!=` `>=` `<=` `>` `<` | `` `exit_code == 0` `` |
+| 逻辑组合 | `&&` `\|\|` | `` `exit_code == 0` && `failures == 0` `` |
+| 存在性 | `EXISTS` `NOT_EXISTS` | `` `docs/specs/ EXISTS` `` |
+| 非空 | `NOT_EMPTY` | `` `output NOT_EMPTY` `` |
+| 包含 | `CONTAINS` | `` `output CONTAINS "PASS"` `` |
+| 成员 | `IN` | `` `status` IN [`DONE`, `BLOCKED`] `` |
+| 属性 | `.` | `` `READ("file").field` `` |
+| 否定 | `!` | `` `!output` `` |
 
-### 模式 10：内联守卫
+逻辑 `&&` 可跨反引号组合：`` `exit_code == 0` && `failures == 0` ``（两个独立反引号表达式用 `&&` 连接）。
 
-在主指令上附加括号内守卫条件，不影响主指令的后续流：
+> **DP-15 表达式是伪代码** — 表达式无需精确到可编译。它是 LLM 可理解的伪代码——足够明确传达意图，足够灵活容纳项目差异。不定义类型系统——LLM 从上下文推断。
 
-```markdown
-**EXEC** 创建目录（**IF** 已存在 → 跳过）
-```
+---
 
-规则：`（**IF** cond → action）` 是附加在主指令上的前置检查。条件不满足时执行 action（通常是"跳过"），然后继续下一条指令。
+## §4 错误处理
 
-### 模式 11：条件注解
+> **DP-16 默认安全** — 未被显式捕获的错误默认触发 `BLOCKED` + `H3`，而非静默继续。宁可误报不可漏报（FP-4）。
 
-在 GATE 检查项或指令前标注适用条件，LLM 根据当前上下文选择执行哪段：
+| 错误场景 | 默认行为 |
+|----------|---------|
+| `**READ**` 目标不存在 | `**BLOCKED**` + `**H3**` |
+| `**EXEC**` 失败且无 ASSERT fallback | `**BLOCKED**` + `**H3**` |
+| `**GOTO**` 目标不存在 | `**BLOCKED**`（Skill 编写错误） |
+| `**MATCH**` 无匹配且无 `*default*` | `**BLOCKED**`（分支未穷尽） |
+| `**GATE**` 补全重检仍不通过 | `**BLOCKED**` + `**H3**` |
+| `**REPEAT**` 次数耗尽 | 执行 `*repeat exhausted*` 兜底分支 |
 
-```markdown
-- [ ] G1: `[完整模式]` **ASSERT** `01-plan.md` 包含目标澄清
-       `[精简替代]` **ASSERT** `03-sdd.md` 包含任务目标
-```
+**传播链**：构造级 fallback → Step 级 ASSERT → `**BLOCKED**` + `**H3**`。
 
-规则：`[标签]` 方括号注解标记适用条件。同一行的多个注解互斥——根据当前 `mode` 选择匹配的注解段执行。
+---
 
-### 模式 12：多值匹配
-
-MATCH 分支条件可用 `||` 合并多个值，匹配任意一个即执行该分支：
-
-```markdown
-**MATCH** `checkpoint.status`：
-
-- `DONE` || `DONE_WITH_CONCERNS` → 提示用户任务已完成
-- `BLOCKED` → 触发 **H3**
-- *default* → 恢复执行
-```
-
-## 形式语法
-
-简化 BNF 参考。不追求 parser-ready，但足够精确地定义每个构造的合法形式。
-
-```bnf
-skill           ::= frontmatter section+
-frontmatter     ::= '---' NL 'name:' TEXT NL 'description:' TEXT NL '---'
-
-section         ::= step_heading instruction*
-step_heading    ::= '###' step_label '：' title
-step_label      ::= 'Step' NUMBER | 'Phase' NUMBER
-substep_heading ::= '####' substep_label '：' title
-
-instruction     ::= keyword_stmt
-                   | ordered_list
-                   | unordered_branch
-                   | gate_block
-                   | blockquote
-
-(* 关键词语句 *)
-keyword_stmt    ::= '**' KEYWORD '**' target action*
-KEYWORD         ::= 'READ' | 'WRITE' | 'RESOLVE' | 'EXEC'
-                   | 'IF' | 'ELSE' | 'MATCH' | 'FOR' | 'REPEAT' | 'GOTO'
-                   | 'ASSERT' | 'GATE'
-                   | 'DONE' | 'BLOCKED' | 'NEEDS_CONTEXT' | 'DONE_WITH_CONCERNS'
-                   | 'ROLLBACK' | 'ROUTE' | 'H3'
-target          ::= backtick_expr | write_target | description
-write_target    ::= backtick_expr | '（对话中）' | 'checkpoint'
-action          ::= '→' keyword_stmt
-                   | '→' description
-
-(* 表达式 *)
-backtick_expr   ::= '`' expression '`'
-expression      ::= term (logical_op term)*
-term            ::= identifier compare_op value
-                   | identifier existence
-                   | identifier '.' identifier
-                   | function_call
-compare_op      ::= '==' | '!=' | '>=' | '<=' | '>' | '<'
-logical_op      ::= '&&' | '||'
-existence       ::= '存在' | '不存在' | '非空'
-function_call   ::= identifier '(' string (',' string)* ')'
-
-(* 条件 *)
-if_guard        ::= '**IF**' condition '→' action     (* 单行守卫，无 ELSE *)
-if_branch       ::= '**IF**' condition '：' NL body ('**ELSE**' '：' NL body)?
-condition       ::= backtick_expr | short_description
-inline_guard    ::= '（' '**IF**' condition '→' action '）'
-
-(* 分支 *)
-match_block     ::= '**MATCH**' backtick_expr '：' NL match_branch+
-match_branch    ::= '-' match_pattern '→' action
-match_pattern   ::= backtick_expr ('||' backtick_expr)*
-                   | '*' fallback_label '*'
-fallback_label  ::= 'none' | 'default' | 'not found' | 'repeat exhausted'
-
-(* 循环 *)
-for_block       ::= '**FOR**' 'each' backtick_expr '：' NL body
-repeat_block    ::= '**REPEAT**' 'max=' NUMBER '：' NL body NL fallback_branch
-
-(* 门禁 *)
-gate_block      ::= '**GATE**' description '：' NL checkbox+
-checkbox        ::= '- [ ]' (annotation)? assertion
-annotation      ::= '[' label ']'
-assertion       ::= '**ASSERT**' backtick_expr
-
-(* 有序列表 *)
-ordered_list    ::= ordered_item+                      (* 默认：顺序执行 *)
-resolve_chain   ::= '**RESOLVE**' backtick_expr NL ordered_item+ fallback_branch
-                                                       (* RESOLVE 引导：优先级链 *)
-fallback_branch ::= '-' '*' fallback_label '*' '→' action
-
-(* 非执行 *)
-blockquote      ::= '>' TEXT                           (* WHY / 设计意图，不含关键词 *)
-```
-
-## 反模式
+## §5 反模式
 
 | # | 反模式 | 问题 | 正确做法 |
 |---|--------|------|---------|
-| 1 | 纯段落描述条件逻辑 | LLM 需"读懂段落"才能提取分支 | 用 `**IF**` / `**MATCH**` + 缩进分支 |
-| 2 | 指令动词不加粗大写 | 动词淹没在句子中，无法扫描 | 所有指令动词用 `**全大写粗体**` 标记 |
-| 3 | 优先级链无兜底 | 所有选项都不命中时行为未定义 | 末尾加 `*none*` → 兜底动作 |
-| 4 | ASSERT 无表达式 | "确认测试通过"不可机械验证 | `**ASSERT** \`exit_code == 0\` && \`failures == 0\`` |
-| 5 | 状态声明用自然语言 | "任务完成"歧义——完成还是有保留？ | 用四态关键词：`**DONE**` / `**DONE_WITH_CONCERNS**` / ... |
-| 6 | 引用块中含执行指令 | 违反约定 #8（引用块=WHY） | 执行指令移出引用块，引用块仅保留设计意图 |
-| 7 | MATCH 后跟自然语言 | LLM 无法提取待匹配变量 | `**MATCH**` 后必须跟 `` `变量名` `` |
-| 8 | MATCH 分支用 emoji 做标识符 | emoji 与关键词语义重复，LLM 可能匹配 emoji 而非文本 | 分支用文本描述，状态用关键词（`**DONE**` 等） |
-| 9 | 超过 2 层嵌套未提取子步骤 | LLM 丢失层级追踪，解析出错 | 3 层以上嵌套提取为命名子步骤（`####`），用 `**GOTO**` 连接 |
-| 10 | MATCH 缺少兜底且未穷尽枚举 | 未覆盖的值 = 未定义行为 | 提供 `*default*` 兜底或枚举全部值域 |
-| 11 | EXEC 后跳过 exit_code 检查 | "执行了"≠"执行成功" | `**EXEC**` 后必须 `**ASSERT** \`exit_code == 0\`` 或说明无需检查的理由 |
-| 12 | 编排级 ROUTE 无提示模板 | 目标 skill 缺少执行上下文 | 编排器调度子 skill 时，`**ROUTE**` 后跟代码块提示模板。MATCH 内简单路由可省略 |
+| 1 | EXEC 后不检查 exit_code | "执行了"≠"成功了" | `**ASSERT** \`exit_code == 0\``，或标注`[探索性]` |
+| 2 | 段落描述条件逻辑 | LLM 需读懂段落才能提取分支 | 用 `**IF**` / `**MATCH**` + 缩进分支 |
+| 3 | 指令动词不加粗大写 | 动词淹没在句子中，无法扫描 | 所有指令动词 `**全大写粗体**` |
+| 4 | RESOLVE / MATCH 无兜底 | 所有选项未命中时行为未定义 | `*none*` / `*default*` 兜底 |
+| 5 | ASSERT 用自然语言 | "确认测试通过"不可机械验证 | `**ASSERT** \`exit_code == 0\`` |
+| 6 | 引用块含执行指令 | 违反约定 #7（引用块 = 非执行注解） | 指令移出引用块 |
+| 7 | MATCH 后跟自然语言 | 无法提取匹配变量 | `**MATCH**` 后必须跟 `` `变量名` `` |
+| 8 | 嵌套超 2 层未提取子步骤 | LLM 丢失层级追踪 | 提取为 `####` 命名子步骤 |
+| 9 | WRITE 无输出骨架 | LLM 产出格式和精度随机波动 | 附带结构模板（见 §2.1 WRITE） |
+| 10 | GATE 全是形式断言无自我审问 | 只检测客观错误，放过偷懒和模糊 | 至少一条第一人称自我审问 |
+| 11 | Step 无意图只有指令 | LLM 无法在边缘情况自主纠偏 | `###` 后紧跟 `>` 意图行 |
+
+---
+
+## 附录：设计原则索引
+
+| 编号 | 名称 | 位置 | 要点 |
+|------|------|------|------|
+| DP-1 | 视觉锚定 | §设计原则 | 粗体大写关键词 = LLM 扫描锚点 |
+| DP-2 | 模式驱动 | §设计原则 | 示例 > 形式语法 |
+| DP-3 | 显式优先 | §设计原则 | 反引号表达式 > 描述性文本 |
+| DP-4 | Markdown 原生 | §设计原则 | 不引入自定义标记 |
+| DP-5 | 最小充分 | §设计原则 | 覆盖 95% 场景的最小集 |
+| DP-6 | 信噪分离 | §设计原则 | 设计解释在引用块中 |
+| DP-7 | 单义映射 | §1.1 | 一个构造一个语义，例外仅 RESOLVE |
+| DP-8 | 格式即角色 | §1.2 | 粗体=执行，反引号=引用，纯文本=代码块 |
+| DP-9 | 关键词即 API | §2 | 关键词表封闭，表外粗体非关键词 |
+| DP-10 | 描述性是退路 | §2.1 EXEC | 首选反引号确切值 |
+| DP-11 | RESOLVE 唯一切换 | §2.1 RESOLVE | 有序列表语义由前置标记确定 |
+| DP-12 | 显式集合优先 | §2.2 FOR | 隐式集合仅限来源显而易见时 |
+| DP-13 | ASSERT ≠ GATE | §2.3 | ASSERT=fallback 动作，GATE=阻塞放行 |
+| DP-14 | 变量是名字 | §3 | 无形式作用域/类型，LLM 自然理解 |
+| DP-15 | 表达式是伪代码 | §3 | 传达意图即可，无需可编译 |
+| DP-16 | 默认安全 | §4 | 未捕获错误 → BLOCKED + H3 |
+| DP-17 | 对抗认知偏差 | §1.1 引用块 | TRAP/SIGNAL/GOOD-BAD 在犯错位置触发自审 |
+| DP-18 | 骨架消灭模糊 | §2.1 WRITE | 输出结构模板 = 质量标准 |
+| DP-19 | 门禁要审问 | §2.3 GATE | 至少一条自我审问，检测偷懒 |
+| DP-20 | 意图赋予纠偏 | §1.3 Step | Step 意图 = LLM 的指南针 |

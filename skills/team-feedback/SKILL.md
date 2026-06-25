@@ -64,17 +64,23 @@ NO IMPLEMENTATION WITHOUT TECHNICAL VERIFICATION FIRST
 
 ### Phase 1：理解反馈
 
-> 收到反馈后先理解、再验证、最后回应。禁止跳过验证直接实施。
+> 将每条反馈视为待验证假设——理解它、验证它、再决定接受或推回。跳过验证的"立即实施"是最常见的失败模式。
+
+> TRAP：你会倾向于无条件接受反馈（people-pleasing），尤其当反馈来自资深审查者时。
+> 技术正确性不因发出者的权威而改变——用 grep 验证，不凭印象或地位。
+
+> TRAP：反过来，你也可能因为"我的代码是对的"而拒绝反馈。
+> 拒绝必须基于代码证据，不基于自信程度。
 
 1. **READ** 所有反馈项 — 不立即反应
-2. **FOR** each `feedback_item`：
+2. **FOR** `feedback_item`：
    - 用自己的话重述审查者的要求
    - **IF** 含义不确定 → 先提问澄清，暂不处理该项
-3. **FOR** each `feedback_item`：
+3. **FOR** `feedback_item`：
    - **EXEC** `grep` / **READ** 实际代码 — 验证该建议在当前代码库中的技术正确性
-   - **IF** `exit_code != 0` && `output 为空` → 标记该项为 *not found*，记录无法验证
+   - **IF** `exit_code != 0` && `output 为空` → 标记该项为未找到，记录无法验证
    - **ASSERT** `evidence_source != 印象`（验证基于代码证据，不凭印象）
-4. **FOR** each `feedback_item`：
+4. **FOR** `feedback_item`：
    - **IF** 技术正确 → 记录确认，标记待实施
    - **ELSE** → 用技术理由推回（参考「推回指南」）
 5. **IF** 存在「增加功能/完善」建议 → **GOTO** Phase 2
@@ -83,10 +89,10 @@ NO IMPLEMENTATION WITHOUT TECHNICAL VERIFICATION FIRST
 
 ### Phase 2：YAGNI 检查
 
-> 当审查者建议"实现得更完善"或添加新功能时，用代码证据判断是否真正需要。
+> 审查者建议"更完善"时，用代码证据判断是否真正需要。"将来可能有用"不是充分理由——当前有调用方才是。
 
 1. **EXEC** `grep` 在代码库中查找该功能/接口的实际使用
-   - **IF** `exit_code != 0` && `output 为空` → `usage_result` = *not found*
+   - **IF** `exit_code != 0` && `output 为空` → `usage_result` = 未找到
 
 2. **MATCH** `usage_result`：
    - exported / public API 且有外部消费方可能 → 保留，即使当前项目未直接调用
@@ -96,11 +102,17 @@ NO IMPLEMENTATION WITHOUT TECHNICAL VERIFICATION FIRST
 
 ### Phase 3：外部反馈处理
 
-> 外部反馈可能基于不完整上下文。验证技术正确性之外，还需检查上下文和决策一致性。
+> 外部反馈可能基于不完整上下文。验证技术正确性之外，还需检查上下文完整性和决策一致性——反馈者看到的和你看到的可能不是同一份代码。
 
-1. **FOR** each `external_feedback_item`：
+> SIGNAL：同一反馈被多个审查者重复提出 → 大概率是系统性问题，不是巧合。优先处理。
+
+> SIGNAL：反馈与 SDD 矛盾 → 可能是 SDD 需要更新，不只是代码需要修改。先确认哪个是正确的。
+
+> SIGNAL：反馈措辞模糊（如"提升性能""改善可读性"）→ 需要具体指标或示例才能行动。直接要求澄清。
+
+1. **FOR** `external_feedback_item`：
    - **EXEC** `grep` / **READ** 实际代码 — 验证技术正确性（同 Phase 1 步骤 3）
-   - **IF** `exit_code != 0` && `output 为空` → 标记该项为 *not found*
+   - **IF** `exit_code != 0` && `output 为空` → 标记该项为未找到
    - **READ** `08-ai-decisions.md` — 检查与已有决策是否冲突
    - **ASSERT** `evidence_source != 印象`（验证基于代码证据，不凭印象）
 
@@ -115,29 +127,36 @@ NO IMPLEMENTATION WITHOUT TECHNICAL VERIFICATION FIRST
 
 ### Phase 4：实施
 
-> 逐项实施、逐项测试。不可批量实施后再测试（FP-2 实现偏见污染验证）。全部单项通过后再跑全量测试确认无交叉回归。
+> 逐项实施、逐项测试。批量实施后再测试 = 出问题时无法定位是哪项修改引入的（FP-2）。全部单项通过后再跑全量测试确认无交叉回归。
+
+> TRAP：你会倾向于修改实现去匹配反馈，而不检查反馈是否与 SDD 一致。
+> 实施前先确认：这项修改是让代码更接近 SDD，还是偏离 SDD？偏离 → 先路由 team-spec。
 
 **RESOLVE** `verify_cmd`（首个命中即停）：
 
 1. `READ("05-risk.md", "§一验证计划")`
-2. `READ("CLAUDE.md").test_cmd` / `READ(".cursor/rules/")`
+2. `READ("CLAUDE.md").verify_cmd` / `READ(".cursor/rules/")`
 3. `READ("package.json").scripts.test` / `READ("Makefile")` / `READ("Cargo.toml")`
 4. *none* → **NEEDS_CONTEXT**：请用户提供验证命令
 
 实施顺序：
 
 1. **ASSERT** `不明确项 == 0`（所有不明确项已在 Phase 1 步骤 2 中澄清）
-   - `不明确项 > 0` → **GOTO** Phase 1 步骤 2 澄清后重试
+   - `不明确项 > 0` → **GOTO** Phase 1（从步骤 2 澄清后重试）
 2. 按优先级排序：阻塞问题 → 简单修复 → 复杂修复
-3. **FOR** each `impl_item`（按排序顺序）：
+3. **FOR** `impl_item`（按排序顺序）：
    - 实施修改
    - **EXEC** `verify_cmd` — 单独测试该项修改
    - **ASSERT** `exit_code == 0` && `failures == 0`
-     - `exit_code != 0` → 立即定位原因并修复 → **GOTO** Step 3 当前项重新测试
+     - `exit_code != 0` → 立即定位原因并修复 → 重新测试当前项
 4. **EXEC** `verify_cmd` — 全量测试，确认无回归
    - **ASSERT** `exit_code == 0` && `failures == 0`
-     - `exit_code != 0` → 定位引入问题的修改 → **ROLLBACK** 该修改 → 重新实施 → **GOTO** Step 3 该项
-5. **IF** 任务目录存在（编排模式）→ **WRITE** `08-ai-decisions.md` 每项修改的实施结果（反馈项 + 修改内容 + 测试结果）
+     - `exit_code != 0` → 定位引入问题的修改 → 撤销该修改 → 重新实施 → 重新测试该项
+5. **IF** 任务目录存在（编排模式）→ **WRITE** `08-ai-decisions.md` 每项修改的实施结果：
+
+   | 反馈项 | 来源 | 决策 | 技术验证 | 修改内容 | 测试结果 |
+   |--------|------|------|----------|----------|----------|
+   | {feedback_desc} | {reviewer} | 接受 / 推回 / 部分接受 | {evidence} | {change_desc} | ✅/❌ `{test_output}` |
 
 **验证协议**（步骤 3-4 声明"通过"前必须执行 `_team-rules/verification-protocol.md` 的 5 个步骤）
 
@@ -169,6 +188,26 @@ NO IMPLEMENTATION WITHOUT TECHNICAL VERIFICATION FIRST
 6. 建议修复了不存在的 bug
 7. 建议的方案比现有代码更复杂
 
+## 反馈分流校准
+
+> GOOD：审查者建议"这里应该用 Map 替代 Object"。
+> `grep -n "new Map\|Map<" src/ → 项目中已有 Map 使用模式。该场景 key 为动态字符串且需频繁删除。技术正确，标记待实施。`
+
+> GOOD：审查者建议"应该加个缓存层"。
+> `grep -rn "cache\|memoize" src/ → 无现有缓存模式。检查 SDD §二 → 未提及缓存需求。推回："当前无性能瓶颈证据，建议作为后续优化项。"`
+
+> BAD：审查者建议"这里应该用 Map 替代 Object"。
+> `"好主意！让我现在改。" → 未验证 Map 在当前场景是否合适就直接实施。`
+
+> BAD：审查者建议"应该加个缓存层"。
+> `"不需要。" → 无技术理由的拒绝，未检查代码也未解释原因。`
+
+> GOOD：审查者说"这段代码可读性差"。
+> `要求具体指出哪些行、期望什么风格 → 模糊反馈需要具体化才能行动。`
+
+> BAD：审查者说"这段代码可读性差"。
+> `立即重写整段代码 → 在不确定具体问题时过度反应，可能引入新问题。`
+
 ## STOP Signals
 
 - **实施**反馈建议前没有验证技术正确性
@@ -182,7 +221,7 @@ NO IMPLEMENTATION WITHOUT TECHNICAL VERIFICATION FIRST
 
 - **Rule #9 TDD 顺序不可逆**：每项修改必须单独测试，不可批量实施后再测试（FP-2）
 - **Rule #2 有向图回退**：反馈揭示 spec 遗漏 → 回退 specAgent，不可自行决定（FP-4）
-- **Rule #1 人类介入是一等公民**：反馈揭示架构问题 → 触发 H3（FP-1）
+- **Rule #1 人类介入是一等公民**：反馈揭示架构问题 → 触发 `H3`（FP-1）
 
 ## 自检门禁
 
@@ -194,8 +233,22 @@ NO IMPLEMENTATION WITHOUT TECHNICAL VERIFICATION FIRST
 - [ ] **ASSERT** `全量测试.exit_code == 0`
 - [ ] **IF** 反馈揭示 spec 遗漏 → 已 **ROUTE** `team-spec`
 - [ ] **IF** 反馈揭示架构问题 → 已触发 **H3**
+- [ ] 我是否因为反馈来自权威人士就未经验证地接受了？
+- [ ] 我拒绝的反馈真的不合理，还是我在为自己的实现辩护？
+- [ ] 我是否把风格偏好类反馈当成了 P0 优先处理，而忽略了实质性 bug？
 
 ## 完成标志
+
+**WRITE**（对话中）反馈处理摘要：
+
+```
+## 反馈处理结果
+- 总反馈项：{N}
+- 已实施：{N}（含技术验证通过）
+- 已推回：{N}（含技术理由）
+- 路由 team-spec：{N}（spec 遗漏）
+- 全量测试：{pass/fail}
+```
 
 **MATCH** `result`：
 
@@ -216,3 +269,9 @@ NO IMPLEMENTATION WITHOUT TECHNICAL VERIFICATION FIRST
 - `team-impl` — 修复实现
 - `team-spec` — 反馈揭示 spec 遗漏时
 - `team-finish` — 分支完成处理
+
+## 下一步
+
+- 反馈含实现修复项 → 使用 `team-impl` 按反馈修复
+- 反馈揭示 spec 遗漏 → 使用 `team-spec` 补全规格
+- 反馈全部处理完毕 → 使用 `team-finish` 完成分支

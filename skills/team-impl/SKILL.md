@@ -69,6 +69,8 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 
 ### Phase 0：理解规格
 
+> 建立对任务的完整心智模型。完成时应能不看 spec 复述出：输入是什么、输出是什么、哪些边界会出错。
+
 1. **READ** `01-plan.md` → 理解任务目标和阶段拆分（**IF** `mode == compact` → 跳过）
 2. **READ** `02-context.md` → 理解业务术语和上下文（**IF** `mode == compact` → 跳过）
 3. **READ** `03-sdd.md` → 理解输入/输出/边界/异常规格
@@ -86,20 +88,46 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 4. **EXEC** 项目构建/测试命令
    - **IF** `exit_code == 0` → 基线健康，继续
    - **IF** `exit_code != 0` → 记录到 `06-tdd-log.md` 审计段落（含失败测试名+输出），确认与本任务无关后继续
-5. **WRITE** `06-tdd-log.md` 差距快照（格式见产出模板）
-6. **FOR** each `confusion`（阅读 spec/源码时的困惑）：
+
+> SIGNAL：`output CONTAINS "Cannot find module"` 或 `"Module not found"` 通常意味着引用了 `04-boundary.md` deny 列表中的文件，先对照 boundary 再排查路径。
+
+5. **WRITE** `06-tdd-log.md` 差距快照（格式见产出模板）：
+
+   ```
+   ### 当前基线快照
+   | 文件 | 当前状态 | Spec 要求 | 差距 |
+   |------|----------|-----------|------|
+   | {path} | {现状} | {spec 要求} | {差距描述} |
+
+   ### 可行性评估
+   - 方案可行：✅/⚠️/❌
+   - 依赖可用：✅/⚠️/❌
+   ```
+
+6. **FOR** `confusion`（阅读 spec/源码时的困惑）：
    - **WRITE** `06-tdd-log.md` 审计段落，标注 `{ambiguous}`
    - 不可默默假设后继续编码
 
 ### Phase 1：TDD 红-绿-重构循环
 
-**FOR** each `feature_point`（从 SDD 提取）：
+> 通过红-绿-重构循环逐个实现功能点。每个 GREEN 完成时代码应是"能工作的最简单方案"，不是"我能想到的最好方案"。
+
+**FOR** `feature_point`（从 SDD 提取）：
 
 #### 循环 1：红（Red）— 写测试
 
+> TRAP：你会想"我已经知道实现怎么写了，先写实现再补测试也一样"。不一样——后写的测试只会验证你已经写的代码，不会验证需求（FP-2）。
+
 1. **READ** `03-sdd.md` → 提取该功能点的规格
 2. **WRITE** 测试 → 覆盖 Happy Path + 边界条件（SDD §七）+ 异常场景（SDD §八）
+
+> TRAP：只写 Happy Path 测试就急着进 GREEN。SDD §七（边界条件）和 §八（异常场景）的测试必须在 RED 阶段一起写，不是"以后再补"。
+
 3. **EXEC** 项目测试命令 → **ASSERT** `exit_code != 0`（尚无实现，测试必须失败）
+
+> SIGNAL：`output CONTAINS "0 tests found"` → 测试文件路径或命名不符合项目 test pattern，先检查 glob 配置再下结论。
+> SIGNAL：测试全部 PASS 但尚未写实现 → 测试断言太弱（断言了永真条件），需重写断言。
+
 4. **WRITE** `06-tdd-log.md` RED 记录：
 
    ```
@@ -116,15 +144,18 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 
 **GATE** RED 完成检查（全部通过才放行）：
 
-- [ ] **ASSERT** `06-tdd-log.md 包含 RED 记录`
-- [ ] **ASSERT** `git log 包含 RED commit`
+- [ ] **ASSERT** `06-tdd-log.md CONTAINS "RED 记录"`
+- [ ] **ASSERT** `git log CONTAINS "RED commit"`
+- [ ] 我是否因为"应该没问题"跳过了 SDD §七/§八 中某个边界条件或异常场景的测试？
 
 #### 循环 2：绿（Green）— 写实现
 
+> TRAP：你会倾向于在 GREEN 阶段写"正确且优雅"的代码。抑制这个冲动——GREEN 只需让当前测试通过的最小代码量。三行重复优于过早抽象，优雅留给 REFACTOR。
+
 1. **WRITE** 最少代码让测试通过
 2. **EXEC** 项目测试命令 → **ASSERT** `exit_code == 0`
-   - **IF** `tests_pass` → **WRITE** `06-tdd-log.md` GREEN 记录
-   - **IF** `tests_fail` → 修改实现（非测试）→ **GOTO** Step 2
+   - **IF** `exit_code == 0` → **WRITE** `06-tdd-log.md` GREEN 记录
+   - **IF** `exit_code != 0` → 修改实现（非测试）→ **GOTO** 循环 2
 3. GREEN 记录格式：
 
    ```
@@ -138,7 +169,14 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 4. **EXEC** `git commit -m "feat: {功能点} (GREEN)"` 或 `fix:` 前缀（修复类任务）
    - **ASSERT** `exit_code == 0`
 
+> GOOD：`🔴 RED — 测试文件：src/user.test.ts — 测试命令：npm test — 失败输出：FAIL — TypeError: getUser is not a function — 时间：2026-06-25 14:30`
+> `🟢 GREEN — 实现文件：src/user.ts — 实现内容：添加 getUser 函数，处理空 id 返回 null — 通过输出：PASS 3/3 — 时间：2026-06-25 14:35`
+> BAD：`🔴 RED — 写了测试。🟢 GREEN — 实现了功能，测试通过了。`
+> （缺少文件路径、命令、输出证据、时间戳——无法复现和审计）
+
 #### 循环 3：重构（Refactor）
+
+> TRAP：重构时修改了测试断言让它"更合理"。重构阶段只改实现代码，不改测试——如果测试需要改，说明你改变了行为，那不是重构。
 
 1. **IF** 有可优化项 → 提取公共逻辑、消除重复、优化命名
 2. **EXEC** 项目测试命令 → **ASSERT** `exit_code == 0`
@@ -153,7 +191,7 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 
 1. **WRITE** 回归测试 → **EXEC** 项目测试命令 → **ASSERT** `exit_code != 0`（预期失败）
 2. **WRITE** 修复代码 → **EXEC** 项目测试命令 → **ASSERT** `exit_code == 0`（预期通过）
-3. **ROLLBACK** 修复 → **EXEC** 项目测试命令 → **ASSERT** `exit_code != 0`（必须失败）
+3. 撤销修复代码（`git stash` 或 `git checkout`）→ **EXEC** 项目测试命令 → **ASSERT** `exit_code != 0`（必须失败）
 4. 恢复修复 → **EXEC** 项目测试命令 → **ASSERT** `exit_code == 0`（必须通过）
 
 **ELSE**：
@@ -174,6 +212,8 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 
 → 删除代码，从 RED 重新开始
 
+**ELSE** → 继续正常 TDD 循环
+
 > 为什么 TDD 顺序不可逆？后写测试被实现偏见污染（FP-2）：测的是已构建的行为，不是需求。"先实现再补测试效果一样""已经手动测试过了""删掉 X 小时工作太浪费了"——这些借口均不成立。
 
 #### 卡住时怎么办
@@ -188,9 +228,17 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 
 ### 并行记录：决策日志
 
-> 与 Phase 1 TDD 循环同步进行，实时记录，不可事后回忆补写。
+> 实时捕捉"为什么这样做而不那样做"。事后回忆的决策理由会被结果偏见污染——只有实时记录才可信。
 
 **WRITE** `08-ai-decisions.md`（模板见 `references/08-ai-decisions-template.md`）：
+
+   ```
+   ## 决策 {N}：{决策标题}
+   - **决策内容**：{具体决策}
+   - **决策理由**：{为什么这样做}
+   - **拒绝的替代方案**：{替代方案 + 拒绝理由}
+   - **信息来源**：{extracted|inferred|ambiguous}
+   ```
 
 | 决策类型 | 记录内容 |
 | -------- | -------- |
@@ -202,9 +250,21 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 
 ### 并行记录：Prompt 日志
 
-> 与 Phase 1 TDD 循环同步进行。
+> 记录每个关键 Prompt 的五要素和效果，使纠偏经验可复用。
 
 **WRITE** `07-prompt-log.md`（模板见 `references/07-prompt-log-template.md`），每条含：
+
+   ```
+   ## Prompt {N}：{用途}
+   | 要素 | 内容 |
+   |------|------|
+   | 目标 | {一句话} |
+   | 上下文 | {引用文件/约束} |
+   | 边界 | {不可做} |
+   | 输出格式 | {结构} |
+   | 验证标准 | {判断标准} |
+   - 结果：{成功/失败/部分成功}
+   ```
 
 1. **五要素**：目标、上下文、边界、输出格式、验证标准
 2. **效果**：成功/失败/部分成功
@@ -212,9 +272,11 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 
 ### Phase 2：自检与全量验证
 
+> 用独立的全量验证确认实现正确。此阶段的每个"通过"声明必须基于刚执行的命令输出，不是 Phase 1 的记忆。
+
 1. **RESOLVE** `verify_cmd`（首个命中即停）：
    1. `READ("05-risk.md", "§一验证计划")`
-   2. `READ("CLAUDE.md").test_cmd` / `READ(".cursor/rules/")`
+   2. `READ("CLAUDE.md").verify_cmd` / `READ(".cursor/rules/")`
    3. `READ("package.json").scripts.test` / `READ("Makefile")` / `READ("CI 配置")`
    4. *none* → **NEEDS_CONTEXT**：请用户提供验证命令，记录到 `06-tdd-log.md`
 
@@ -232,7 +294,7 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 
 1. **READ** full output → 定位失败原因
 2. **WRITE** 失败测试（RED）→ 修复代码（GREEN）→ 仍遵循 TDD
-3. **GOTO** Phase 2 Step 2（重新运行全部检查）
+3. **GOTO** Phase 2（从步骤 2 重新运行全部检查）
 4. **WRITE** `06-tdd-log.md` 修复循环 + **WRITE** `08-ai-decisions.md` 修复决策
 
 **ELSE** → 继续 Phase 2 下一步骤
@@ -263,7 +325,7 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 
 ## STOP Signals
 
-- **编码**前没 **READ** spec，或发现 spec 问题不 **ROLLBACK** 而自己决定
+- **编码**前没 `READ` spec，或发现 spec 问题不 `ROLLBACK` 而自己决定
 - **跳过** RED 阶段直接写实现，或先写实现再补测试
 - **修改**测试让它通过（而非修改实现），或困惑不记录默默假设
 
@@ -272,13 +334,13 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 引用 `_team-rules/constitutional-rules.md`。实现阶段尤其注意：
 
 - **Rule #9 TDD 顺序不可逆**：RED 必须在 GREEN 之前，先写实现再补测试则删除代码重新开始（FP-2）
-- **Rule #2 有向图回退**：发现 spec 问题必须 **ROLLBACK** specAgent，不可自行假设正确行为（FP-4）
+- **Rule #2 有向图回退**：发现 spec 问题必须 `ROLLBACK` specAgent，不可自行假设正确行为（FP-4）
 - **Rule #6 自我约束预算**：超出预算砍范围，不放宽预算（FP-3）
 - **Rule #8 验证先行**：声明"测试通过"前必须执行验证协议 5 步（FP-4）
 
 ## 自检门禁
 
-- [ ] **ASSERT** `06-tdd-log.md 存在` && `07-prompt-log.md 存在` && `08-ai-decisions.md 存在` && `各文件有效行数 ≥ 5`
+- [ ] **ASSERT** `06-tdd-log.md EXISTS` && `07-prompt-log.md EXISTS` && `08-ai-decisions.md EXISTS` && `各文件有效行数 ≥ 5`
 - [ ] **ASSERT** `每个功能点有 RED → GREEN → REFACTOR 序列` && `时间递增`
 - [ ] **EXEC** 项目测试命令 → **ASSERT** `failures == 0`
 - [ ] **EXEC** 项目 lint 命令 → **ASSERT** `exit_code == 0`
@@ -288,6 +350,8 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 - [ ] **ASSERT** `实际消耗 <= 01-plan.md 自我约束预算`
 - [ ] **ASSERT** `所有困惑已显式记录于 06-tdd-log.md 审计段落`
 - [ ] **IF** 发现 spec 问题 → **ASSERT** `已 ROLLBACK specAgent`
+- [ ] 我是否在某个 GREEN 阶段写了超出当前测试要求的代码？
+- [ ] 我是否有任何"通过"声明是基于上一轮输出而非本轮刚执行的结果？
 
 ## 完成标志
 
@@ -311,3 +375,8 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 
 - `team-test` — REQUIRED：实现完成后必须进行测试审计
 - `team-debug` — 发现 bug 时使用
+
+## 下一步
+
+- 实现完成 → 使用 `team-test` 进行测试审计
+- 遇到难以定位的 bug → 使用 `team-debug` 根因分析
