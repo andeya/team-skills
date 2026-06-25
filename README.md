@@ -112,8 +112,8 @@ npx team-skills@latest update
 
 | 内容 | 位置 | 说明 |
 |------|------|------|
-| 11 个 Agent Skills | `~/.agents/skills/` | Cursor 自动发现 |
-| 11 个 Skill 斜杠命令 | `~/.claude/commands/` | Claude Code `/team-{name}` |
+| 12 个 Agent Skills | `~/.agents/skills/` | Cursor 自动发现（team-score 需 `--with-score`） |
+| 12 个 Skill 斜杠命令 | `~/.claude/commands/` | Claude Code `/team-{name}` |
 | 共享规则 | `~/.agents/skills/_team-rules/` | 被所有 Skill 引用 |
 | CLI 辅助命令 | 两端均安装 | team-setup/uninstall/pull/push |
 | Hooks（可选） | `~/.cursor/hooks/` | session-start 自动加载 |
@@ -168,6 +168,7 @@ npx team-skills@latest update
 | 代码质量如何？ | `/team-review` |
 | 这个 bug 怎么回事？ | `/team-debug` |
 | 测试真的过了吗？ | `/team-verify` |
+| 项目做得好不好？ | `/team-score` |
 | Review 反馈来了 | `/team-feedback` |
 | 代码写完了 | `/team-finish` |
 | 不知道用哪个 | `/using-team-skills` |
@@ -249,6 +250,7 @@ graph TD
     Q -->|"遇到 Bug"| DEBUG[🐛 team-debug<br/>→ 根因分析 + 修复]:::skill
     Q -->|"实现完成，准备合并"| FINISH[🏁 team-finish<br/>→ 合并/PR/清理]:::skill
     Q -->|"声称完成"| VERIFY[✅ team-verify<br/>→ 验证证据链]:::skill
+    Q -->|"项目做得好不好"| SCORE[📊 team-score<br/>→ 量化评分报告]:::skill
     Q -->|"不知道用哪个"| USING[🧭 using-team-skills<br/>→ Skill 推荐]:::skill
     Q -->|"需要完整交付流水线"| ORCH[⚙️ team-orchestrator<br/>→ 全自动编排]:::orch
 
@@ -267,7 +269,7 @@ graph TD
 
 ---
 
-## 📦 包含 11 个可独立使用的 Skill
+## 📦 包含 12 个可独立使用的 Skill
 
 | Skill | 一句话说明 | 使用场景 |
 |-------|-----------|----------|
@@ -281,9 +283,10 @@ graph TD
 | `team-debug` | 四阶段根因分析 + 修复 | "这个 bug 怎么回事？" |
 | `team-feedback` | 先验证再实施，非表演性同意 | "Review 反馈来了" |
 | `team-finish` | 分支完成处理（合并/PR/保留/丢弃） | "代码写完了" |
+| `team-score` | 7 硬门禁 + 24 项五维度评分（100 分制） | "项目做得好不好？" |
 | `using-team-skills` | Meta-skill，自动引导你选正确的 Skill | "我该用哪个？" |
 
-> 每个 Skill 可独立使用，也可通过 `team-orchestrator` 串联成完整流水线。
+> 每个 Skill 可独立使用，也可通过 `team-orchestrator` 串联成完整流水线。`team-score` 为可选评估工具，安装时需 `--with-score`。
 
 ---
 
@@ -365,7 +368,7 @@ Team Skills 融合了业界多个 AI 协作框架的精华：
 | **OpenSpec** (Fission AI) | Delta Spec 增量规格、RFC 2119 + Given/When/Then |
 | **Karpathy Skills** | 过度抽象防御、死代码清理、困惑管理 |
 | **Agent-Style** | 5 条 LLM 输出质量约束 |
-| **独创** | 有向图回退、质量追溯矩阵、消费方契约、H1-H4 人类介入点 |
+| **独创** | 有向图回退、质量追溯矩阵、消费方契约、H1-H4 人类介入点、100 分制量化评估、Markdown Skill Language |
 
 ---
 

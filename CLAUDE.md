@@ -307,6 +307,7 @@ H3 触发时，编排器 **MUST** 向用户展示以下结构化信息：
 | `skills/_team-rules/verification-protocol.md` | 5 步验证协议 + Iron Law + 常见失败模式 |
 | `skills/_team-rules/four-state-protocol.md` | 四态完成状态（DONE / DONE_WITH_CONCERNS / NEEDS_CONTEXT / BLOCKED） |
 | `skills/_team-rules/first-principles.md` | 4 条第一性原理（FP-1 ~ FP-4）+ 使用指南 |
+| `skills/_team-rules/skill-spec.md` | Markdown Skill Language v1.0：执行模型 + 形式语法（BNF）+ 约定/模式/反模式 |
 
 ## 八、完成状态协议
 
