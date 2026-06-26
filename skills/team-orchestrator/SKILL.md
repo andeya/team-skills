@@ -43,6 +43,8 @@ flowchart TD
 - testAgent 发现 bug → 回退 implAgent；spec 遗漏 → 回退 specAgent
 - 同一阶段回退 ≤ 2 次
 - H1/H4 任何模式下不可省略
+- 编排器不得自己写实现代码（必须 dispatch 子 Skill，不可亲自实现）
+- 子 Skill 不可用时不得自动降级为自我执行，必须 H3 请示用户
 ```
 
 ### 路由推理检查点
@@ -246,7 +248,7 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 
 | 级别 | 典型场景 | 推荐模式 | 预期文档产出 |
 | ---- | -------- | -------- | ------------ |
-| Small | 修 bug、改文案、加字段、调样式 | `--compact` 精简模式 | 11 个文档（03-04 + 06-13 + task-rules） |
+| Small | 修 bug、改文案、加字段、调样式 | `--compact` 精简模式 | 12 个文档（03-04 + 06-13 + task-rules） |
 | Medium | 新增功能模块、重构组件、加 API | 完整模式（默认） | 全部 17 文件 |
 | Large | 跨系统重构、架构变更、多模块联动 | 完整模式 + 多期分期 | 全部 17 文件 + 多期迭代 |
 
@@ -282,6 +284,8 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 默认执行模型是**单会话顺序执行**：编排器在同一个 AI 会话中依次调用各 sub-skill（`/team-spec` → `/team-impl` → `/team-test` → `/team-review` → `/team-finish`）。
 
 **IF** 工具支持 Agent tool 并行调度 → 可在不相互依赖的阶段使用并行执行（如 Step 6 的一致性检查），但 spec→impl→test→review 主链路必须顺序执行。
+
+**子 Skill 可用性**：编排器在调度前必须检查子 Skill 是否存在。不可用时不得自动降级为自我执行——必须通过 **H3** 由用户决定降级方案。参见 Step 2/3/4/5 的 GATE 检查。
 
 ### 断点续传机制
 
@@ -426,6 +430,14 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 
 > 规格是所有下游 Agent 的唯一输入源。规格质量直接决定 impl/test/review 的返工率。宁可在此多花时间，不可带着模糊规格进入实现。
 
+**GATE** 子 Skill 可用性检查（进入 Step 2 前强制执行）：
+
+- **CHECK** `team-spec` skill 是否存在（`/team-spec` 是否可调用）
+- **IF** 不可用 → **H3**，向用户展示 3 个选项：
+  - (a) 安装 team-spec skill 后继续
+  - (b) 由编排器手动编写规格，但承诺补全 01-05 规划文档
+  - (c) 终止任务
+
 **ROUTE** `team-spec`
 
 调用方式取决于工具能力：
@@ -486,6 +498,15 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 
 > TRAP：你会倾向于信任 implAgent 的 `DONE` 状态而跳过 TDD 证据验证。`DONE` 只表示"自认为完成"——必须验证 `06-tdd-log.md` 中 RED→GREEN 顺序和失败输出。
 
+**GATE** 子 Skill 可用性检查（进入 Step 3 前强制执行）：
+
+- **CHECK** `team-impl` skill 是否存在（`/team-impl` 是否可调用）
+- **IF** 不可用 → **H3**，向用户展示 3 个选项：
+  - (a) 安装 team-impl skill 后继续
+  - (b) 由编排器手动执行实现，但承诺补全 06-08 协作文档
+  - (c) 终止任务
+- **IF** 用户选择 (b) → 编排器执行实现，但**必须**在进入 Step 4 前产出 06-08
+
 **ROUTE** `team-impl`
 
 调用方式取决于工具能力：
@@ -542,6 +563,11 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 
 > SIGNAL：testAgent 报告 `spec 遗漏` 通常意味着 SDD 的边界条件或异常场景章节不完整，不是 implAgent 的问题——回退到 specAgent 而非 implAgent。
 
+**GATE** 子 Skill 可用性检查：
+
+- **CHECK** `team-test` skill 是否存在
+- **IF** 不可用 → **H3**，展示选项：(a) 安装后继续 (b) 编排器手动执行但承诺补全 09-10 (c) 终止
+
 **ROUTE** `team-test`
 
 调用方式取决于工具能力：
@@ -594,6 +620,11 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 > 代码审查是交付前最后的质量门禁。编排器必须确认 reviewAgent 的五维度审查全部完成，且 P0/P1 问题已触发回退而非被标记为"后续处理"。
 
 > TRAP：reviewAgent 返回 `DONE_WITH_CONCERNS` 时，你会倾向于视为"基本完成"而继续流程。必须将 concerns 完整展示给用户，由用户决定是否继续。
+
+**GATE** 子 Skill 可用性检查：
+
+- **CHECK** `team-review` skill 是否存在
+- **IF** 不可用 → **H3**，展示选项：(a) 安装后继续 (b) 编排器手动执行但承诺补全 11-13 + task-rules (c) 终止
 
 **ROUTE** `team-review`
 
@@ -759,6 +790,20 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 
 > H4 是用户对整个交付物的最终确认，不可省略。展示内容必须让用户在不读代码的情况下做出有效判断。
 
+**GATE** 协作文档完整性检查（进入 H4 前强制执行）：
+
+**IF** `mode == full`：
+
+- **FOR** `file` **IN** [`06-tdd-log.md`, `07-prompt-log.md`, `08-ai-decisions.md`, `09-test-matrix.md`, `10-test-report.md`, `11-review.md`, `12-asset-update.md`, `13-retrospective.md`, `14-team.md`, `15-brief.md`, `task-rules.md`]：
+  - **ASSERT** `{file} EXISTS` && `有效行数 >= 5`
+  - 任一不通过 → **ROLLBACK** 对应 Step（06-08 → Step 3；09-10 → Step 4；11-13/task-rules → Step 5；14-15 → Step 6），附缺失文件名
+
+**ELSE**（`mode == compact`）：
+
+- **FOR** `file` **IN** [`06-tdd-log.md`, `07-prompt-log.md`, `08-ai-decisions.md`, `09-test-matrix.md`, `10-test-report.md`, `11-review.md`, `12-asset-update.md`, `13-retrospective.md`, `task-rules.md`]：
+  - **ASSERT** `{file} EXISTS` && `有效行数 >= 5`
+  - 任一不通过 → **ROLLBACK** 对应 Step
+
 **WRITE**（对话中）向用户展示：交付物清单 + 代码 diff 摘要。
 
 - **IF** `mode == full` → 还展示 `14-team.md` 和 `15-brief.md` 核心内容
@@ -901,6 +946,7 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 - **延迟**回退（"先记着后面一起修"）
 - **信任** Agent 自我声明而不验证产出
 - **超出**预算却不砍范围
+- **编排器自己写实现代码**（必须 dispatch 子 Skill，不得亲自实现。编排器的价值在于协调，不是执行）
 
 ## Constitutional Rules 遵守
 
