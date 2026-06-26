@@ -1,5 +1,5 @@
 import { join } from 'node:path';
-import { existsSync, readdirSync, rmSync, copyFileSync } from 'node:fs';
+import { existsSync, readdirSync, rmSync, copyFileSync, realpathSync } from 'node:fs';
 import { createSymlinkSafe, ensureDir, isSymlink, copyRecursive } from './fs-utils.js';
 import { GLOBAL_TARGETS, PROJECT_IDE_DIRS } from './constants.js';
 import * as log from './logger.js';
@@ -56,21 +56,44 @@ export function verifyGlobalSymlinks(targets, skills, rules) {
   log.heading('验证安装');
   let errors = 0;
 
-  const verify = (label, dest) => {
-    if (isSymlink(dest)) {
-      log.success(label);
-    } else {
-      log.error(`${label} 未正确安装`);
-      errors++;
-    }
-  };
-
   for (const t of targets) {
     for (const skill of skills) {
-      verify(`${t.label} Skill: ${skill.name}`, join(t.dir, skill.name));
+      const dest = join(t.dir, skill.name);
+      const label = `${t.label} Skill: ${skill.name}`;
+      if (isSymlink(dest)) {
+        log.success(label);
+      } else if (existsSync(dest)) {
+        try {
+          if (realpathSync(dest) === realpathSync(skill.path)) {
+            log.skip(`${label}（已存在，跳过）`);
+            continue;
+          }
+        } catch { /* 忽略解析失败 */ }
+        log.error(`${label} 未正确安装`);
+        errors++;
+      } else {
+        log.error(`${label} 未正确安装`);
+        errors++;
+      }
     }
     for (const rule of rules) {
-      verify(`${t.label} Rule: ${rule.name}`, join(t.dir, '_team-rules', rule.name));
+      const dest = join(t.dir, '_team-rules', rule.name);
+      const label = `${t.label} Rule: ${rule.name}`;
+      if (isSymlink(dest)) {
+        log.success(label);
+      } else if (existsSync(dest)) {
+        try {
+          if (realpathSync(dest) === realpathSync(rule.path)) {
+            log.skip(`${label}（已存在，跳过）`);
+            continue;
+          }
+        } catch { /* 忽略解析失败 */ }
+        log.error(`${label} 未正确安装`);
+        errors++;
+      } else {
+        log.error(`${label} 未正确安装`);
+        errors++;
+      }
     }
   }
 
@@ -98,7 +121,16 @@ export function installSkillsProject(projectDir, ides, skills, rules, { dryRun, 
     for (const skill of skills) {
       const dest = join(skillsDst, skill.name);
       if (!dryRun) {
-        if (existsSync(dest)) rmSync(dest, { recursive: true });
+        // 如果目标就是源文件本身，跳过删除+复制（否则删了就复制不了）
+        if (existsSync(dest)) {
+          try {
+            if (realpathSync(dest) === realpathSync(skill.path)) {
+              log.skip(`${tag}Skill: ${skill.name}（自身，跳过）`);
+              continue;
+            }
+          } catch { /* 忽略解析失败 */ }
+          rmSync(dest, { recursive: true });
+        }
         copyRecursive(skill.path, dest);
       }
       log.success(`${tag}Skill: ${skill.name}`);
@@ -108,7 +140,19 @@ export function installSkillsProject(projectDir, ides, skills, rules, { dryRun, 
     const rulesDst = join(skillsDst, '_team-rules');
     if (!dryRun) ensureDir(rulesDst);
     for (const r of rules) {
-      if (!dryRun) copyFileSync(r.path, join(rulesDst, r.name));
+      if (!dryRun) {
+        const ruleDest = join(rulesDst, r.name);
+        // 如果目标就是源文件本身，跳过复制
+        if (existsSync(ruleDest)) {
+          try {
+            if (realpathSync(ruleDest) === realpathSync(r.path)) {
+              log.skip(`${tag}Rule: ${r.name}（自身，跳过）`);
+              continue;
+            }
+          } catch { /* 忽略解析失败 */ }
+        }
+        copyFileSync(r.path, ruleDest);
+      }
       log.success(`${tag}Rule: ${r.name}`);
       count++;
     }

@@ -1,7 +1,7 @@
 import {
   mkdirSync, symlinkSync, unlinkSync, readlinkSync,
   lstatSync, existsSync, readdirSync, statSync,
-  copyFileSync, chmodSync, rmSync,
+  copyFileSync, chmodSync, rmSync, realpathSync,
 } from 'node:fs';
 import { join, dirname } from 'node:path';
 
@@ -25,6 +25,12 @@ export function createSymlinkSafe(source, target, { force = false, dryRun = fals
     if (!force) return 'conflict';
     unlinkSync(target);
   } else if (existsSync(target)) {
+    // 目标存在但不是软连接 — 解析真实路径，如果是同一文件则视为已安装
+    try {
+      if (realpathSync(target) === realpathSync(source)) return 'exists';
+    } catch {
+      // 任一无法解析，继续走 force 逻辑
+    }
     if (!force) return 'conflict';
     rmSync(target, { recursive: true });
   }
