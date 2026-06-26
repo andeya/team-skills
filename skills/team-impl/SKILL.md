@@ -277,7 +277,7 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 1. **RESOLVE** `verify_cmd`（首个命中即停）：
    1. `READ("05-risk.md", "§一验证计划")`
    2. `READ("CLAUDE.md").verify_cmd` / `READ(".cursor/rules/")`
-   3. `READ("package.json").scripts.test` / `READ("Makefile")` / `READ("CI 配置")`
+   3. `READ("package.json").scripts.test` / `READ("Makefile")` / `READ("Cargo.toml")` / `READ("CI 配置")`
    4. *none* → **NEEDS_CONTEXT**：请用户提供验证命令，记录到 `06-tdd-log.md`
 
 2. **EXEC** `verify_cmd`（测试）→ **ASSERT** `exit_code == 0` && `failures == 0`

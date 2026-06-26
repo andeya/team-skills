@@ -53,7 +53,7 @@ NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE FIRST
 ## 执行步骤
 
 ### Step 1：确定验证命令
->
+
 > 找到当前项目真正有效的验证命令。"上次用的命令"不等于"现在正确的命令"——项目配置可能已变更。
 
 **RESOLVE** `verify_cmd`（首个命中即停）：
@@ -66,7 +66,7 @@ NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE FIRST
    - *default* → **NEEDS_CONTEXT**：请用户提供验证命令
 
 ### Step 2：执行验证
->
+
 > 亲手执行，亲眼看到。"刚才跑过了"是最危险的借口——上一次结果不是当前事实。
 
 > TRAP：你会倾向于引用上一轮输出而非重新执行。每次到这一步，默认假设之前的结果已失效。
@@ -81,7 +81,7 @@ NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE FIRST
    - `exit_code != 0` || `failures > 0` → 记录失败详情 → fix → **GOTO** Step 2
 
 ### Step 3：报告结果
->
+
 > 报告是验证的证据——不是总结感想，而是呈现可追溯的事实。缺少 `exit_code` 或输出摘要的报告等于没有报告。
 
 > TRAP："Tests pass" 不等于 "changed code is tested"。如果测试数量比上次减少了，可能是删除了失败测试而非修复了 bug。
@@ -123,7 +123,7 @@ NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE FIRST
 > ```
 
 ### Step 4：工具失败恢复
->
+
 > 区分"验证不通过"与"验证命令本身失败"。前者是代码问题，后者是环境问题。修复环境不等于验证通过。
 
 > 验证命令本身执行失败（超时、进程崩溃、环境错误），不同于验证不通过。

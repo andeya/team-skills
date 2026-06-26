@@ -70,7 +70,7 @@ NO SKILL RECOMMENDATION WITHOUT SCENE ANALYSIS FIRST
 ## 执行步骤
 
 ### Step 1：分析用户场景
->
+
 > 精准识别用户当前工程阶段，而非表面关键词匹配。错误分诊比慢分诊代价更高。
 
 > TRAP：你会倾向于推荐 `team-orchestrator`（最完整的流水线），即使用户只需要一个单点 Skill。
@@ -101,7 +101,7 @@ NO SKILL RECOMMENDATION WITHOUT SCENE ANALYSIS FIRST
 13. *none* → **NEEDS_CONTEXT**：请用户描述当前阶段和目标
 
 ### Step 2：推荐并说明理由
->
+
 > 推荐的核心是"最短路径"——从用户当前状态到目标状态经过最少的 Skill。过度推荐等于浪费用户时间。
 
 > GOOD：`用户报告登录接口 500 错误。当前阶段：调试。推荐：team-debug。理由：已有明确错误现象，需先定位根因再决定是否修改规格或实现。启动方式：/team-debug`
@@ -115,7 +115,7 @@ NO SKILL RECOMMENDATION WITHOUT SCENE ANALYSIS FIRST
 **WRITE**（对话中）推荐结果：推荐 Skill + 推荐理由 + 启动方式
 
 ### Step 3：可选 — 展示流程图
->
+
 > 仅在用户主动需要全貌时展示，不主动展开——信息过载是另一种误导。
 
 **IF** 用户需要了解全貌 → 展示 Mermaid 流程图

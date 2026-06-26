@@ -124,7 +124,7 @@ Phase 1 只分析，不写测试代码。
 
 1. `READ("05-risk.md", "§一验证计划")`（精简模式下不存在属于正常）
 2. `READ("CLAUDE.md").verify_cmd` / `READ(".cursor/rules/")`
-3. `READ("package.json").scripts.test` / `READ("Makefile")`
+3. `READ("package.json").scripts.test` / `READ("Makefile")` / `READ("Cargo.toml")`
 4. *none* → **NEEDS_CONTEXT**：请用户提供测试命令
 
 ### Phase 4：补充测试（填补缺口）

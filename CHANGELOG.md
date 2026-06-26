@@ -7,6 +7,13 @@
 
 ## [Unreleased]
 
+## [1.3.6] - 2026-06-26
+
+### 修复
+
+- D12：移除 4 个 SKILL.md 中 `###` 标题后的 bare `>` 空行（using-team-skills×3、team-brainstorm×6、team-finish×6、team-verify×4），统一为标准空行格式
+- D4：`verify_cmd` RESOLVE 链一致性修复——team-impl 和 team-test 补齐 `Cargo.toml`（与 team-verify/team-feedback 对齐）
+
 ## [1.3.5] - 2026-06-26
 
 ### 变更

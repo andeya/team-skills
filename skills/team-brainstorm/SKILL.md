@@ -67,7 +67,7 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 ## 执行步骤
 
 ### Phase 1：探索
->
+
 > 理解用户要解决的真实问题和项目现状。不要急于构思方案——先确认"问题是什么"比"答案是什么"更重要。
 
 1. **READ** 用户需求，提取核心目标和关键词
@@ -86,7 +86,7 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 8. **EXEC** 创建 `docs/tasks/{slug}/` 目录（**IF** 已存在 → 跳过）→ **ASSERT** `exit_code == 0`
 
 ### Phase 2：需求澄清（一次性提问）
->
+
 > 挖出用户未说出的假设和隐性约束。好问题比好答案更有价值——问错问题意味着后续全部方向偏移。
 
 > TRAP：你会倾向于接受用户的初始框架，不质疑其前提假设。
@@ -109,7 +109,7 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 - 整合用户回复，进入 Phase 3
 
 ### Phase 3：方案设计
->
+
 > 探索根本不同的解决路径，不是同一个想法的三种措辞。每个方案应从不同的设计取舍出发（如性能 vs 简洁、侵入式 vs 非侵入式）。
 
 > TRAP：锚定偏差——你会倾向于围绕第一个想到的方案展开变体，而非探索本质不同的路径。
@@ -136,7 +136,7 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 ```
 
 ### Phase 4：展示设计
->
+
 > 逐段确认而非一次倾倒，每段确认后再展示下一段。目标是让用户在每个维度上做出知情决策，而非被信息量压垮后草率同意（FP-1）。
 
 逐段展示设计，每段后等待用户确认：
@@ -162,7 +162,7 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 - *default* → 向用户澄清确认意图
 
 ### Phase 5：产出 00-design-brief.md
->
+
 > 将讨论共识固化为结构化文档。这是下游 Skill 的唯一输入——口头讨论不算数，写下来的才算数。
 
 > SIGNAL：方案缺少具体下一步行动 → brainstorm 停留在空想层面，补充可执行的交付物定义。
@@ -221,7 +221,7 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 - 残留占位符 → 替换为实际值后重新 **WRITE**
 
 ### Phase 6：Handoff
->
+
 > 确保 brainstorm 成果顺滑传递给下游 Skill，不丢失上下文。
 
 **WRITE**（对话中）slug 目录路径 `docs/tasks/{slug}/`。

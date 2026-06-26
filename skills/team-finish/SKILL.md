@@ -61,7 +61,7 @@ NO BRANCH COMPLETION WITHOUT TEST VERIFICATION FIRST
 ## 执行步骤
 
 ### Step 1：验证测试
->
+
 > 用新鲜执行结果确认代码可交付。"上次跑过了"不是证据——只有当次输出才是。
 
 > TRAP：你会倾向于引用上一轮的测试结果来跳过重新执行。Iron Law 不允许——每次进入 finish 都必须重新运行。
@@ -78,7 +78,7 @@ NO BRANCH COMPLETION WITHOUT TEST VERIFICATION FIRST
 > 不可忽略失败继续展示选项（FP-4）。
 
 ### Step 1.5：凭证泄露扫描
->
+
 > 推送前最后一道安全防线。凭证泄露一旦进入远程仓库，撤回成本极高。
 
 **EXEC** `grep -rn -E '(AK|SK|access[_-]?key|secret[_-]?key|api[_-]?key|token|password|passwd|credential)\s*[:=]' .` — 推送前凭证扫描（RL-2）
@@ -87,7 +87,7 @@ NO BRANCH COMPLETION WITHOUT TEST VERIFICATION FIRST
 - **ELSE** → **GOTO** Step 2
 
 ### Step 2：确定基准分支
->
+
 > 精确找到合并目标。基准错误 = 合并到错误分支，后果比不合并更糟。
 
 **RESOLVE** `base_branch`（首个命中即停）：
@@ -105,7 +105,7 @@ NO BRANCH COMPLETION WITHOUT TEST VERIFICATION FIRST
 - 失败（分支无公共祖先）→ **BLOCKED**，触发 **H3**
 
 ### Step 3：展示选项
->
+
 > 让用户在完整信息下做选择。选项列表必须覆盖所有合理路径，不替用户预判。
 
 **WRITE**（对话中）选项列表：
@@ -122,7 +122,7 @@ NO BRANCH COMPLETION WITHOUT TEST VERIFICATION FIRST
 ```
 
 ### Step 4：执行选择
->
+
 > 严格按用户选择执行，不添加未要求的操作。不可逆操作必须二次确认。
 
 > TRAP：合并成功后你会倾向于跳过重新测试（"刚才不是通过了吗"）。合并引入的代码交互可能导致回归——必须重新验证。
@@ -181,7 +181,7 @@ NO BRANCH COMPLETION WITHOUT TEST VERIFICATION FIRST
 - *default* → **WRITE**（对话中）"请选择 A/B/C"
 
 ### Step 5：清理工作目录
->
+
 > 操作完成后工作区必须干净。残留的 worktree 或未提交变更是下次操作的隐患。
 
 > SIGNAL：`git status` 显示未提交变更 → 提交纪律不完整，有文件遗漏在 commit 之外。
