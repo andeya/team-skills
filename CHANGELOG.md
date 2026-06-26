@@ -7,6 +7,19 @@
 
 ## [Unreleased]
 
+## [1.3.8] - 2026-06-27
+
+### 新增
+
+- 编排器 Iron Law 强化：不得自己写实现代码、子 Skill 不可用不得自动降级
+- Step 2/3/4/5 子 Skill 可用性 GATE 检查（team-spec/impl/test/review），不可用时 H3 请示用户
+- H4 前协作文档完整性 GATE（full 11 文件 / compact 9 文件），不通过则 ROLLBACK 对应 Step
+
+### 修复
+
+- compact 模式文档计数 11→12，补齐 `12-asset-update.md`
+- 引用段落更新（Step 3/4/5 → Step 2/3/4/5）
+
 ## [1.3.7] - 2026-06-26
 
 ### 修复
