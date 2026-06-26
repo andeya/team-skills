@@ -7,6 +7,12 @@
 
 ## [Unreleased]
 
+## [1.3.7] - 2026-06-26
+
+### 修复
+
+- 安装时自检：目标与源为同一文件时跳过删除/复制，防止误删源文件（`createSymlinkSafe` + `installSkillsProject` + `verifyGlobalSymlinks`）
+
 ## [1.3.6] - 2026-06-26
 
 ### 修复
