@@ -7,6 +7,36 @@
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-06-28
+
+### 新增
+
+- team-spec: `01-plan.md` 骨架新增"容量与成本预估"章节（数据量级/QPS/API 成本/存储增长）
+- team-spec: `03-sdd.md` §八 异常场景后新增并发和兼容性 SIGNAL 提示
+- team-spec: Phase 3 自检新增容量成本检查项
+- team-test: 功能覆盖维度补充跨模块/跨服务集成路径端到端测试要求
+- team-test: 新增 E2E/集成测试遗漏 TRAP
+- team-impl: RED 阶段新增集成测试遗漏 TRAP
+- team-review: 正确性维度新增向后兼容性检查（API 签名、数据格式、配置项破坏性变更）
+- team-review: 性能维度新增并发安全、数据量级评估、成本影响评估
+- team-orchestrator: 精简模式等效证据映射表（D2 五项 + G1/G6/G7 硬门槛映射）
+- team-debug: Phase 4 补充 `debug-report.md` WRITE 指令，QUALITY 表同步更新
+- ai-collaboration-standards: 三层体系项目级新增 AGENTS.md，§1.4 Review 标准和交付要求新增 checklist 文件引用
+- spec-driven-workflow: §七 边界条件新增"兼容性变更"
+
+### 变更
+
+- team-score: D3 TDD 流程正确分值 5→8（对齐 L2 workshop 标准），移除 D4 评委自定(3)，D3 总分 27→30，D4 总分 13→10，总分保持 100
+- team-orchestrator: Step 8 D3/D4 分值标注同步（27→30, 13→10）
+- team-orchestrator: 精简模式 D2.2/D2.3/D2.5 从"跳过"改为等效证据 ASSERT 检查
+- team-security: 一级红线标识 RL-1~6 → RED_LINE_1~6，二级红线 HR-1~4 → HIGH_RISK_1~4（遵循"缩写即缺陷"命名规范）
+- 消费方引用格式统一：`（红线 RL-N）` → ``（`team-security: RED_LINE_N`）``（team-review/team-spec/team-impl/team-finish）
+
+### 修复
+
+- team-review: 复盘模板§编号对齐（§二.5→§三, §三→§四，与 13-retrospective-template.md 一致）
+- ai-collaboration-standards: §1.4 代码结构引用计数修正（"17 文件"→"任务目录结构"）
+
 ## [1.4.0] - 2026-06-27
 
 ### 新增
