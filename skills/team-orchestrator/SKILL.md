@@ -334,7 +334,7 @@ NO AGENT DISPATCH WITHOUT CONFIRM_GOAL HUMAN CONFIRMATION FIRST
 - `BLOCKED` → 触发 **ASK_HUMAN** 展示 `blocked_reason`
 - `NEEDS_CONTEXT` → 展示缺失信息，请求用户补充
 - *not found*（checkpoint 不存在）→ **GOTO** 恢复：文件推断阶段
-- *default*（status 值不在预定义范围内）→ **ASK_HUMAN**，展示 checkpoint 内容，由用户决定恢复策略
+- *DEFAULT*（status 值不在预定义范围内）→ **ASK_HUMAN**，展示 checkpoint 内容，由用户决定恢复策略
 
 #### 恢复：文件推断阶段
 
@@ -348,7 +348,7 @@ NO AGENT DISPATCH WITHOUT CONFIRM_GOAL HUMAN CONFIRMATION FIRST
 - `有 09-10 但无 11-review.md` → **GOTO** Step 5
 - `有 11-13 但无 14-team.md` → **GOTO** Step 6
 - `有 14-team.md + 15-brief.md` → **GOTO** Step 7
-- *none*（不符合任何模式）→ **ASK_HUMAN**，展示已有/缺失文件清单，由用户决定
+- *NONE*（不符合任何模式）→ **ASK_HUMAN**，展示已有/缺失文件清单，由用户决定
 
 **回退计数规则**：`rollback_counts` 按 `source→target` 对独立计数。计数仅在以下情况重置：(1) **ASK_HUMAN** 后用户明确决定重试；(2) team-spec 重新产出规格后，重置所有下游计数。正常回退修复不重置。
 
@@ -361,7 +361,7 @@ NO AGENT DISPATCH WITHOUT CONFIRM_GOAL HUMAN CONFIRMATION FIRST
    1. **READ** `docs/tasks/` 已有目录（**IF** NOT_EXISTS → 创建）
    2. **IF** 用户传入已有 slug 且 `docs/tasks/{slug}/00-design-brief.md EXISTS` → 复用该 slug
    3. **IF** 分期任务（HUMAN_ACCEPT 后续分期触发）→ slug 包含 `-p{N}` 后缀，checkpoint 记录 `parent_slug`
-   4. *default* → 取最大序号 +1（从 `0001` 起），拼接 `{NNNN}-{关键词}`（kebab-case，≤ 50 字符）
+   4. *DEFAULT* → 取最大序号 +1（从 `0001` 起），拼接 `{NNNN}-{关键词}`（kebab-case，≤ 50 字符）
 3. **EXEC** 创建 `docs/tasks/{slug}/` 目录（**IF** 已存在 → 跳过）→ **ASSERT** `exit_code == 0`
 4. **WRITE** checkpoint：`current_step=Step 1, next_step=CONFIRM_GOAL, phase=init, status=IN_PROGRESS`
 5. **READ** `docs/tasks/progress.md`（**IF** NOT_EXISTS → 创建含表头）→ **ASSERT** `{slug} 不在 progress.md 已完成列表中`
@@ -380,7 +380,7 @@ NO AGENT DISPATCH WITHOUT CONFIRM_GOAL HUMAN CONFIRMATION FIRST
 - `确认` → **WRITE** checkpoint：`completed_steps 追加 CONFIRM_GOAL` → **GOTO** Step 1.5
 - `不确认` → 根据反馈调整 → 重新展示
 - `任务不可行` → 向用户提出终止建议（Kill Switch 预检查）
-- *default* → 请求用户明确回复
+- *DEFAULT* → 请求用户明确回复
 
 ### Step 1.5：Git 分支初始化
 
@@ -393,7 +393,7 @@ NO AGENT DISPATCH WITHOUT CONFIRM_GOAL HUMAN CONFIRMATION FIRST
 1. **READ** `CLAUDE.md` / `.cursor/rules/` → 查找 `base_branch` 或 `default_branch` 配置项
 2. **EXEC** `git symbolic-ref refs/remotes/origin/HEAD` → **IF** `exit_code == 0` → 解析分支名；**ELSE** → **EXEC** `git remote show origin` → **IF** `exit_code == 0` → 解析分支名
 3. **FOR** `name` **IN** [`main`, `master`, `develop`]：**EXEC** `git show-ref --verify refs/heads/{name}` → **IF** `exit_code == 0` → 首个存在即停
-4. *none* → **ASK_HUMAN**，请求用户指定基准分支
+4. *NONE* → **ASK_HUMAN**，请求用户指定基准分支
 
 #### 1.5.2 创建功能分支
 
@@ -415,7 +415,7 @@ NO AGENT DISPATCH WITHOUT CONFIRM_GOAL HUMAN CONFIRMATION FIRST
 - `stash 后继续` → **EXEC** `git stash` → **ASSERT** `exit_code == 0` → **GOTO** 1.5.2 步骤 3
 - `先提交再继续` → 等待用户提交 → **GOTO** 1.5.2 步骤 3
 - `取消` → **BLOCKED**
-- *default* → 请求用户从以上选项中选择
+- *DEFAULT* → 请求用户从以上选项中选择
 
 不自动 stash 或丢弃。
 
@@ -490,7 +490,7 @@ NO AGENT DISPATCH WITHOUT CONFIRM_GOAL HUMAN CONFIRMATION FIRST
 - `用户确认` → **WRITE** checkpoint：`current_step=Step 3, completed_steps 追加 CONFIRM_SPEC` → **GOTO** Step 3
 - `用户要求修改` → **GOTO** Step 2（根据反馈调整后重新调度 team-spec）
 - `Kill Switch`（用户认为不可行/范围不可接受）→ **WRITE** checkpoint：`status=BLOCKED` → **BLOCKED**
-- *default* → 请求用户明确回复
+- *DEFAULT* → 请求用户明确回复
 
 ### Step 3：调度 team-impl
 
@@ -609,7 +609,7 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 - `同一对第 3 次回退` → **WRITE** checkpoint：`status=BLOCKED` → 强制 **ASK_HUMAN**
 - `Kill Switch`（任务不可行）→ **WRITE** checkpoint：`status=BLOCKED` → **ASK_HUMAN**
 - `人类需决策` → **WRITE** checkpoint：`status=BLOCKED` → **ASK_HUMAN**
-- *default* → 记录问题，继续下一步
+- *DEFAULT* → 记录问题，继续下一步
 
 **ELSE** → 测试全部通过，继续下一步
 
@@ -668,7 +668,7 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 - `同一对第 3 次回退` → **WRITE** checkpoint：`status=BLOCKED` → 强制 **ASK_HUMAN**
 - `Kill Switch` → **WRITE** checkpoint：`status=BLOCKED` → **ASK_HUMAN**
 - `人类需决策` → **WRITE** checkpoint：`status=BLOCKED` → **ASK_HUMAN**
-- *default* → 记录问题，继续下一步
+- *DEFAULT* → 记录问题，继续下一步
 
 **ELSE** → 审查全部通过，继续下一步
 
@@ -782,7 +782,7 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 - `merge` → **ASSERT** `merge_commit EXISTS`
 - `PR` → **ASSERT** `PR 已创建`
 - `keep` || `discard` → 记录用户决策
-- *default* → **ASK_HUMAN**，请求用户选择分支处理方式
+- *DEFAULT* → **ASK_HUMAN**，请求用户选择分支处理方式
 
 **WRITE** checkpoint：`current_step=Step 7.3, next_step=Step 7.5, phase=finish, completed_steps 追加 Step 7`
 
@@ -816,7 +816,7 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 - `验收通过` → **WRITE** checkpoint：`completed_steps 追加 HUMAN_ACCEPT` → **GOTO** Step 7.5
 - `验收不通过` → 根据反馈回退对应 Step（spec 问题 → **GOTO** Step 2；实现问题 → **GOTO** Step 3；测试问题 → **GOTO** Step 4；审查问题 → **GOTO** Step 5）
 - `后续分期` → **IF** `01-plan.md` §二 定义了后续分期候选 → **GOTO** 7.3.1
-- *default* → 请求用户明确决策
+- *DEFAULT* → 请求用户明确决策
 
 #### 7.3.1：后续分期启动
 
@@ -868,7 +868,7 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 **RESOLVE** `mode`（首个命中即停）：
 
 1. `READ("docs/tasks/{slug}/.checkpoint.json").mode`
-2. *default* → `full`
+2. *DEFAULT* → `full`
 
 **IF** `mode == compact`：
 
@@ -981,7 +981,7 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 - `完成但有保留意见` → **DONE_WITH_CONCERNS**（`concerns: [...]`）
 - `缺少关键上下文` → **NEEDS_CONTEXT**
 - `被阻塞`（Kill Switch / 人类决策）→ **BLOCKED** → **ASK_HUMAN**
-- *default* → **BLOCKED** → **ASK_HUMAN**
+- *DEFAULT* → **BLOCKED** → **ASK_HUMAN**
 
 ## INTEGRATION
 
