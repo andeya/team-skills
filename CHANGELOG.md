@@ -7,6 +7,35 @@
 
 ## [Unreleased]
 
+## [1.3.9] - 2026-06-27
+
+### 新增
+
+- team-impl: Phase 0 无 SDD 时 fallback 分支（design-brief 轻量替代 + boundary 缺失时最小修改约束）
+- team-impl: 并行记录 section 意图说明（贯穿 Phase 1，非独立阶段）
+- team-debug: Phase 3 假设验证 REPEAT MAX=5 迭代限制，超限后 GOTO Phase 5
+- team-feedback: Phase 4 入口新增 ASK_HUMAN 回复状态断言
+- team-review: Phase 1.5 Constitutional 检查统一文件缺失处理规则
+- task-lifecycle: 目录结构补充 .checkpoint.json
+
+### 变更
+
+- SDD 章节编号统一：七部分→九章节，spec-driven-workflow + team-spec inline skeleton + task-lifecycle 同步更新
+- team-brainstorm: Phase 6 跳过 spec 路由添加前置 ASSERT（需 design-brief 存在）
+- team-security: Phase 2 改为"标记违规 + 继续检查"模式，全部 6 条红线检查完毕后统一路由
+- team-score: OUTPUT_TEMPLATE 维度分数从 {n}/100 改为各维度实际满分（25/25/27/13/10）
+- team-orchestrator: compact 模式文档计数 12→11、COMPLETION_STATUS→COMPLETION_PROTOCOL、13 个兜底标签 *default*/*none* → *DEFAULT*/*NONE*
+- team-test: Phase 2 标题改为"设计并写入四维测试矩阵"
+- 6 个 Skill INTEGRATION "被谁调用" 补充"用户直接调用"
+
+### 修复
+
+- 5 个 Skill SELF_CHECK 双重复选框 `- [ ] - [ ]` 修正 + 裸文本自问补 checkbox
+- team-spec inline skeleton §六/§七 → §七/§八（对齐 sdd-template.md 实际编号）
+- team-feedback Phase 4 步骤序号重复修正（3→4→5→6）
+- spec-driven-workflow 追溯链示例 M1→D1（有效 SDD 条目编号）
+- lint 结构检查规则与 SKILL.md 实际章节名对齐
+
 ## [1.3.8] - 2026-06-27
 
 ### 新增
