@@ -147,15 +147,15 @@ NO IMPLEMENTATION WITHOUT TECHNICAL VERIFICATION FIRST
 2. **ASSERT** `Phase 3 触发的 ASK_HUMAN 均已获得用户回复`（决策冲突/架构问题需人类裁决后才可实施）
    - `ASK_HUMAN 未回复` → **BLOCKED**，等待用户决策
 3. 按优先级排序：阻塞问题 → 简单修复 → 复杂修复
-3. **FOR** `impl_item`（按排序顺序）：
+4. **FOR** `impl_item`（按排序顺序）：
    - 实施修改
    - **EXEC** `verify_cmd` — 单独测试该项修改
    - **ASSERT** `exit_code == 0` && `failures == 0`
      - `exit_code != 0` → 立即定位原因并修复 → 重新测试当前项
-4. **EXEC** `verify_cmd` — 全量测试，确认无回归
+5. **EXEC** `verify_cmd` — 全量测试，确认无回归
    - **ASSERT** `exit_code == 0` && `failures == 0`
      - `exit_code != 0` → 定位引入问题的修改 → 撤销该修改 → 重新实施 → 重新测试该项
-5. **IF** 任务目录存在（编排模式）→ **WRITE** `08-ai-decisions.md` 每项修改的实施结果：
+6. **IF** 任务目录存在（编排模式）→ **WRITE** `08-ai-decisions.md` 每项修改的实施结果：
 
    | 反馈项 | 来源 | 决策 | 技术验证 | 修改内容 | 测试结果 |
    |--------|------|------|----------|----------|----------|
