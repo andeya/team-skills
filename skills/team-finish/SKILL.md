@@ -81,7 +81,7 @@ NO BRANCH COMPLETION WITHOUT TEST VERIFICATION FIRST
 
 > 推送前最后一道安全防线。凭证泄露一旦进入远程仓库，撤回成本极高。
 
-**EXEC** `grep -rn -E '(AK|SK|access[_-]?key|secret[_-]?key|api[_-]?key|token|password|passwd|credential)\s*[:=]' .` — 推送前凭证扫描（RL-2）
+**EXEC** `grep -rn -E '(AK|SK|access[_-]?key|secret[_-]?key|api[_-]?key|token|password|passwd|credential)\s*[:=]' .` — 推送前凭证扫描（`team-security: RED_LINE_2`）
 
 - **IF** `exit_code == 0` → 逐条排除占位符/测试值/注释 → 真实凭证 → **BLOCKED**，**WRITE**（对话中）凭证位置，要求修复后重新验证
 - **ELSE** → **GOTO** Step 2

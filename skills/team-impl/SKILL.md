@@ -126,6 +126,8 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 
 > TRAP：只写 Happy Path 测试就急着进 GREEN。SDD §七（边界条件）和 §八（异常场景）的测试必须在 RED 阶段一起写，不是"以后再补"。
 
+> TRAP：仅写单元测试而遗漏集成测试——如果 SDD §四 数据流涉及跨模块调用，RED 阶段应包含跨模块集成测试，否则单元测试全绿但集成路径未验证。
+
 3. **EXEC** 项目测试命令 → **ASSERT** `exit_code != 0`（尚无实现，测试必须失败）
 
 > SIGNAL：`output CONTAINS "0 tests found"` → 测试文件路径或命名不符合项目 test pattern，先检查 glob 配置再下结论。
@@ -142,20 +144,28 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
    - 时间：{YYYY-MM-DD HH:MM}
    ```
 
-5. **EXEC** `git commit -m "test: {功能点} (RED)"`
-   - **ASSERT** `exit_code == 0`（commit 失败 → 检查 pre-commit hook 输出，修复后重试）
+5. **EXEC** `git add {测试文件路径}` — 仅暂存测试文件
+   - **ASSERT** `git diff --cached --name-only` 仅包含测试文件，不含生产代码
+   - **IF** 暂存区包含非测试文件 → `git reset HEAD {非测试文件}` 移出暂存区
+6. **EXEC** `git commit -m "test: {功能点} (RED)"` → **ASSERT** `exit_code == 0`
+   - commit 失败 → 检查 pre-commit hook 输出，修复后重试
+
+> TRAP：你会倾向于在 RED 阶段"顺手"写几行实现代码。RED commit 是 TDD 顺序的**不可篡改证据**——一旦 commit 中混入生产代码，整个 TDD 证据链失效。编排器会通过 `git show --stat` 验证每个 RED commit 仅包含测试文件。
 
 **GATE** RED 完成检查（全部通过才放行）：
 
 - [ ] **ASSERT** `06-tdd-log.md CONTAINS "RED 记录"`
-- [ ] **ASSERT** `git log CONTAINS "RED commit"`
+- [ ] **ASSERT** `git log CONTAINS "test: ... (RED)" commit`
+- [ ] **ASSERT** `git show --stat HEAD` 仅包含测试文件变更（不含生产代码）
 - [ ] 我是否因为"应该没问题"跳过了 SDD §七/§八 中某个边界条件或异常场景的测试？
 
 #### 循环 2：绿（Green）— 写实现
 
 > TRAP：你会倾向于在 GREEN 阶段写"正确且优雅"的代码。抑制这个冲动——GREEN 只需让当前测试通过的最小代码量。三行重复优于过早抽象，优雅留给 REFACTOR。
 
-1. **WRITE** 最少代码让测试通过
+1. **EXEC** `git diff --name-only` → **ASSERT** 工作区无生产代码变更（仅允许 `06-tdd-log.md` 等文档变更）
+   - **IF** 发现已存在实现代码文件 → 违反 TDD 纪律（先写实现后写测试）→ 删除实现代码 → **GOTO** 循环 1 重新开始
+2. **WRITE** 最少代码让测试通过
 2. **EXEC** 项目测试命令 → **ASSERT** `exit_code == 0`
    - **IF** `exit_code == 0` → **WRITE** `06-tdd-log.md` GREEN 记录
    - **IF** `exit_code != 0` → 修改实现（非测试）→ 重新执行步骤 1-2
@@ -186,7 +196,7 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 3. **WRITE** `06-tdd-log.md` REFACTOR 记录
 4. **EXEC** `git commit -m "refactor: {功能点}"` → **ASSERT** `exit_code == 0`
 
-**提交纪律**（Constitutional Rule #9）：每个功能点的 RED → GREEN → REFACTOR 各自独立 commit（`test:` → `feat:/fix:` → `refactor:`）。RED commit 必须在写实现代码之前完成。编排器通过 `git log` 验证时序。违反 → 删除实现，从 RED 重新开始。
+**提交纪律**（Constitutional Rule #9）：每个功能点的 RED → GREEN → REFACTOR 各自独立 commit（`test:` → `feat:/fix:` → `refactor:`）。RED commit **仅包含测试文件**，不得混入任何生产代码——git history 是 TDD 顺序的不可篡改证据。编排器通过 `git show --stat` 验证每个 RED commit 的文件列表。违反 → 删除实现，从 RED 重新开始。
 
 #### Bug 修复验证模式
 
@@ -360,8 +370,8 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 - [ ] **EXEC** 项目测试命令 → **ASSERT** `failures == 0`
 - [ ] **EXEC** 项目 lint 命令 → **ASSERT** `exit_code == 0`
 - [ ] **EXEC** `git diff --name-only` → **ASSERT** `未修改 04-boundary.md deny 文件`
-- [ ] **EXEC** `grep -rn -E '(AK|SK|access[_-]?key|secret[_-]?key|api[_-]?key|password|passwd|credential)\s*[:=]' .` → **ASSERT** 无真实凭证硬编码（RL-2，排除占位符/测试值/注释）
-- [ ] **IF** 代码调用外部 AI 服务 → **ASSERT** `输入数据已脱敏或确认为非敏感`（RL-1）
+- [ ] **EXEC** `grep -rn -E '(AK|SK|access[_-]?key|secret[_-]?key|api[_-]?key|password|passwd|credential)\s*[:=]' .` → **ASSERT** 无真实凭证硬编码（`team-security: RED_LINE_2`，排除占位符/测试值/注释）
+- [ ] **IF** 代码调用外部 AI 服务 → **ASSERT** `输入数据已脱敏或确认为非敏感`（`team-security: RED_LINE_1`）
 - [ ] **ASSERT** `实际消耗 <= 01-plan.md 自我约束预算`
 - [ ] **ASSERT** `所有困惑已显式记录于 06-tdd-log.md 审计段落`
 - [ ] **ASSERT** `无占位符残留（{N}、{slug} 等已被实际值替换）`

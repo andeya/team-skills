@@ -178,9 +178,9 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
 
 > 以下 6 条红线绝对禁止，不受业务需求、紧急程度或管理层级影响。
 
-**FOR** `red_line` **IN** [`RL-1`, `RL-2`, `RL-3`, `RL-4`, `RL-5`, `RL-6`]：
+**FOR** `red_line` **IN** [`RED_LINE_1`, `RED_LINE_2`, `RED_LINE_3`, `RED_LINE_4`, `RED_LINE_5`, `RED_LINE_6`]：
 
-#### RL-1：敏感数据输入外部 AI
+#### RED_LINE_1：敏感数据输入外部 AI
 
 1. **EXEC** `grep -rn -E '(api\.openai|api\.anthropic|api\.google|generativelanguage|azure\.com/openai|外部AI|external[_-]?ai|third[_-]?party)' .` — 检测外部 AI 服务调用
    - **IF** `exit_code == 0` → 发现外部 AI 调用 → 检查输入数据
@@ -189,9 +189,9 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
    - 个人信息（客户数据、员工信息）→ **违规**
    - 商业秘密 → **违规**
    - 核心仓库代码 → **违规**
-   - 违规 → 标记 `RL-1 VIOLATION`，继续检查下一条红线
+   - 违规 → 标记 `RED_LINE_1 VIOLATION`，继续检查下一条红线
 
-#### RL-2：凭证泄露
+#### RED_LINE_2：凭证泄露
 
 > SIGNAL：`grep` 命中硬编码凭证 → 立即 P0，不等其他检查完成。凭证一旦入库（即使后续 commit 删除），git history 中永久存在。
 
@@ -202,9 +202,9 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
    - 硬编码真实 AK/SK/Token/API Key/密码 → **违规**
    - 凭证通过 Prompt 输入 AI → **违规**
    - 账号外借/共享 → **违规**
-   - 违规 → 标记 `RL-2 VIOLATION`，继续检查下一条红线
+   - 违规 → 标记 `RED_LINE_2 VIOLATION`，继续检查下一条红线
 
-#### RL-3：AI 直接执行高风险操作
+#### RED_LINE_3：AI 直接执行高风险操作
 
 > TRAP："内部 API 不需要授权检查"是最常见的安全假设错误。内部 ≠ 可信——横向移动攻击正是利用这一点。
 
@@ -216,32 +216,32 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
    - 数据删除 → **ASSERT** `人工确认记录 EXISTS`
    - 对外发布 → **ASSERT** `人工确认记录 EXISTS`
    - *DEFAULT* → 继续下一项
-3. **IF** 任一高风险操作无人工确认 → 标记 `RL-3 VIOLATION`，继续检查下一条红线
+3. **IF** 任一高风险操作无人工确认 → 标记 `RED_LINE_3 VIOLATION`，继续检查下一条红线
 
-#### RL-4：未审批接入外部 AI 或 API
+#### RED_LINE_4：未审批接入外部 AI 或 API
 
 1. **READ** 项目依赖（`package.json` / `go.mod` / `requirements.txt` / `pom.xml`）+ 代码中的外部服务调用
 2. **EXEC** `grep -rn -E '(import|require|from)\s.*(openai|anthropic|google\.generativeai|azure.*openai|cohere|mistral|replicate)' .` — 检测外部 AI SDK 引入
    - **IF** `exit_code == 0` → 检查是否经过审批
 3. **ASSERT** `外部 AI 服务已审批`
-   - 未经审批的外部 AI 接入 → 标记 `RL-4 VIOLATION`，继续检查下一条红线
+   - 未经审批的外部 AI 接入 → 标记 `RED_LINE_4 VIOLATION`，继续检查下一条红线
 
-#### RL-5：使用公司数据训练外部模型
+#### RED_LINE_5：使用公司数据训练外部模型
 
 1. **READ** 代码中的模型训练/微调逻辑
 2. **EXEC** `grep -rn -E '(fine[_-]?tun|train|finetune|lora|qlora|sft)\b' .` — 检测训练相关代码
    - **IF** `exit_code == 0` → 检查数据来源和模型目标
 3. **ASSERT** `公司数据未用于训练外部模型`
-   - 公司数据输出到第三方训练平台 → 标记 `RL-5 VIOLATION`，继续检查下一条红线
+   - 公司数据输出到第三方训练平台 → 标记 `RED_LINE_5 VIOLATION`，继续检查下一条红线
 
-#### RL-6：滥用公司 AI 资源
+#### RED_LINE_6：滥用公司 AI 资源
 
 1. **READ** AI 资源使用记录/代码逻辑
 2. **ASSERT** `AI 资源用于工作职责范围内`
-   - 与工作无关的用途 → 标记 `RL-6 VIOLATION`
-   - 未授权的商业经营/外部服务/数据处理 → 标记 `RL-6 VIOLATION`
+   - 与工作无关的用途 → 标记 `RED_LINE_6 VIOLATION`
+   - 未授权的商业经营/外部服务/数据处理 → 标记 `RED_LINE_6 VIOLATION`
 
-**IF** 存在任何 `RL-* VIOLATION` → **GOTO** Phase 7（携带全部违规记录）
+**IF** 存在任何 `RED_LINE_* VIOLATION` → **GOTO** Phase 7（携带全部违规记录）
 
 ### Phase 3：二级红线检查（高风险限制）
 
@@ -251,49 +251,49 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
 
 > 以下 4 条为高风险操作，必须满足控制条件后方可执行。
 
-**FOR** `high_risk` **IN** [`HR-1`, `HR-2`, `HR-3`, `HR-4`]：
+**FOR** `high_risk` **IN** [`HIGH_RISK_1`, `HIGH_RISK_2`, `HIGH_RISK_3`, `HIGH_RISK_4`]：
 
-#### HR-1：AI 自动化执行
+#### HIGH_RISK_1：AI 自动化执行
 
 **IF** 存在 AI 自动化执行逻辑：
 
 - **ASSERT** `人机协同控制机制 已配置`
 - **ASSERT** `关键执行节点有人工确认`
-- 未满足 → 标记 `HR-1 NON_COMPLIANT`
+- 未满足 → 标记 `HIGH_RISK_1 NON_COMPLIANT`
 
-**ELSE**：标注 `HR-1 N/A`
+**ELSE**：标注 `HIGH_RISK_1 N/A`
 
-#### HR-2：Agent 多系统调用
+#### HIGH_RISK_2：Agent 多系统调用
 
 **IF** 存在 Agent 跨系统调用：
 
 - **ASSERT** `安全评估 已完成`
 - **ASSERT** `系统间调用权限边界 已明确`
 - **ASSERT** `审计监控（日志记录） 已纳入`
-- 未满足 → 标记 `HR-2 NON_COMPLIANT`
+- 未满足 → 标记 `HIGH_RISK_2 NON_COMPLIANT`
 
-**ELSE**：标注 `HR-2 N/A`
+**ELSE**：标注 `HIGH_RISK_2 N/A`
 
-#### HR-3：Workflow 自动决策
+#### HIGH_RISK_3：Workflow 自动决策
 
 **IF** 存在 Workflow 自动决策逻辑：
 
 - **ASSERT** `决策阈值 已定义`
 - **ASSERT** `回退机制 已配置`
 - **ASSERT** `决策结果 可追溯、可复核`
-- 未满足 → 标记 `HR-3 NON_COMPLIANT`
+- 未满足 → 标记 `HIGH_RISK_3 NON_COMPLIANT`
 
-**ELSE**：标注 `HR-3 N/A`
+**ELSE**：标注 `HIGH_RISK_3 N/A`
 
-#### HR-4：AI 辅助决策（影响业务结果）
+#### HIGH_RISK_4：AI 辅助决策（影响业务结果）
 
 **IF** 存在 AI 辅助决策影响业务：
 
 - **ASSERT** `AI 建议角色定位 已明确`
 - **ASSERT** `最终决策由授权人员做出并确认`
-- 未满足 → 标记 `HR-4 NON_COMPLIANT`
+- 未满足 → 标记 `HIGH_RISK_4 NON_COMPLIANT`
 
-**ELSE**：标注 `HR-4 N/A`
+**ELSE**：标注 `HIGH_RISK_4 N/A`
 
 ### Phase 4：分场景安全控制检查
 
@@ -428,21 +428,21 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
 
 | 编号 | 红线 | 状态 | 说明 |
 | ---- | ---- | ---- | ---- |
-| RL-1 | 敏感数据输入外部 AI | ✅ 合规 / ❌ 违规 / N/A | {detail} |
-| RL-2 | 凭证泄露 | ✅ 合规 / ❌ 违规 / N/A | {detail} |
-| RL-3 | AI 直接执行高风险操作 | ✅ 合规 / ❌ 违规 / N/A | {detail} |
-| RL-4 | 未审批接入外部 AI 或 API | ✅ 合规 / ❌ 违规 / N/A | {detail} |
-| RL-5 | 使用公司数据训练外部模型 | ✅ 合规 / ❌ 违规 / N/A | {detail} |
-| RL-6 | 滥用公司 AI 资源 | ✅ 合规 / ❌ 违规 / N/A | {detail} |
+| RED_LINE_1 | 敏感数据输入外部 AI | ✅ 合规 / ❌ 违规 / N/A | {detail} |
+| RED_LINE_2 | 凭证泄露 | ✅ 合规 / ❌ 违规 / N/A | {detail} |
+| RED_LINE_3 | AI 直接执行高风险操作 | ✅ 合规 / ❌ 违规 / N/A | {detail} |
+| RED_LINE_4 | 未审批接入外部 AI 或 API | ✅ 合规 / ❌ 违规 / N/A | {detail} |
+| RED_LINE_5 | 使用公司数据训练外部模型 | ✅ 合规 / ❌ 违规 / N/A | {detail} |
+| RED_LINE_6 | 滥用公司 AI 资源 | ✅ 合规 / ❌ 违规 / N/A | {detail} |
 
 ## 三、二级红线检查结果
 
 | 编号 | 行为类型 | 状态 | 控制条件满足情况 |
 | ---- | -------- | ---- | ---------------- |
-| HR-1 | AI 自动化执行 | ✅ 合规 / ⚠️ 不合规 / N/A | {detail} |
-| HR-2 | Agent 多系统调用 | ✅ 合规 / ⚠️ 不合规 / N/A | {detail} |
-| HR-3 | Workflow 自动决策 | ✅ 合规 / ⚠️ 不合规 / N/A | {detail} |
-| HR-4 | AI 辅助决策 | ✅ 合规 / ⚠️ 不合规 / N/A | {detail} |
+| HIGH_RISK_1 | AI 自动化执行 | ✅ 合规 / ⚠️ 不合规 / N/A | {detail} |
+| HIGH_RISK_2 | Agent 多系统调用 | ✅ 合规 / ⚠️ 不合规 / N/A | {detail} |
+| HIGH_RISK_3 | Workflow 自动决策 | ✅ 合规 / ⚠️ 不合规 / N/A | {detail} |
+| HIGH_RISK_4 | AI 辅助决策 | ✅ 合规 / ⚠️ 不合规 / N/A | {detail} |
 
 ## 四、分场景安全控制
 
@@ -465,8 +465,8 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
 
 | 优先级 | 问题 | 红线编号 | 整改要求 | 责任方 | 期限 |
 | ------ | ---- | -------- | -------- | ------ | ---- |
-| P0 | {issue} | RL-{N} | {action} | {owner} | 立即 |
-| P1 | {issue} | HR-{N} | {action} | {owner} | {date} |
+| P0 | {issue} | RED_LINE_{N} | {action} | {owner} | 立即 |
+| P1 | {issue} | HIGH_RISK_{N} | {action} | {owner} | {date} |
 
 ## 七、审计结论
 
@@ -483,8 +483,8 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
 - **人机协同要求**：{从 Phase 5 提取的必须插入人工确认的操作列表}
 ```
 
-> GOOD：`RL-2 ✅ 合规 — grep 扫描 src/ 和 config/ 共 3 处命中：(1) config/example.env 为占位符 "YOUR_API_KEY"，(2) src/auth.ts:12 从环境变量读取 process.env.SECRET_KEY 未硬编码，(3) tests/mock.ts:5 为测试 mock 值。逐一排查后确认无真实凭证泄露。`
-> BAD：`RL-2 ✅ 合规 — 未发现硬编码凭证。`
+> GOOD：`RED_LINE_2 ✅ 合规 — grep 扫描 src/ 和 config/ 共 3 处命中：(1) config/example.env 为占位符 "YOUR_API_KEY"，(2) src/auth.ts:12 从环境变量读取 process.env.SECRET_KEY 未硬编码，(3) tests/mock.ts:5 为测试 mock 值。逐一排查后确认无真实凭证泄露。`
+> BAD：`RED_LINE_2 ✅ 合规 — 未发现硬编码凭证。`
 > （缺少扫描范围、命中数量、逐条排查过程——无法判断是真合规还是扫描不充分）
 
 ### Phase 7：违规路由与回退
@@ -495,12 +495,12 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
 
 **MATCH** `violation_level`：
 
-- `RL-*`（一级红线违规）：
+- `RED_LINE_*`（一级红线违规）：
   1. **WRITE** `docs/security-audit.md` — 写入已完成的检查结果 + 违规详情
   2. **WRITE**（对话中）违规详情：
 
      ```
-     🚨 红线违规：{RL-N} {红线名称}
+     🚨 红线违规：{RED_LINE_N} {红线名称}
      违规行为：{具体行为描述}
      涉及位置：{文件路径:行号}
      证据：{grep/代码片段}
@@ -512,7 +512,7 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
      - 规格层问题（SDD 设计违反安全原则、缺少安全约束）→ **ROLLBACK** team-spec，附：缺失的安全要求 + 建议补充内容
      - 流程/审批问题（未审批接入外部 AI、资源滥用）→ **ASK_HUMAN**：人类立即介入
      - *DEFAULT* → **BLOCKED** + **ASK_HUMAN**
-- `HR-*`（二级红线不合规）：
+- `HIGH_RISK_*`（二级红线不合规）：
   1. **WRITE** 整改建议到 `docs/security-audit.md` §六
   2. **MATCH** `hr_source`：
      - 实现层缺失控制机制 → **ROLLBACK** team-impl，附：需补充的控制机制
@@ -556,7 +556,7 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
 - [ ] **ASSERT** `high_risk_checked == 4` — 4 条二级红线全部检查（含 N/A 标注）
 - [ ] **ASSERT** `RL_violation == 0` || `ASK_HUMAN 已触发` — 一级红线违规已触发人类介入
 - [ ] **ASSERT** `docs/security-audit.md EXISTS` && CONTAINS 八个章节（含 §八 安全约束参考）
-- [ ] **EXEC** `grep -cE 'RL-[1-6]|HR-[1-4]' docs/security-audit.md` → **ASSERT** `output >= 10` — 红线编号均已记录
+- [ ] **EXEC** `grep -cE 'RED_LINE_[1-6]|HIGH_RISK_[1-4]' docs/security-audit.md` → **ASSERT** `output >= 10` — 红线编号均已记录
 - [ ] **ASSERT** `整改清单` NOT_EMPTY（如有不合规项）|| `全部合规`
 - [ ] **ASSERT** `无占位符残留（{N}、{slug} 等已被实际值替换）`
 - [ ] **ASSERT** `IRON_LAW 遵守` — 一级红线违规已触发 ASK_HUMAN，未擅自降级

@@ -7,7 +7,7 @@
 ### 1.1 三层规则体系
 
 ```
-项目级 CLAUDE.md / .cursor/rules/    ← 全局规则，所有任务继承
+项目级 CLAUDE.md / .cursor/rules/ / AGENTS.md    ← 全局规则 + 架构说明，所有任务继承
   └─ 模块级 {module}/CLAUDE.md        ← 模块特有规则
       └─ 任务级 task-rules.md          ← 仅本任务适用
 ```
@@ -47,12 +47,12 @@
 | ----------- | ------------------------------------------------------------------------- |
 | 业务术语    | `team-spec` `02-context.md` 模板（术语表）                                |
 | 系统架构    | `team-orchestrator` 有向图流程图 + `team-spec` `03-sdd.md` §四 数据流     |
-| 代码结构    | `_team-rules/task-lifecycle.md` §1（17 文件目录结构）                     |
+| 代码结构    | `_team-rules/task-lifecycle.md` §1（任务目录结构）                        |
 | 接口约定    | `team-spec` `02-context.md`（接口约束表）+ `03-sdd.md` §五/§六           |
 | 编码规范    | `_team-rules/spec-driven-workflow.md` §2 TDD + 本文件 §2.3 输出质量约束 + `team-impl` 各阶段禁止项 |
 | 测试要求    | `_team-rules/verification-protocol.md` + `team-test` 四维测试矩阵        |
-| Review 标准 | `team-review` 五维度审查 + 严重级别校准（P0-P3 实例）                     |
-| 交付要求    | `team-orchestrator` Step 8 完整性检查                                     |
+| Review 标准 | `team-review` 五维度审查 + 严重级别校准（P0-P3 实例）+ `docs/review-checklist.md`（由 `team-review` 产出并维护） |
+| 交付要求    | `team-orchestrator` Step 8 完整性检查 + `docs/delivery-checklist.md`（由 `team-review` 产出并维护）                  |
 
 ## §2 Prompt 工程规范
 

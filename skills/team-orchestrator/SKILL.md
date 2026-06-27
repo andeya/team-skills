@@ -269,6 +269,18 @@ NO AGENT DISPATCH WITHOUT CONFIRM_GOAL HUMAN CONFIRMATION FIRST
 | 团队证据 14-15 | ✅ | ❌ |
 | 归档合并 | ✅ | ✅ |
 
+**精简模式等效证据映射**（team-score 评分时使用相同映射）：
+
+| 评分项 | 完整模式证据 | 精简模式等效证据 |
+| ------ | ----------- | --------------- |
+| D2.1 目标澄清 | `01-plan.md` §一 | `03-sdd.md` §一 背景与动机 |
+| D2.2 上下文选择 | `02-context.md` | `04-boundary.md` 引用文件列表 |
+| D2.3 任务拆分 | `01-plan.md` §二 分期 | `03-sdd.md` 分期说明或阶段划分 |
+| D2.5 验证与风险 | `05-risk.md` | `03-sdd.md` §三 设计决策 + `11-review.md` §四 剩余风险 |
+| G1 任务规划 | `01-plan.md` 全文 | `03-sdd.md` 含目标和设计决策 |
+| G6 风险说明 | `05-risk.md` + `11-review.md` | `11-review.md` §四 |
+| G7 关键决策 | `08-ai-decisions.md` + `15-brief.md` | `08-ai-decisions.md` |
+
 ## INPUT
 
 | 来源 | 必需 | 说明 |
@@ -330,7 +342,7 @@ NO AGENT DISPATCH WITHOUT CONFIRM_GOAL HUMAN CONFIRMATION FIRST
 
 **MATCH** `checkpoint.status`：
 
-- `IN_PROGRESS` → 从 `next_step` 对应的 Step 继续
+- `IN_PROGRESS` → 从 `current_step` 对应的 Step 继续
 - `DONE` || `DONE_WITH_CONCERNS` → 提示用户"该任务已完成"，询问是否新建变体任务
 - `BLOCKED` → 触发 **ASK_HUMAN** 展示 `blocked_reason`
 - `NEEDS_CONTEXT` → 展示缺失信息，请求用户补充
@@ -439,6 +451,8 @@ NO AGENT DISPATCH WITHOUT CONFIRM_GOAL HUMAN CONFIRMATION FIRST
   - (b) 由编排器手动编写规格，但承诺补全 01-05 规划文档
   - (c) 终止任务
 
+**WRITE** checkpoint：`current_step=Step 2, phase=spec-dispatching, status=IN_PROGRESS`
+
 **ROUTE** `team-spec`
 
 调用方式取决于工具能力：
@@ -508,6 +522,8 @@ NO AGENT DISPATCH WITHOUT CONFIRM_GOAL HUMAN CONFIRMATION FIRST
   - (c) 终止任务
 - **IF** 用户选择 (b) → 编排器执行实现，但**必须**在进入 Step 4 前产出 06-08
 
+**WRITE** checkpoint：`current_step=Step 3, phase=impl-dispatching, status=IN_PROGRESS`
+
 **ROUTE** `team-impl`
 
 调用方式取决于工具能力：
@@ -553,10 +569,15 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 3. **ASSERT** `GREEN.通过输出` NOT_EMPTY && `GREEN.通过输出` CONTAINS `PASS|pass|OK|✓|✅|passed`
 4. **ASSERT** `RED.时间 <= GREEN.时间` && `GREEN.时间 <= REFACTOR.时间`
 5. **EXEC** `git log --oneline` → **ASSERT** `exit_code == 0` && `test: 提交数 >= 功能点数`
+6. **FOR** `red_commit` **IN** `test: ... (RED) commits`：**EXEC** `git show --stat {red_commit}` → **ASSERT** 仅包含测试文件变更，不含生产代码
 
 任一项不通过 → **ROLLBACK** team-impl，附具体不合格项及期望修正行为。
 
+**WRITE**（对话中）team-impl 产出摘要：代码变更文件列表 + TDD 循环数 + 测试通过状态。
+
 **WRITE** checkpoint：`current_step=Step 4, next_step=Step 5, phase=impl, completed_steps 追加 Step 3`
+
+→ **GOTO** Step 4
 
 ### Step 4：调度 team-test
 
@@ -568,6 +589,8 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 
 - CHECK `team-test` skill 是否存在
 - **IF** 不可用 → **ASK_HUMAN**，展示选项：(a) 安装后继续 (b) 编排器手动执行但承诺补全 09-10 (c) 终止
+
+**WRITE** checkpoint：`current_step=Step 4, phase=test-dispatching, status=IN_PROGRESS`
 
 **ROUTE** `team-test`
 
@@ -597,6 +620,8 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 
 **READ** `10-test-report.md` 中 team-test 路由决策（→ team-review / → team-impl / → team-spec / → **ASK_HUMAN**）
 
+**WRITE**（对话中）team-test 产出摘要：测试矩阵覆盖率 + 新增/修改测试数 + 路由决策（继续/回退）。
+
 **WRITE** checkpoint：`current_step=Step 5, next_step=Step 6, phase=test, completed_steps 追加 Step 4`
 
 **回退检查**（Constitutional Rule #7：同一 source→target 对回退 ≤ 2 次）：
@@ -610,9 +635,9 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 - `同一对第 3 次回退` → **WRITE** checkpoint：`status=BLOCKED` → 强制 **ASK_HUMAN**
 - `Kill Switch`（任务不可行）→ **WRITE** checkpoint：`status=BLOCKED` → **ASK_HUMAN**
 - `人类需决策` → **WRITE** checkpoint：`status=BLOCKED` → **ASK_HUMAN**
-- *DEFAULT* → 记录问题，继续下一步
+- *DEFAULT* → 记录问题 → **GOTO** Step 5
 
-**ELSE** → 测试全部通过，继续下一步
+**ELSE** → 测试全部通过 → **GOTO** Step 5
 
 > SIGNAL：同一 `source→target` 对回退达到 2 次时，第 3 次不是"再试一次"——是系统性问题（SDD 不完整、架构不适配等），必须触发 `ASK_HUMAN` 让用户介入。
 
@@ -626,6 +651,8 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 
 - CHECK `team-review` skill 是否存在
 - **IF** 不可用 → **ASK_HUMAN**，展示选项：(a) 安装后继续 (b) 编排器手动执行但承诺补全 11-13 + task-rules (c) 终止
+
+**WRITE** checkpoint：`current_step=Step 5, phase=review-dispatching, status=IN_PROGRESS`
 
 **ROUTE** `team-review`
 
@@ -656,6 +683,8 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 
 **READ** `11-review.md` 中 team-review 修复/回退决策
 
+**WRITE**（对话中）team-review 产出摘要：五维度审查结论 + P0/P1 问题数 + 路由决策（继续/回退）。**IF** `status == DONE_WITH_CONCERNS` → 完整展示 concerns 给用户。
+
 **WRITE** checkpoint：`current_step=Step 6, next_step=Step 7, phase=review, completed_steps 追加 Step 5`
 
 **回退检查**（Constitutional Rule #7：同一 source→target 对回退 ≤ 2 次）：
@@ -669,9 +698,9 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 - `同一对第 3 次回退` → **WRITE** checkpoint：`status=BLOCKED` → 强制 **ASK_HUMAN**
 - `Kill Switch` → **WRITE** checkpoint：`status=BLOCKED` → **ASK_HUMAN**
 - `人类需决策` → **WRITE** checkpoint：`status=BLOCKED` → **ASK_HUMAN**
-- *DEFAULT* → 记录问题，继续下一步
+- *DEFAULT* → 记录问题 → **GOTO** Step 6
 
-**ELSE** → 审查全部通过，继续下一步
+**ELSE** → 审查全部通过 → **GOTO** Step 6
 
 ### Step 6：补全团队级证据
 
@@ -904,12 +933,12 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 **D2 AI 协作任务规划（25 分）：**
 
 - [ ] D2.1 `[完整模式]` **ASSERT** `01-plan.md 有成功标准 >= 3 条` && `非目标 >= 2 条`。`[精简替代]` **ASSERT** `03-sdd.md §一 有明确目标`
-- [ ] D2.2 `[完整模式]` **ASSERT** `02-context.md 有必要引用 + 已排除上下文`。`[精简替代]` 跳过
-- [ ] D2.3 `[完整模式]` **ASSERT** `01-plan.md 有 >= 5 阶段拆分`。`[精简替代]` 跳过
+- [ ] D2.2 `[完整模式]` **ASSERT** `02-context.md 有必要引用 + 已排除上下文`。`[精简替代]` **ASSERT** `04-boundary.md 有引用文件列表`
+- [ ] D2.3 `[完整模式]` **ASSERT** `01-plan.md 有 >= 5 阶段拆分`。`[精简替代]` **ASSERT** `03-sdd.md 有分期说明或阶段划分`
 - [ ] D2.4 **ASSERT** `04-boundary.md 有 allow/deny + 依赖约束`
-- [ ] D2.5 `[完整模式]` **ASSERT** `05-risk.md 有验证计划` && `停下来问人条件 >= 3 个`。`[精简替代]` 跳过
+- [ ] D2.5 `[完整模式]` **ASSERT** `05-risk.md 有验证计划` && `停下来问人条件 >= 3 个`。`[精简替代]` **ASSERT** `03-sdd.md §三 有风险相关设计决策` || `11-review.md §四 有剩余风险说明`
 
-**D3 AI 交付质量保障（27 分）：**
+**D3 AI 交付质量保障（30 分）：**
 
 - [ ] D3.1 **ASSERT** `03-sdd.md 含输入/输出/边界/异常/验收 Checklist`
 - [ ] D3.2 **READ** `06-tdd-log.md` → **ASSERT** `RED 失败输出在前` && `GREEN 通过输出在后` && `git log 中 test: 提交早于 feat:/fix:`
@@ -917,7 +946,7 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 - [ ] D3.4 **ASSERT** `06-tdd-log.md 有修复记录` && `11-review.md 有修复记录`
 - [ ] D3.5 **ASSERT** `11-review.md 含五维度审查` && `§四 剩余风险 EXISTS`
 
-**D4 AI 使用过程与复盘（13 分）：**
+**D4 AI 使用过程与复盘（10 分）：**
 
 - [ ] D4.1 **ASSERT** `07-prompt-log.md 每条含五要素`
 - [ ] D4.2 **ASSERT** `07-prompt-log.md 每条含效果记录`；**IF** 存在偏离 → **ASSERT** `有纠偏前后对比`

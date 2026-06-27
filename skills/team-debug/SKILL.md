@@ -41,7 +41,7 @@ NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST
 
 | 质量维度 | 产出文件 |
 | -------- | -------- |
-| 根因调查记录 | 调试日志（对话中） |
+| 根因调查记录 | 调试日志（对话中）；编排模式另写 `debug-report.md` |
 | 假设验证记录 | 调试日志（对话中） |
 | 修复验证 | 测试通过确认 |
 
@@ -125,7 +125,7 @@ NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST
 
 > SIGNAL：修复通过但不同测试失败 → 修复停留在症状层面，根因仍在。回到 Phase 1 重新调查。
 
-4. **IF** 编排模式（任务目录存在）→ **WRITE** 修复循环到 `06-tdd-log.md` + 决策到 `08-ai-decisions.md`
+4. **IF** 编排模式（任务目录存在）→ **WRITE** 修复循环到 `06-tdd-log.md` + 决策到 `08-ai-decisions.md` + 调试报告到 `debug-report.md`（按 OUTPUT_TEMPLATE 骨架填充）
 5. 修复成功 → 退出 `REPEAT`，进入自检门禁
 
 - *REPEAT_EXHAUSTED* → **BLOCKED**，触发 **ASK_HUMAN**，提交以下信息：

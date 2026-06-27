@@ -106,9 +106,9 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 
 | 维度         | 检查内容                                                       |
 | ------------ | -------------------------------------------------------------- |
-| **正确性**   | 逻辑是否正确？边界条件是否处理？异常路径是否覆盖？             |
+| **正确性**   | 逻辑是否正确？边界条件是否处理？异常路径是否覆盖？向后兼容性是否保持（API 签名、数据格式、配置项的破坏性变更）？ |
 | **可维护性** | 命名是否清晰？函数是否过长？是否有重复代码？是否遵循项目约定？ |
-| **性能**     | 是否有不必要的循环？是否有内存泄漏风险？是否有不必要的渲染？   |
+| **性能**     | 是否有不必要的循环？是否有内存泄漏风险？是否有不必要的渲染？并发安全（竞态条件、死锁、资源争用）？数据量级评估（大表扫描、批量操作）？成本影响评估（外部 API 调用频次、存储增长）？ |
 | **安全**     | 注入风险？凭证泄露？权限检查遗漏？外部 AI 数据脱敏？高风险操作 HITL？ |
 | **测试覆盖** | 测试是否覆盖了所有边界？测试命名是否清晰？测试是否可重复？     |
 
@@ -116,16 +116,16 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 
 #### 安全硬检查（安全维度强制执行，不可仅靠人眼）
 
-1. **EXEC** `grep -rn -E '(AK|SK|access[_-]?key|secret[_-]?key|api[_-]?key|token|password|passwd|credential)\s*[:=]' .` — 凭证泄露扫描（RL-2）
+1. **EXEC** `grep -rn -E '(AK|SK|access[_-]?key|secret[_-]?key|api[_-]?key|token|password|passwd|credential)\s*[:=]' .` — 凭证泄露扫描（`team-security: RED_LINE_2`）
    - **IF** `exit_code == 0` → 逐条排除占位符/测试值/注释 → 真实凭证 → **P0 安全漏洞**
    - **ELSE** → 记录"凭证扫描通过"
 
 2. **IF** 项目配置了 SAST/SCA 工具（`npm audit` / `safety check` / `cargo audit` / `gosec` / `semgrep`）→ **EXEC** 对应扫描命令 → **IF** `exit_code != 0` → 高危 → **P1**，中低危 → **P2**
    **ELSE** → 标注"项目未配置 SAST/SCA，仅人工安全审查"
 
-3. **IF** 代码涉及高风险操作（资金划转 / 权限变更 / 数据删除 / 对外发布）→ **ASSERT** `人工确认机制已实现`（RL-3） — 未实现 → **P0 安全漏洞**
+3. **IF** 代码涉及高风险操作（资金划转 / 权限变更 / 数据删除 / 对外发布）→ **ASSERT** `人工确认机制已实现`（`team-security: RED_LINE_3`） — 未实现 → **P0 安全漏洞**
 
-4. **IF** 代码调用外部 AI 服务 → **ASSERT** `输入数据已脱敏或确认为非敏感`（RL-1） — 敏感数据直接输入 → **P0 安全漏洞**
+4. **IF** 代码调用外部 AI 服务 → **ASSERT** `输入数据已脱敏或确认为非敏感`（`team-security: RED_LINE_1`） — 敏感数据直接输入 → **P0 安全漏洞**
 
 ### Phase 1.5：Constitutional 合规检查
 
@@ -363,13 +363,13 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 
 1. **本次任务回顾**：做得好的 + 可以改进的 + 意外发现（具体事例，不是泛泛而谈）
 2. **AI 协作经验**：提示词优化经验 + 团队协作改进建议
-3. **新规则沉淀**（§二.5）：列出可固化规则，注明写入位置。**固化门槛**：同类问题出现 ≥ 2 次（模式），或可在未来导致 P0/P1（严重性）。一次性 P2/P3 仅记录到 task-rules.md
+3. **新规则沉淀**（§三）：列出可固化规则，注明写入位置。**固化门槛**：同类问题出现 ≥ 2 次（模式），或可在未来导致 P0/P1（严重性）。一次性 P2/P3 仅记录到 task-rules.md
    - **FOR** `new_rule`：
      1. **WRITE** 追加到目标文件（项目 AI 规范 / 模块 AI 规范 / task-rules.md）
      2. **WRITE** 变更记录到 `12-asset-update.md`
-4. **改进承诺**（§三）：具体行动 + 预期效果
+4. **改进承诺**（§四）：具体行动 + 预期效果
 
-**ASSERT** `新规则沉淀段落 EXISTS` — §二.5 是质量检查 D4.4 的关键证据。"发现规则但未写入目标文件"视为未完成
+**ASSERT** `新规则沉淀段落 EXISTS` — §三 是质量检查 D4.4 的关键证据。"发现规则但未写入目标文件"视为未完成
 
 ## OUTPUT_TEMPLATE
 
