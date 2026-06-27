@@ -78,7 +78,7 @@ flowchart TD
 NO AGENT DISPATCH WITHOUT CONFIRM_GOAL HUMAN CONFIRMATION FIRST
 ```
 
-## COMPLETION_STATUS
+## COMPLETION_PROTOCOL
 
 引用 `_team-rules/four-state-protocol.md`，不内联重复。
 
@@ -248,7 +248,7 @@ NO AGENT DISPATCH WITHOUT CONFIRM_GOAL HUMAN CONFIRMATION FIRST
 
 | 级别 | 典型场景 | 推荐模式 | 预期文档产出 |
 | ---- | -------- | -------- | ------------ |
-| Small | 修 bug、改文案、加字段、调样式 | `--compact` 精简模式 | 12 个文档（03-04 + 06-13 + task-rules） |
+| Small | 修 bug、改文案、加字段、调样式 | `--compact` 精简模式 | 11 个文档（03-04 + 06-13 + task-rules） |
 | Medium | 新增功能模块、重构组件、加 API | 完整模式（默认） | 全部 17 文件 |
 | Large | 跨系统重构、架构变更、多模块联动 | 完整模式 + 多期分期 | 全部 17 文件 + 多期迭代 |
 

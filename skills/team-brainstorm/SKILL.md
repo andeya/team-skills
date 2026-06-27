@@ -258,8 +258,8 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 - [ ] **ASSERT** `00-design-brief.md EXISTS`（已 **WRITE** 到 `docs/tasks/{slug}/`）
 - [ ] **ASSERT** `00-design-brief.md 无占位符残留`
 - [ ] **ASSERT** `01-plan.md NOT_EXISTS`（那是 team-spec 的职责）
-- [ ] - [ ] **ASSERT** `IRON_LAW 遵守` — 设计方案已获用户确认，未擅自决定
-我是否真的探索了不同方向，还是只是同一个想法的变体？
+- [ ] **ASSERT** `IRON_LAW 遵守` — 设计方案已获用户确认，未擅自决定
+- [ ] 我是否真的探索了不同方向，还是只是同一个想法的变体？
 - [ ] 如果用户的前提假设是错的，我的方案还成立吗？
 
 ## COMPLETION

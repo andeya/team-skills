@@ -552,9 +552,9 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
 - [ ] **ASSERT** `docs/security-audit.md EXISTS` && CONTAINS 八个章节（含 §八 安全约束参考）
 - [ ] **EXEC** `grep -cE 'RL-[1-6]|HR-[1-4]' docs/security-audit.md` → **ASSERT** `output >= 10` — 红线编号均已记录
 - [ ] **ASSERT** `整改清单` NOT_EMPTY（如有不合规项）|| `全部合规`
-- [ ] - [ ] **ASSERT** `无占位符残留（{N}、{slug} 等已被实际值替换）`
+- [ ] **ASSERT** `无占位符残留（{N}、{slug} 等已被实际值替换）`
 - [ ] **ASSERT** `IRON_LAW 遵守` — 一级红线违规已触发 ASK_HUMAN，未擅自降级
-我是否只检查了已知漏洞类型，而忽略了这个项目特有的攻击面？
+- [ ] 我是否只检查了已知漏洞类型，而忽略了这个项目特有的攻击面？
 - [ ] 如果我是攻击者，我会从哪里入手？我检查了那里吗？
 
 ## COMPLETION

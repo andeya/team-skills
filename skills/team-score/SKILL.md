@@ -409,11 +409,11 @@ NO SCORE WITHOUT EVIDENCE FIRST
 
 | 维度 | 分数 | 证据摘要 | 改进建议 |
 |------|------|---------|---------|
-| D1 AI 协作资产 | {n}/100 | {evidence} | {suggestion} |
-| D2 任务规划 | {n}/100 | {evidence} | {suggestion} |
-| D3 交付质量 | {n}/100 | {evidence} | {suggestion} |
-| D4 过程复盘 | {n}/100 | {evidence} | {suggestion} |
-| D5 团队协作 | {n}/100 | {evidence} | {suggestion} |
+| D1 AI 协作资产 | {n}/25 | {evidence} | {suggestion} |
+| D2 任务规划 | {n}/25 | {evidence} | {suggestion} |
+| D3 交付质量 | {n}/27 | {evidence} | {suggestion} |
+| D4 过程复盘 | {n}/13 | {evidence} | {suggestion} |
+| D5 团队协作 | {n}/10 | {evidence} | {suggestion} |
 ```
 
 ## CONSTITUTIONAL_RULES
@@ -433,9 +433,9 @@ NO SCORE WITHOUT EVIDENCE FIRST
 - [ ] **ASSERT** `每个验收项有实际证据支撑`
 - [ ] **ASSERT** `无证据项已标注「未找到」或「需现场补充」`
 - [ ] **ASSERT** `改进建议已按 priority 排列`
-- [ ] - [ ] **ASSERT** `无占位符残留（{N}、{slug} 等已被实际值替换）`
+- [ ] **ASSERT** `无占位符残留（{N}、{slug} 等已被实际值替换）`
 - [ ] **ASSERT** `IRON_LAW 遵守` — 每个分数有实际证据支撑，非印象评分
-我的评分是基于证据还是基于印象？每个分数我能指出具体的交付物支撑吗？
+- [ ] 我的评分是基于证据还是基于印象？每个分数我能指出具体的交付物支撑吗？
 - [ ] 如果把评分对象匿名化，我会给同样的分数吗？
 - [ ] 5 个维度的分数是独立评出的，还是被第一个维度的印象锚定了？
 

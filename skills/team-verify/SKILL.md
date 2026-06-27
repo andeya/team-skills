@@ -197,6 +197,7 @@ NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE FIRST
 
 **被谁调用：**
 
+- 用户直接调用（独立使用）
 - 所有需要验证声明的 skill
 - `team-orchestrator`（编排模式）
 

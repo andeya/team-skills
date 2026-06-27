@@ -303,6 +303,8 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 
 ### 回退路由
 
+> 精确归因问题根源，将问题送到正确的上游修复。"有问题"不是路由依据——"spec 未定义某个边界"才是。
+
 **MATCH** `issue_type`：
 
 - `spec 遗漏`（SDD 未定义某个边界）→ **ROLLBACK** team-spec（通过编排器，附遗漏点 + 建议补充）
@@ -371,6 +373,7 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 
 **被谁调用：**
 
+- 用户直接调用（独立使用）
 - `team-orchestrator`（编排模式）
 - `team-brainstorm`（用户跳过规格阶段时直接路由）
 - `team-feedback`（审查反馈修复后重新验证）

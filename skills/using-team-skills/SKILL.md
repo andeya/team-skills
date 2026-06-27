@@ -151,9 +151,9 @@ NO SKILL RECOMMENDATION WITHOUT SCENE ANALYSIS FIRST
 - [ ] `target_skill` 已 **RESOLVE** 且推荐理由与场景匹配
 - [ ] **IF** 场景模糊 → 已推荐 `team-brainstorm`
 - [ ] **IF** 用户需要完整流水线 → 已推荐 `team-orchestrator`
-- [ ] - [ ] **ASSERT** `无占位符残留（{N}、{slug} 等已被实际值替换）`
+- [ ] **ASSERT** `无占位符残留（{N}、{slug} 等已被实际值替换）`
 - [ ] **ASSERT** `IRON_LAW 遵守` — 推荐基于场景匹配，非个人偏好
-我推荐的 Skill 组合是否是完成这个任务的最简路径？
+- [ ] 我推荐的 Skill 组合是否是完成这个任务的最简路径？
 - [ ] 我是否因为熟悉某个 Skill 而忽略了更合适的选择？
 
 ## COMPLETION

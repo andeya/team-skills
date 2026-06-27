@@ -497,6 +497,7 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 
 **被谁调用：**
 
+- 用户直接调用（独立使用）
 - `team-orchestrator`（编排模式）
 - `team-test`（测试全部通过后路由）
 

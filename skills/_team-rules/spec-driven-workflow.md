@@ -10,19 +10,21 @@
 - SDD 是 team-impl 和 team-test 的唯一规格来源——不依赖口头约定或聊天记录
 - 修改类任务使用 Delta Spec（ADDED/MODIFIED/REMOVED），新建类任务使用完整 SDD
 
-### 1.2 SDD 七部分质量标准
+### 1.2 SDD 九章节质量标准
 
-每份 SDD **MUST** 包含以下七部分（缺一不可）：
+每份 SDD **MUST** 包含以下九章节（章节编号与 `references/sdd-template.md` 一致）：
 
-| 部分          | 内容                                                       | 消费方                       |
+| 章节          | 内容                                                       | 消费方                       |
 | ------------- | ---------------------------------------------------------- | ---------------------------- |
-| 背景与动机    | 为什么做、痛点、用户场景                                   | 所有 Agent                   |
-| 业务规则      | RFC 2119 强度标记（MUST/SHOULD/MAY）+ Given/When/Then 场景 | team-test → 直接映射测试用例 |
-| 关键设计决策  | 选择方案 + 拒绝方案 + 拒绝理由                             | team-review → 审查决策合理性 |
-| 数据流总览    | ASCII 架构图                                               | team-impl → 理解调用链路     |
-| 输入/输出规格 | 参数类型、约束、默认值、示例                               | team-impl + team-test        |
-| 边界条件      | 空值、极值、并发、格式异常                                 | team-test → 边界测试         |
-| 异常场景      | 错误码、错误消息、HTTP 状态                                | team-test → 异常测试         |
+| §一 背景与动机    | 为什么做、痛点、用户场景                                   | 所有 Agent                   |
+| §二 业务规则      | RFC 2119 强度标记（MUST/SHOULD/MAY）+ Given/When/Then 场景 | team-test → 直接映射测试用例 |
+| §三 关键设计决策  | 选择方案 + 拒绝方案 + 拒绝理由                             | team-review → 审查决策合理性 |
+| §四 数据流总览    | ASCII 架构图                                               | team-impl → 理解调用链路     |
+| §五 输入规格 | 参数类型、约束、默认值、示例                               | team-impl + team-test        |
+| §六 输出规格 | 场景、HTTP 状态、输出结构、示例                            | team-impl + team-test        |
+| §七 边界条件      | 空值、极值、并发、格式异常                                 | team-test → 边界测试         |
+| §八 异常场景      | 错误码、错误消息、HTTP 状态                                | team-test → 异常测试         |
+| §九 验收 Checklist | 验收条件、验证方式、预期结果                               | team-review → 验收检查       |
 
 ### 1.3 规格驱动的验证链
 
@@ -36,7 +38,7 @@ team-impl 实现代码
 team-review 对照 SDD 逐条检查
 ```
 
-每个验证环节 **MUST** 引用 SDD 条目编号（如 B1、E2、M1），形成闭环可追溯链。
+每个验证环节 **MUST** 引用 SDD 条目编号（如 B1、E2、D1），形成闭环可追溯链。
 
 ## §2 TDD 工作流
 

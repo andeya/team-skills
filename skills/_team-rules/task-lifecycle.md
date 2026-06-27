@@ -11,7 +11,7 @@ docs/tasks/{NNNN}-{keyword}/
 ├── 00-design-brief.md      # 设计概要（team-brainstorm 产出，可选）
 ├── 01-plan.md              # 任务规划（目标 + 分期 + 预算）
 ├── 02-context.md           # 上下文选择（术语 + 引用 + 排除）
-├── 03-sdd.md               # SDD 规格（七部分完整）
+├── 03-sdd.md               # SDD 规格（九章节完整）
 ├── 04-boundary.md          # 修改边界（allow + deny）
 ├── 05-risk.md              # 风险 + 验证计划
 ├── prompt-template.md      # AI 任务提示词模板
