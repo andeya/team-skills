@@ -12,14 +12,12 @@ import { execSync } from 'node:child_process';
 const root = execSync('git rev-parse --show-toplevel', { encoding: 'utf8' }).trim();
 
 const REQUIRED_SECTIONS = [
-  ['角色定位'],
-  ['系统提示词'],
-  ['推理检查点', '路由推理检查点', '推理指引', '路由推理'],
-  ['Iron Law'],
-  ['执行步骤'],
-  ['自检门禁'],
-  ['完成标志'],
-  ['STOP Signals'],
+  ['ROLE'],
+  ['IRON_LAW'],
+  ['STEPS'],
+  ['SELF_CHECK'],
+  ['COMPLETION'],
+  ['STOP_SIGNALS'],
 ];
 
 const SHARED_RULES = [
