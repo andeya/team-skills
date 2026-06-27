@@ -128,7 +128,7 @@ NO IMPLEMENTATION WITHOUT TECHNICAL VERIFICATION FIRST
 
 ### Phase 4：实施
 
-> 逐项实施、逐项测试。批量实施后再测试 = 出问题时无法定位是哪项修改引入的（First Principle #2）。全部单项通过后再跑全量测试确认无交叉回归。
+> 逐项实施、逐项测试。批量实施后再测试 = 出问题时无法定位是哪项修改引入的 `_team-rules/first-principles.md: First Principle #2`。全部单项通过后再跑全量测试确认无交叉回归。
 
 > TRAP：你会倾向于修改实现去匹配反馈，而不检查反馈是否与 SDD 一致。
 > 实施前先确认：这项修改是让代码更接近 SDD，还是偏离 SDD？偏离 → 先路由 team-spec。
@@ -161,7 +161,7 @@ NO IMPLEMENTATION WITHOUT TECHNICAL VERIFICATION FIRST
    |--------|------|------|----------|----------|----------|
    | {feedback_desc} | {reviewer} | 接受 / 推回 / 部分接受 | {evidence} | {change_desc} | ✅/❌ `{test_output}` |
 
-**验证协议**（步骤 3-4 声明"通过"前必须执行 `_team-rules/verification-protocol.md` 的 5 个步骤）
+**验证协议**：步骤 3-4 声明"通过"前必须执行 `_team-rules/verification-protocol.md: 验证执行步骤`
 
 ## 禁止回应
 
@@ -215,16 +215,19 @@ NO IMPLEMENTATION WITHOUT TECHNICAL VERIFICATION FIRST
 
 - **实施**反馈建议前没有验证技术正确性
 - **回应**"你说得太对了""好主意"等表演性同意
-- **批量**实施多项反馈而不逐项测试
+- **跳过**逐项测试而批量实施多项反馈
 - **忽略**外部反馈与代码库现实的冲突而不推回
 
 ## CONSTITUTIONAL_RULES
 
-引用 `_team-rules/constitutional-rules.md`。反馈处理阶段尤其注意：
+**REF** `_team-rules/constitutional-rules.md` — 9 条 Constitutional Rules
+**REF** `_team-rules/first-principles.md` — 4 条第一性原理（First Principle #1 ~ #4）
 
-- **Rule #9 TDD 顺序不可逆**：每项修改必须单独测试，不可批量实施后再测试（First Principle #2）
-- **Rule #2 有向图回退**：反馈揭示 spec 遗漏 → 回退 team-spec，不可擅自决定（First Principle #4）
-- **Rule #1 人类介入是一等公民**：反馈揭示架构问题 → 触发 `ASK_HUMAN`（First Principle #1）
+反馈处理阶段尤其注意：
+
+- **Rule #9 TDD 顺序不可逆**：每项修改必须单独测试，不可批量实施后再测试 `_team-rules/first-principles.md: First Principle #2`
+- **Rule #2 有向图回退**：反馈揭示 spec 遗漏 → 回退 `team-spec`，不可擅自决定 `_team-rules/first-principles.md: First Principle #4`
+- **Rule #1 人类介入是一等公民**：反馈揭示架构问题 → 触发 `ASK_HUMAN` `_team-rules/first-principles.md: First Principle #1`
 
 ## SELF_CHECK
 
@@ -243,6 +246,8 @@ NO IMPLEMENTATION WITHOUT TECHNICAL VERIFICATION FIRST
 - [ ] 我是否把风格偏好类反馈当成了 P0 优先处理，而忽略了实质性 bug？
 
 ## COMPLETION
+
+**REF** `_team-rules/four-state-protocol.md` — 四态完成状态
 
 **WRITE**（对话中）反馈处理摘要：
 

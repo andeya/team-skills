@@ -22,7 +22,7 @@ description: Use when SDD exists and you need TDD implementation with 06-08 docs
 
 ### 推理检查点
 
-**核心指令**：先让测试通过，再优化代码。三行重复优于过早抽象。测试通过是客观事实，代码美观是主观判断——顺序不可逆（First Principle #2）。
+**核心指令**：先让测试通过，再优化代码。三行重复优于过早抽象。测试通过是客观事实，代码美观是主观判断——顺序不可逆 `_team-rules/first-principles.md: First Principle #2`。
 
 **推理框架**（首个功能点完整推理 5 点；后续仅推理 1、4，其余沿用）：
 
@@ -119,7 +119,7 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 
 #### 循环 1：红（Red）— 写测试
 
-> TRAP：你会想"我已经知道实现怎么写了，先写实现再补测试也一样"。不一样——后写的测试只会验证你已经写的代码，不会验证需求（First Principle #2）。
+> TRAP：你会想"我已经知道实现怎么写了，先写实现再补测试也一样"。不一样——后写的测试只会验证你已经写的代码，不会验证需求 `_team-rules/first-principles.md: First Principle #2`。
 
 1. **READ** `03-sdd.md` → 提取该功能点的规格
 2. **WRITE** 测试 → 覆盖 Happy Path + 边界条件（SDD §七）+ 异常场景（SDD §八）
@@ -217,7 +217,7 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 
 **ELSE** → 继续正常 TDD 循环
 
-> 为什么 TDD 顺序不可逆？后写测试被实现偏见污染（First Principle #2）：测的是已构建的行为，不是需求。"先实现再补测试效果一样""已经手动测试过了""删掉 X 小时工作太浪费了"——这些借口均不成立。
+> 为什么 TDD 顺序不可逆？后写测试被实现偏见污染 `_team-rules/first-principles.md: First Principle #2`：测的是已构建的行为，不是需求。"先实现再补测试效果一样""已经手动测试过了""删掉 X 小时工作太浪费了"——这些借口均不成立。
 
 #### 卡住时怎么办
 
@@ -289,7 +289,7 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 3. **EXEC** 项目 lint 命令 → **ASSERT** `exit_code == 0`
 4. **EXEC** 项目 CI 命令 → **ASSERT** `exit_code == 0`
 
-**验证协议**（步骤 2-4 每次声明"通过"前须执行 `_team-rules/verification-protocol.md` 的 5 个步骤）
+**验证协议**：步骤 2-4 每次声明"通过"前须执行 `_team-rules/verification-protocol.md: 验证执行步骤`
 
 5. **EXEC** `git diff --name-only` → **READ** `04-boundary.md` deny 列表 → **ASSERT** `无越界修改`
 6. **READ** `01-plan.md` 预算 → **ASSERT** `未超出自我约束预算`
@@ -304,7 +304,7 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 
 **ELSE** → 继续 Phase 2 下一步骤
 
-> 不可跳过失败继续后续步骤（First Principle #4）。预算超支砍范围，不放宽预算。
+> 不可跳过失败继续后续步骤 `_team-rules/first-principles.md: First Principle #4`。预算超支砍范围，不放宽预算。
 
 ### 回退路由
 
@@ -338,12 +338,18 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 
 ## CONSTITUTIONAL_RULES
 
-引用 `_team-rules/constitutional-rules.md`。实现阶段尤其注意：
+**REF** `_team-rules/constitutional-rules.md` — 9 条 Constitutional Rules
+**REF** `_team-rules/first-principles.md` — 4 条第一性原理（First Principle #1 ~ #4）
+**REF** `_team-rules/verification-protocol.md` — 5 步验证协议
+**REF** `_team-rules/spec-driven-workflow.md` — Spec-Driven 开发原则与 TDD 工作流
+**REF** `_team-rules/ai-collaboration-standards.md` — AI 协作资产与 Prompt 工程规范
 
-- **Rule #9 TDD 顺序不可逆**：RED 必须在 GREEN 之前，先写实现再补测试则删除代码重新开始（First Principle #2）
-- **Rule #2 有向图回退**：发现 spec 问题必须 `ROLLBACK` team-spec，不可擅自假设正确行为（First Principle #4）
-- **Rule #6 自我约束预算**：超出预算砍范围，不放宽预算（First Principle #3）
-- **Rule #8 验证先行**：声明"测试通过"前必须执行验证协议 5 步（First Principle #4）
+实现阶段尤其注意：
+
+- **Rule #9 TDD 顺序不可逆**：RED 必须在 GREEN 之前，先写实现再补测试则删除代码重新开始 `_team-rules/first-principles.md: First Principle #2`
+- **Rule #2 有向图回退**：发现 spec 问题必须 `ROLLBACK` team-spec，不可擅自假设正确行为 `_team-rules/first-principles.md: First Principle #4`
+- **Rule #6 自我约束预算**：超出预算砍范围，不放宽预算 `_team-rules/first-principles.md: First Principle #3`
+- **Rule #8 验证先行**：声明"测试通过"前必须执行验证协议 `_team-rules/verification-protocol.md: 验证执行步骤` `_team-rules/first-principles.md: First Principle #4`
 
 ## SELF_CHECK
 
@@ -365,6 +371,8 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 - [ ] 我是否有任何"通过"声明是基于上一轮输出而非本轮刚执行的结果？
 
 ## COMPLETION
+
+**REF** `_team-rules/four-state-protocol.md` — 四态完成状态
 
 **MATCH** `result`：
 

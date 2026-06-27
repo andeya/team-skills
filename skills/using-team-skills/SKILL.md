@@ -54,18 +54,18 @@ NO SKILL RECOMMENDATION WITHOUT SCENE ANALYSIS FIRST
 
 | 场景 | 推荐 Skill |
 |------|-----------|
-| 需求模糊，先讨论再决定 | team-brainstorm |
-| 需求明确，需完整规格 | team-spec |
-| 规格已有，需 TDD 实现 | team-impl |
-| 实现已有，需测试审计 | team-test |
-| 代码 + 测试已有，需审查 | team-review |
-| 收到代码审查反馈，需应对 | team-feedback |
-| 遇到 bug，需根因分析 | team-debug |
-| 声明完成，需验证门禁 | team-verify |
-| 实现完成，需处理分支 | team-finish |
-| 评估项目 AI 协作成熟度 | team-score |
-| AI 使用涉及安全合规 | team-security |
-| 需完整交付流水线 | team-orchestrator |
+| 需求模糊，先讨论再决定 | `team-brainstorm` |
+| 需求明确，需完整规格 | `team-spec` |
+| 规格已有，需 TDD 实现 | `team-impl` |
+| 实现已有，需测试审计 | `team-test` |
+| 代码 + 测试已有，需审查 | `team-review` |
+| 收到代码审查反馈，需应对 | `team-feedback` |
+| 遇到 bug，需根因分析 | `team-debug` |
+| 声明完成，需验证门禁 | `team-verify` |
+| 实现完成，需处理分支 | `team-finish` |
+| 评估项目 AI 协作成熟度 | `team-score` |
+| AI 使用涉及安全合规 | `team-security` |
+| 需完整交付流水线 | `team-orchestrator` |
 
 ## STEPS
 
@@ -133,15 +133,18 @@ NO SKILL RECOMMENDATION WITHOUT SCENE ANALYSIS FIRST
 ## STOP_SIGNALS
 
 - **跳过**场景分析直接推荐 Skill
-- **推荐**实现类 Skill 给场景模糊的用户（应推荐 team-brainstorm）
-- **凭记忆**推荐而不读取当前版本的选择矩阵
+- **推荐**实现类 Skill 给场景模糊的用户（应推荐 `team-brainstorm`）
+- **依赖**记忆推荐而不读取当前版本的选择矩阵
 
 ## CONSTITUTIONAL_RULES
 
-引用 `_team-rules/constitutional-rules.md`。分诊阶段尤其注意：
+**REF** `_team-rules/constitutional-rules.md` — 9 条 Constitutional Rules
+**REF** `_team-rules/first-principles.md` — 4 条第一性原理（First Principle #1 ~ #4）
 
-- **Rule #1 人类介入是一等公民**：推荐后等待用户确认再启动 skill，不可自动跳转（First Principle #1）
-- **Rule #4 Kill Switch**：用户需求明显不可行时应告知而非推荐 skill 继续（First Principle #1 + First Principle #3）
+分诊阶段尤其注意：
+
+- **Rule #1 人类介入是一等公民**：推荐后等待用户确认再启动 skill，不可自动跳转 `_team-rules/first-principles.md: First Principle #1`
+- **Rule #4 Kill Switch**：用户需求明显不可行时应告知而非推荐 skill 继续 `_team-rules/first-principles.md: First Principle #1 + First Principle #3`
 
 ## SELF_CHECK
 
@@ -157,6 +160,8 @@ NO SKILL RECOMMENDATION WITHOUT SCENE ANALYSIS FIRST
 - [ ] 我是否因为熟悉某个 Skill 而忽略了更合适的选择？
 
 ## COMPLETION
+
+**REF** `_team-rules/four-state-protocol.md` — 四态完成状态
 
 **MATCH** `result`：
 

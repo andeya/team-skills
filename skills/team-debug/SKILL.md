@@ -16,7 +16,7 @@ description: Use when encountering any bug, test failure, or unexpected behavior
 
 ### 推理检查点
 
-> 每次修复必须能解释"为什么之前坏了"。"应该能修好"是无效声明（First Principle #4）。95% 的"找不到根因"是调查不充分。
+> 每次修复必须能解释"为什么之前坏了"。"应该能修好"是无效声明 `_team-rules/first-principles.md: First Principle #4`。95% 的"找不到根因"是调查不充分。
 
 **推理框架**：
 
@@ -174,7 +174,7 @@ NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST
 ## STOP_SIGNALS
 
 - **跳过**根因调查直接写修复代码
-- **同时**修改多个变量，无法隔离有效改动
+- **修改**多个变量同时进行，无法隔离有效改动
 - **继续**尝试 3 次修复失败后仍不触发 `ASK_HUMAN`
 - **绕过**调查流程（"先快速修一下，后面再查根因"）
 
@@ -204,12 +204,16 @@ NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST
 
 ## CONSTITUTIONAL_RULES
 
-引用 `_team-rules/constitutional-rules.md`。调试阶段尤其注意：
+**REF** `_team-rules/constitutional-rules.md` — 9 条 Constitutional Rules
+**REF** `_team-rules/first-principles.md` — 4 条第一性原理（First Principle #1 ~ #4）
+**REF** `_team-rules/verification-protocol.md` — 5 步验证协议
 
-- **Rule #9 TDD 顺序不可逆**：修复 bug 必须先写失败的回归测试再写修复代码（First Principle #2）
-- **Rule #3 产出必须验证**：修复完成后必须执行 `_team-rules/verification-protocol.md` 的 5 个步骤（First Principle #4）
-- **Rule #7 回退次数上限**：3 次修复失败必须触发 `ASK_HUMAN`，不可无限重试（First Principle #1）
-- **Rule #2 有向图回退**：调试发现根源在 spec 歧义/遗漏 → `ROLLBACK` team-spec（First Principle #4）
+调试阶段尤其注意：
+
+- **Rule #9 TDD 顺序不可逆**：修复 bug 必须先写失败的回归测试再写修复代码 `_team-rules/first-principles.md: First Principle #2`
+- **Rule #3 产出必须验证**：修复完成后必须执行验证协议 `_team-rules/verification-protocol.md: 验证执行步骤` `_team-rules/first-principles.md: First Principle #4`
+- **Rule #7 回退次数上限**：3 次修复失败必须触发 `ASK_HUMAN`，不可无限重试 `_team-rules/first-principles.md: First Principle #1`
+- **Rule #2 有向图回退**：调试发现根源在 spec 歧义/遗漏 → `ROLLBACK` `team-spec` `_team-rules/first-principles.md: First Principle #4`
 
 ## SELF_CHECK
 
@@ -226,6 +230,8 @@ NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST
 - [ ] 我是在修根因还是在修症状？根因仍在时这个修复能撑多久？
 
 ## COMPLETION
+
+**REF** `_team-rules/four-state-protocol.md` — 四态完成状态
 
 **MATCH** `result`：
 

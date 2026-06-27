@@ -64,9 +64,8 @@ team-skills/
 
 ### 2.2 一致性规则
 
-- 验证协议引用：所有需要声明"通过"的 Skill **MUST** 引用 `_team-rules/verification-protocol.md`，不内联重复
-- 四态协议引用：所有完成状态 **MUST** 引用 `_team-rules/four-state-protocol.md`，不内联重复
-- Constitutional Rules 引用：所有涉及质量红线的 Skill **MUST** 引用 `_team-rules/constitutional-rules.md`
+- 引用规范：所有外部规则引用统一使用 `**REF**` 关键词，格式为 `**REF** \`_team-rules/{file}.md\` — {一句话说明}`。CONSTITUTIONAL_RULES 章节在 Rule 列表前声明引用，COMPLETION 章节在 MATCH 前声明引用。不再使用"引用"、"底层依据"、"工作流依据"等中文变体
+- 内联引用：正文中引用规则文件章节时，统一使用反引号格式 `` `_team-rules/filename.md: 章节描述` ``。例如 `` `_team-rules/first-principles.md: First Principle #4` ``、`` `_team-rules/verification-protocol.md: 验证执行步骤` ``、`` `_team-rules/constitutional-rules.md: Rule #9` ``。反引号渲染为 monospace，视觉弹出；不可嵌套，结构性防止括号嵌套问题
 - 指令风格：优先使用正向指令（"每步必须：A → B → C"），减少负向禁止
 - 模板变量：使用 `{slug}`、`{日期}`、`{N}` 等统一占位符
 - 完成状态：统一使用四态协议（DONE / DONE_WITH_CONCERNS / NEEDS_CONTEXT / BLOCKED）
@@ -183,6 +182,7 @@ IRON_LAW **MUST** 出现在 STEPS 之前，作为不可协商的门禁。
 | 控制流 | `IF` `ELSE` `MATCH` `FOR` `IN` `REPEAT` `MAX` `GOTO` | 条件、否则、多路分发、遍历、集合/成员、有限重试、上限、跳转 |
 | 验证 | `ASSERT` `GATE` | 单条件断言（失败执行 fallback）、多条件门禁（全部通过才放行） |
 | 状态 | `DONE` `DONE_WITH_CONCERNS` `NEEDS_CONTEXT` `BLOCKED` | 四态完成状态 |
+| 引用 | `REF` | 声明本 Skill 依赖的外部规则文件，格式：`**REF** \`path\` — 说明` |
 | 组合 | `ROUTE` `ROLLBACK` `ASK_HUMAN` | 调用 Skill、回退上游、人类介入 |
 
 **表达式运算符**（反引号内使用，不加粗）：`EXISTS` `NOT_EXISTS` `NOT_EMPTY` `CONTAINS` `==` `!=` `&&` `||` `.`
@@ -207,6 +207,7 @@ IRON_LAW **MUST** 出现在 STEPS 之前，作为不可协商的门禁。
 - **ROLLBACK** agent — 回退上游。必须携带：问题、位置、期望、建议
 - **ASK_HUMAN** — 暂停执行，触发人类介入
 - **DONE** / **DONE_WITH_CONCERNS** / **NEEDS_CONTEXT** / **BLOCKED** — 四态终止状态
+- **REF** `_team-rules/{file}.md` — 声明外部规则引用。用于 CONSTITUTIONAL_RULES（Rule 列表前）和 COMPLETION（MATCH 前）章节
 
 #### 2.7.4 文档结构与执行顺序
 

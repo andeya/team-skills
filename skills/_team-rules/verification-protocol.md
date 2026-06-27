@@ -19,7 +19,7 @@
 
 ```
 
-违反此协议的声明视为无效，team-review MUST 标记为 P0。
+违反此协议的声明视为无效，`team-review` MUST 标记为 P0。
 
 ## 结构化证据格式
 

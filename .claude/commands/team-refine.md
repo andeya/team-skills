@@ -30,18 +30,18 @@ argument-hint: [轮次数, 默认5]
 
 ## 打磨顺序
 
-按编排流程顺序逐个处理，先流水线后支撑：
+按编排流程顺序逐个处理，入口 → 编排器 → 流水线 → 支撑：
 
 | # | 流水线 Skill | # | 支撑 Skill |
 |---|-------------|---|-----------|
 | 1 | `using-team-skills` | 9 | `team-verify` |
-| 2 | `team-brainstorm` | 10 | `team-debug` |
-| 3 | `team-spec` | 11 | `team-feedback` |
-| 4 | `team-impl` | 12 | `team-score` |
-| 5 | `team-test` | 13 | `team-security` |
-| 6 | `team-review` | | |
-| 7 | `team-finish` | | |
-| 8 | `team-orchestrator` | | |
+| 2 | `team-orchestrator` | 10 | `team-debug` |
+| 3 | `team-brainstorm` | 11 | `team-feedback` |
+| 4 | `team-spec` | 12 | `team-score` |
+| 5 | `team-impl` | 13 | `team-security` |
+| 6 | `team-test` | | |
+| 7 | `team-review` | | |
+| 8 | `team-finish` | | |
 
 ## 审计维度（15 维度）
 

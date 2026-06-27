@@ -92,7 +92,7 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 > TRAP：你会倾向于接受用户的初始框架，不质疑其前提假设。
 > 用户说"我需要一个缓存层"——但也许问题根源是查询太慢，缓存只是用户想到的第一个方案。
 
-> 一次最多 3 个问题，优先用选项形式降低用户认知负担（First Principle #1）。
+> 一次最多 3 个问题，优先用选项形式降低用户认知负担 `_team-rules/first-principles.md: First Principle #1`。
 
 向用户展示最多 3 个关键问题，等待用户一次回复：
 
@@ -137,7 +137,7 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 
 ### Phase 4：展示设计
 
-> 逐段确认而非一次倾倒，每段确认后再展示下一段。目标是让用户在每个维度上做出知情决策，而非被信息量压垮后草率同意（First Principle #1）。
+> 逐段确认而非一次倾倒，每段确认后再展示下一段。目标是让用户在每个维度上做出知情决策，而非被信息量压垮后草率同意 `_team-rules/first-principles.md: First Principle #1`。
 
 逐段展示设计，每段后等待用户确认：
 
@@ -242,11 +242,14 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 
 ## CONSTITUTIONAL_RULES
 
-引用 `_team-rules/constitutional-rules.md`。brainstorm 阶段尤其注意：
+**REF** `_team-rules/constitutional-rules.md` — 9 条 Constitutional Rules
+**REF** `_team-rules/first-principles.md` — 4 条第一性原理（First Principle #1 ~ #4）
 
-- **Rule #1 人类介入是一等公民**：每个方案设计决策必须等待用户确认，不可擅自决定（First Principle #1）
-- **Rule #5 分期交付优先**：方案设计时主动考虑分期交付（First Principle #3）
-- **Rule #4 Kill Switch**：如果探索阶段发现需求不可行，立即暂停而非继续设计（First Principle #1 + First Principle #3）
+brainstorm 阶段尤其注意：
+
+- **Rule #1 人类介入是一等公民**：每个方案设计决策必须等待用户确认，不可擅自决定 `_team-rules/first-principles.md: First Principle #1`
+- **Rule #5 分期交付优先**：方案设计时主动考虑分期交付 `_team-rules/first-principles.md: First Principle #3`
+- **Rule #4 Kill Switch**：如果探索阶段发现需求不可行，立即暂停而非继续设计 `_team-rules/first-principles.md: First Principle #1 + First Principle #3`
 
 ## SELF_CHECK
 
@@ -263,6 +266,8 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 - [ ] 如果用户的前提假设是错的，我的方案还成立吗？
 
 ## COMPLETION
+
+**REF** `_team-rules/four-state-protocol.md` — 四态完成状态
 
 **MATCH** `result`：
 

@@ -25,7 +25,7 @@ description: Use when implementation exists and you need test matrix + coverage 
 
 ### 推理检查点
 
-**核心指令**：找不到 bug 是因为还没找够，不是因为不存在。"测试全部通过"是待验证声明（First Principle #4）。忠于 SDD 规格，不被实现偏见引导。
+**核心指令**：找不到 bug 是因为还没找够，不是因为不存在。"测试全部通过"是待验证声明 `_team-rules/first-principles.md: First Principle #4`。忠于 SDD 规格，不被实现偏见引导。
 
 **推理框架**：
 
@@ -59,7 +59,7 @@ NO COVERAGE CLAIMS WITHOUT SDD TRACEABILITY FIRST
 
 - `03-sdd.md`（规格）
 - `06-tdd-log.md`（TDD 日志）
-- team-impl 的代码变更和测试文件
+- `team-impl` 的代码变更和测试文件
 
 ### 完整输入（编排模式）
 
@@ -134,7 +134,7 @@ Phase 1 只分析，不写测试代码。
 > TRAP：写出"测试 mock 而非代码"的测试——mock 返回预期值，断言 mock 返回值等于预期值，永远通过。测试必须穿透 mock 层验证真实逻辑。
 > TRAP：测试紧耦合实现细节（如断言内部方法调用次数、私有状态）。实现重构后测试全部失败 ≠ 发现了 bug，= 测试设计有问题。
 
-> First Principle #2：实现偏见污染验证——修改实现代码会让 team-test 变成 team-impl 的共犯。
+> `_team-rules/first-principles.md: First Principle #2`：实现偏见污染验证——修改实现代码会让 team-test 变成 team-impl 的共犯。
 
 **IF** 新测试揭示真实 bug → 不修复实现，Phase 6 向编排器报告：建议路由到 `team-impl`
 
@@ -202,9 +202,9 @@ Phase 1 只分析，不写测试代码。
 
 - `failures != 0` → **GOTO** Phase 5（重新排查失败原因）
 
-> First Principle #4：声明不等于事实——跳过失败的测试套件不会让 bug 消失。
+> `_team-rules/first-principles.md: First Principle #4`：声明不等于事实——跳过失败的测试套件不会让 bug 消失。
 
-**验证协议**（声明"测试通过"前须执行 `_team-rules/verification-protocol.md` 的 5 个步骤）
+**验证协议**：声明"测试通过"前须执行 `_team-rules/verification-protocol.md: 验证执行步骤`
 
 ### Phase 6：回退路由决策
 
@@ -237,17 +237,20 @@ Phase 1 只分析，不写测试代码。
 ## STOP_SIGNALS
 
 - **检查**测试但不对照 SDD，或只覆盖 Happy Path
-- **决定**擅自实现 spec 遗漏（应向编排器报告路由到 team-spec）
+- **决定**擅自实现 spec 遗漏（应向编排器报告路由到 `team-spec`）
 - **修改**测试让它通过，或声明覆盖无量化证据
 - **跳过**失败继续产出文档
 
 ## CONSTITUTIONAL_RULES
 
-引用 `_team-rules/constitutional-rules.md`。测试审计阶段尤其注意：
+**REF** `_team-rules/constitutional-rules.md` — 9 条 Constitutional Rules
+**REF** `_team-rules/first-principles.md` — 4 条第一性原理（First Principle #1 ~ #4）
 
-- **Rule #8 验证先行**：覆盖率声明必须基于当次新鲜执行的完整输出，不可引用缓存结果（First Principle #4）
-- **Rule #3 产出必须验证**：测试矩阵中的每个覆盖声明必须有对应的测试运行证据（First Principle #4）
-- **Rule #2 有向图回退**：发现 spec 遗漏必须向编排器报告路由到 team-spec，发现实现 bug 必须向编排器报告路由到 team-impl，不可擅自修改实现代码（First Principle #4）
+测试审计阶段尤其注意：
+
+- **Rule #8 验证先行**：覆盖率声明必须基于当次新鲜执行的完整输出，不可引用缓存结果 `_team-rules/first-principles.md: First Principle #4`
+- **Rule #3 产出必须验证**：测试矩阵中的每个覆盖声明必须有对应的测试运行证据 `_team-rules/first-principles.md: First Principle #4`
+- **Rule #2 有向图回退**：发现 spec 遗漏必须向编排器报告路由到 `team-spec`，发现实现 bug 必须向编排器报告路由到 `team-impl`，不可擅自修改实现代码 `_team-rules/first-principles.md: First Principle #4`
 
 ## SELF_CHECK
 
@@ -268,6 +271,8 @@ Phase 1 只分析，不写测试代码。
 - [ ] 如果删掉实现中的某行关键代码，我的测试套件能发现吗？
 
 ## COMPLETION
+
+**REF** `_team-rules/four-state-protocol.md` — 四态完成状态
 
 **MATCH** `result`：
 

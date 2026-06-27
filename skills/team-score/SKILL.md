@@ -11,7 +11,7 @@ description: Use when evaluating AI collaboration maturity of a project
 
 ```
 角色：协作评分评委——证据驱动，找不到证据 = 0 分
-核心原则：只相信物证，不相信口供。默认 0 分，找到证据才加分（First Principle #4）
+核心原则：只相信物证，不相信口供。默认 0 分，找到证据才加分 `_team-rules/first-principles.md: First Principle #4`
 流程：
 1. 按 5 个维度分别收集证据（可并行扫描）
 2. 逐条检查 7 项硬门槛，任一不通过则标记不通过
@@ -24,7 +24,7 @@ description: Use when evaluating AI collaboration maturity of a project
 
 ### 推理检查点
 
-**核心指令**："项目做得不错"是口供，`06-tdd-log.md` 中 RED 时间戳早于 GREEN 是物证。每个评分项有罪推定——默认 0 分，找到证据才加分（First Principle #4）。
+**核心指令**："项目做得不错"是口供，`06-tdd-log.md` 中 RED 时间戳早于 GREEN 是物证。每个评分项有罪推定——默认 0 分，找到证据才加分 `_team-rules/first-principles.md: First Principle #4`。
 
 **推理框架**：
 
@@ -382,7 +382,7 @@ NO SCORE WITHOUT EVIDENCE FIRST
 
 ## STOP_SIGNALS
 
-- **凭印象**给分，没有找到实际文件或代码作为证据
+- **评分**凭印象而非证据，没有找到实际文件或代码
 - **跳过**无证据的评分项而不标注"未找到"
 - **只扫描**代码目录而不检查文档和测试目录
 - **省略**按优先级排列的改进建议
@@ -418,11 +418,16 @@ NO SCORE WITHOUT EVIDENCE FIRST
 
 ## CONSTITUTIONAL_RULES
 
-引用 `_team-rules/constitutional-rules.md`。评分阶段需特别验证被评项目对以下规则的遵守情况：
+**REF** `_team-rules/constitutional-rules.md` — 9 条 Constitutional Rules
+**REF** `_team-rules/first-principles.md` — 4 条第一性原理（First Principle #1 ~ #4）
+**REF** `_team-rules/ai-collaboration-standards.md` — AI 协作资产与 Prompt 工程规范
+**REF** `_team-rules/verification-protocol.md` — 5 步验证协议
 
-- **Rule #9 TDD 顺序不可逆**：检查 06-tdd-log.md 中 RED→GREEN 的时间序证据（First Principle #2）
-- **Rule #3 产出必须验证**：检查验证声明是否基于当次新鲜执行（First Principle #4）
-- **Rule #1 人类介入是一等公民**：检查 CONFIRM_GOAL-HUMAN_ACCEPT 确认记录是否存在（First Principle #1）
+评分阶段需特别验证被评项目对以下规则的遵守情况：
+
+- **Rule #9 TDD 顺序不可逆**：检查 06-tdd-log.md 中 RED→GREEN 的时间序证据 `_team-rules/first-principles.md: First Principle #2`
+- **Rule #3 产出必须验证**：检查验证声明是否基于当次新鲜执行 `_team-rules/first-principles.md: First Principle #4`
+- **Rule #1 人类介入是一等公民**：检查 CONFIRM_GOAL-HUMAN_ACCEPT 确认记录是否存在 `_team-rules/first-principles.md: First Principle #1`
 
 ## SELF_CHECK
 
@@ -440,6 +445,8 @@ NO SCORE WITHOUT EVIDENCE FIRST
 - [ ] 5 个维度的分数是独立评出的，还是被第一个维度的印象锚定了？
 
 ## COMPLETION
+
+**REF** `_team-rules/four-state-protocol.md` — 四态完成状态
 
 **MATCH** `result`：
 

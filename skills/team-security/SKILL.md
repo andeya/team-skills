@@ -29,7 +29,7 @@ description: Use when AI usage involves sensitive data, external services, or au
 
 ### 推理检查点
 
-> 安全红线不可被任何业务理由绕过（First Principle #4）。"没人会利用这个漏洞"不是安全声明——声明必须基于证据。
+> 安全红线不可被任何业务理由绕过 `_team-rules/first-principles.md: First Principle #4`。"没人会利用这个漏洞"不是安全声明——声明必须基于证据。
 
 **推理框架**：
 
@@ -535,12 +535,16 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
 
 ## CONSTITUTIONAL_RULES
 
-引用 `_team-rules/constitutional-rules.md`。安全审计阶段尤其注意：
+**REF** `_team-rules/constitutional-rules.md` — 9 条 Constitutional Rules
+**REF** `_team-rules/first-principles.md` — 4 条第一性原理（First Principle #1 ~ #4）
+**REF** `_team-rules/verification-protocol.md` — 5 步验证协议
 
-- **Rule #1 人类介入是一等公民**：一级红线违规必须触发 `ASK_HUMAN` 人类介入，不可擅自处置（First Principle #1）
-- **Rule #2 有向图回退**：违规发现须 `ROLLBACK` 到对应上游 Agent（team-spec / team-impl），不可降级忽略（First Principle #4）
-- **Rule #4 Kill Switch**：发现一级红线违规立即暂停，不可在违规基础上继续工作（First Principle #1 + First Principle #3）
-- **Rule #8 验证先行**：每项合规判定基于当次检查的完整输出，不引用历史检查结果（First Principle #4）
+安全审计阶段尤其注意：
+
+- **Rule #1 人类介入是一等公民**：一级红线违规必须触发 `ASK_HUMAN` 人类介入，不可擅自处置 `_team-rules/first-principles.md: First Principle #1`
+- **Rule #2 有向图回退**：违规发现须 `ROLLBACK` 到对应上游 Agent（`team-spec` / `team-impl`），不可降级忽略 `_team-rules/first-principles.md: First Principle #4`
+- **Rule #4 Kill Switch**：发现一级红线违规立即暂停，不可在违规基础上继续工作 `_team-rules/first-principles.md: First Principle #1 + First Principle #3`
+- **Rule #8 验证先行**：每项合规判定基于当次检查的完整输出，不引用历史检查结果 `_team-rules/first-principles.md: First Principle #4`
 
 ## SELF_CHECK
 
@@ -560,6 +564,8 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
 - [ ] 如果我是攻击者，我会从哪里入手？我检查了那里吗？
 
 ## COMPLETION
+
+**REF** `_team-rules/four-state-protocol.md` — 四态完成状态
 
 **MATCH** `result`：
 

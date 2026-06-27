@@ -56,7 +56,7 @@ docs/tasks/{NNNN}-{keyword}/
 | 介入点 | 时机             | 目的                               |
 | ------ | ---------------- | ---------------------------------- |
 | CONFIRM_GOAL     | 编排器初始化后   | 确认目标理解 + 方案方向            |
-| CONFIRM_SPEC     | team-spec 产出后 | 确认规格方案 + 分期策略            |
+| CONFIRM_SPEC     | `team-spec` 产出后 | 确认规格方案 + 分期策略            |
 | ASK_HUMAN     | 发现阻塞/需决策  | 人类决策（Kill Switch / 方案选择） |
 | HUMAN_ACCEPT     | 全部完成后       | 验收交付物 + P2 决策               |
 

@@ -31,7 +31,7 @@ flowchart TD
 
 ```
 角色：流程编排器——有向图编排，非线性流水线
-核心原则：根据产出质量动态决定回退或继续，对"先记着后面修"零容忍（First Principle #4）
+核心原则：根据产出质量动态决定回退或继续，对"先记着后面修"零容忍 `_team-rules/first-principles.md: First Principle #4`
 流程：
 1. 理解需求，拆解子任务
 2. 有向图调度：team-spec → team-impl → team-test → team-review
@@ -49,7 +49,7 @@ flowchart TD
 
 ### 路由推理检查点
 
-**核心指令**：价值在于协调而非执行。关注：Agent 是否卡住（需回退或 ASK_HUMAN），下一个 Agent 需要什么上下文。对"先记着后面修"零容忍（First Principle #4）。
+**核心指令**：价值在于协调而非执行。关注：Agent 是否卡住（需回退或 ASK_HUMAN），下一个 Agent 需要什么上下文。对"先记着后面修"零容忍 `_team-rules/first-principles.md: First Principle #4`。
 
 **推理框架**：
 
@@ -80,7 +80,8 @@ NO AGENT DISPATCH WITHOUT CONFIRM_GOAL HUMAN CONFIRMATION FIRST
 
 ## COMPLETION_PROTOCOL
 
-引用 `_team-rules/four-state-protocol.md`，不内联重复。
+**REF** `_team-rules/four-state-protocol.md` — 四态完成状态
+**REF** `_team-rules/task-lifecycle.md` — 任务目录结构与 CONFIRM_GOAL-HUMAN_ACCEPT 协议
 
 ## 有向图流程
 
@@ -273,7 +274,7 @@ NO AGENT DISPATCH WITHOUT CONFIRM_GOAL HUMAN CONFIRMATION FIRST
 | 来源 | 必需 | 说明 |
 |------|------|------|
 | 用户任务描述 | **required** | 自然语言任务请求 |
-| `00-design-brief.md` | 可选 | team-brainstorm 产出的设计概要 |
+| `00-design-brief.md` | 可选 | `team-brainstorm` 产出的设计概要 |
 | `.checkpoint.json` | 可选 | 断点续传状态（恢复中断的任务） |
 | 项目 CLAUDE.md | 自动 | 项目级规则和验证命令 |
 
@@ -945,17 +946,20 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 - **跳过** CONFIRM_GOAL 或 HUMAN_ACCEPT 人类介入点
 - **延迟**回退（"先记着后面一起修"）
 - **信任** Agent 自我声明而不验证产出
-- **超出**预算却不砍范围
-- **编排器自己写实现代码**（必须 dispatch 子 Skill，不得亲自实现。编排器的价值在于协调，不是执行）
+- **超出**预算不砍范围，或亲自执行实现代码而非 dispatch 子 Skill
 
 ## CONSTITUTIONAL_RULES
 
-引用 `_team-rules/constitutional-rules.md`。编排阶段尤其注意：
+**REF** `_team-rules/constitutional-rules.md` — 9 条 Constitutional Rules
+**REF** `_team-rules/first-principles.md` — 4 条第一性原理（First Principle #1 ~ #4）
+**REF** `_team-rules/ai-collaboration-standards.md` — AI 协作资产与 Prompt 工程规范
 
-- **Rule #1 人类介入是一等公民**：CONFIRM_GOAL-HUMAN_ACCEPT 不可被任何 Agent 自动确认，"用户没回复就默认同意"是违规（First Principle #1）
-- **Rule #2 有向图回退**：team-test/team-review 发现问题必须 `ROLLBACK` 对应 Agent，不可"先记着后面一起修"（First Principle #4）
-- **Rule #7 回退次数上限**：同一 source→target 对回退 ≤ 2 次，第 3 次强制触发 `ASK_HUMAN`（First Principle #1）
-- **Rule #9 TDD 顺序不可逆**：team-impl 完成后必须验证 `06-tdd-log.md` 中 RED 在 GREEN 之前（First Principle #2）
+编排阶段尤其注意：
+
+- **Rule #1 人类介入是一等公民**：CONFIRM_GOAL-HUMAN_ACCEPT 不可被任何 Agent 自动确认，"用户没回复就默认同意"是违规 `_team-rules/first-principles.md: First Principle #1`
+- **Rule #2 有向图回退**：team-test/team-review 发现问题必须 `ROLLBACK` 对应 Agent，不可"先记着后面一起修" `_team-rules/first-principles.md: First Principle #4`
+- **Rule #7 回退次数上限**：同一 source→target 对回退 ≤ 2 次，第 3 次强制触发 `ASK_HUMAN` `_team-rules/first-principles.md: First Principle #1`
+- **Rule #9 TDD 顺序不可逆**：team-impl 完成后必须验证 `06-tdd-log.md` 中 RED 在 GREEN 之前 `_team-rules/first-principles.md: First Principle #2`
 
 ## SELF_CHECK
 
@@ -974,6 +978,8 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 - [ ] 我是否在回退时传递了完整的四要素上下文（问题、位置、期望、建议），还是只说了"有 bug"？
 
 ## COMPLETION
+
+**REF** `_team-rules/four-state-protocol.md` — 四态完成状态
 
 **MATCH** `result`：
 

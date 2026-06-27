@@ -16,7 +16,7 @@ description: Use when about to claim work is complete, fixed, or passing - requi
 
 ### 推理检查点
 
-> 对所有声明零信任（First Principle #4）。上一轮结果是历史，不是当前事实。
+> 对所有声明零信任 `_team-rules/first-principles.md: First Principle #4`。上一轮结果是历史，不是当前事实。
 
 **推理框架**：
 
@@ -132,7 +132,9 @@ NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE FIRST
 
 1. 记录失败原因和错误输出
 2. 修复环境问题 → **EXEC** `verify_cmd`
-   - **IF** `exit_code == 0` → **GOTO** Step 3
+   - **ASSERT** `exit_code == 0`
+     - 通过 → **GOTO** Step 3
+     - 失败 → 继续 **REPEAT**
 3. 继续 **REPEAT**
 
 - *REPEAT_EXHAUSTED* → **BLOCKED**，触发 **ASK_HUMAN**
@@ -156,17 +158,19 @@ NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE FIRST
 
 ## STOP_SIGNALS
 
-- 使用推测性语言（"应该""可能""看起来"）声明通过
-- 引用上一轮运行结果而非当次新鲜执行
-- 跳过部分输出或 warning 就声明通过
-- 表达满意（"太好了""完美""完成了"）在验证之前
+- **使用**推测性语言（"应该""可能""看起来"）声明通过
+- **引用**上一轮运行结果而非当次新鲜执行
+- **跳过**部分输出或 warning 就声明通过
+- **表达**满意（"太好了""完美""完成了"）在验证之前
 
 ## CONSTITUTIONAL_RULES
 
-> 引用 `_team-rules/constitutional-rules.md`
+**REF** `_team-rules/constitutional-rules.md` — 9 条 Constitutional Rules
+**REF** `_team-rules/verification-protocol.md` — 5 步验证协议
+**REF** `_team-rules/first-principles.md` — 4 条第一性原理（First Principle #1 ~ #4）
 
-- **Rule #8 验证先行**：本 skill 的核心使命——每个声明基于当次新鲜证据（First Principle #4）
-- **Rule #3 产出必须验证**：验证者自身的声明也不例外——报告必须含结构化证据（First Principle #4）
+- **Rule #8 验证先行**：本 skill 的核心使命——每个声明基于当次新鲜证据 `_team-rules/first-principles.md: First Principle #4`
+- **Rule #3 产出必须验证**：验证者自身的声明也不例外——报告必须含结构化证据 `_team-rules/first-principles.md: First Principle #4`
 
 ## SELF_CHECK
 
@@ -184,6 +188,8 @@ NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE FIRST
 - [ ] 测试确实覆盖了变更代码吗？还是我只是看到"全部通过"就满足了？
 
 ## COMPLETION
+
+**REF** `_team-rules/four-state-protocol.md` — 四态完成状态
 
 **MATCH** `result`：
 

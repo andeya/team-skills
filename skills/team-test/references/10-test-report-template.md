@@ -41,7 +41,7 @@
 
 - 失败输出：{粘贴关键错误信息}
 - 根因分析：{分析失败原因}
-- 路由决策：→ team-impl（bug）/ → team-spec（spec 遗漏）/ → ASK_HUMAN
+- 路由决策：→ `team-impl`（bug）/ → `team-spec`（spec 遗漏）/ → **ASK_HUMAN**
 
 ## 六、补充测试记录
 

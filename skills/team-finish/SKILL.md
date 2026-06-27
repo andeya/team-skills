@@ -18,7 +18,7 @@ description: Use when implementation is complete, all tests pass, and you need t
 
 ### 推理检查点
 
-> 测试未通过 = 不展示合并选项（First Principle #4）。用户未选择 = 不执行操作（First Principle #1）。每步有明确前置条件。
+> 测试未通过 = 不展示合并选项 `_team-rules/first-principles.md: First Principle #4`。用户未选择 = 不执行操作 `_team-rules/first-principles.md: First Principle #1`。每步有明确前置条件。
 
 **推理框架**：
 
@@ -66,7 +66,7 @@ NO BRANCH COMPLETION WITHOUT TEST VERIFICATION FIRST
 
 > TRAP：你会倾向于引用上一轮的测试结果来跳过重新执行。Iron Law 不允许——每次进入 finish 都必须重新运行。
 
-**EXEC** 项目测试命令（声明"通过"前须执行 `_team-rules/verification-protocol.md` 的 5 个步骤）
+**EXEC** 项目测试命令 — 声明"通过"前须执行验证协议 `_team-rules/verification-protocol.md: 验证执行步骤`
 
 **ASSERT** `exit_code == 0` && `failures == 0`
 
@@ -75,7 +75,7 @@ NO BRANCH COMPLETION WITHOUT TEST VERIFICATION FIRST
   - `orchestrated` → **ROLLBACK** 编排器，向编排器报告：建议路由到 `team-impl`（附上失败输出）
   - *DEFAULT* → **WRITE**（对话中）失败详情，推荐 `team-debug`，修复后 **GOTO** Step 1
 
-> 不可忽略失败继续展示选项（First Principle #4）。
+> 不可忽略失败继续展示选项 `_team-rules/first-principles.md: First Principle #4`。
 
 ### Step 1.5：凭证泄露扫描
 
@@ -138,7 +138,7 @@ NO BRANCH COMPLETION WITHOUT TEST VERIFICATION FIRST
        - **GOTO** 子步骤 4.1
      - **ELSE**：
        - 继续下一步
-  3. **EXEC** 项目测试命令（声明"通过"前须执行 `_team-rules/verification-protocol.md` 的 5 个步骤）
+  3. **EXEC** 项目测试命令 — 声明"通过"前须执行验证协议 `_team-rules/verification-protocol.md: 验证执行步骤`
      - **ASSERT** `exit_code == 0` && `failures == 0`
        - 失败 → 记录回归详情 → **BLOCKED**
   4. **EXEC** `git branch -d {branch}`
@@ -279,11 +279,14 @@ NO BRANCH COMPLETION WITHOUT TEST VERIFICATION FIRST
 
 ## CONSTITUTIONAL_RULES
 
-引用 `_team-rules/constitutional-rules.md`。分支完成阶段尤其注意：
+**REF** `_team-rules/constitutional-rules.md` — 9 条 Constitutional Rules
+**REF** `_team-rules/first-principles.md` — 4 条第一性原理（First Principle #1 ~ #4）
 
-- **Rule #1 人类介入是一等公民**：所有分支操作（合并/PR/丢弃）必须等待用户明确选择（First Principle #1）
-- **Rule #8 验证先行**：展示选项前必须通过新鲜测试执行验证（First Principle #4）
-- **Rule #3 产出必须验证**：合并后必须重新运行测试确认无回归（First Principle #4）
+分支完成阶段尤其注意：
+
+- **Rule #1 人类介入是一等公民**：所有分支操作（合并/PR/丢弃）必须等待用户明确选择 `_team-rules/first-principles.md: First Principle #1`
+- **Rule #8 验证先行**：展示选项前必须通过新鲜测试执行验证 `_team-rules/first-principles.md: First Principle #4`
+- **Rule #3 产出必须验证**：合并后必须重新运行测试确认无回归 `_team-rules/first-principles.md: First Principle #4`
 
 ## SELF_CHECK
 
@@ -303,6 +306,8 @@ NO BRANCH COMPLETION WITHOUT TEST VERIFICATION FIRST
 - [ ] 我是否因为"终于要结束了"而降低了完成标准？
 
 ## COMPLETION
+
+**REF** `_team-rules/four-state-protocol.md` — 四态完成状态
 
 **MATCH** `result`：
 

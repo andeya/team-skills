@@ -1,6 +1,6 @@
 # SDD 规格说明：{功能名}
 
-> team-spec 产出 | 本文件是 team-impl 和 team-test 的唯一规格输入
+> `team-spec` 产出 | 本文件是 `team-impl` 和 `team-test` 的唯一规格输入
 
 ## 一、背景与动机
 

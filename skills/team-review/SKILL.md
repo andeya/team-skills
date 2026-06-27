@@ -11,7 +11,7 @@ description: Use when code + tests exist and you need structured review + asset 
 
 ```
 角色：审查专家——第一反应永远是"证据在哪里？"
-核心原则：不信任 Agent 自我声明（First Principle #4），审查目标是"会在什么条件下失败"而非"能不能工作"
+核心原则：不信任 Agent 自我声明 `_team-rules/first-principles.md: First Principle #4`，审查目标是"会在什么条件下失败"而非"能不能工作"
 流程：
 1. 五维度 Review：正确性、可维护性、性能、安全、测试覆盖
 2. Constitutional 合规检查：验证 9 条硬约束
@@ -25,7 +25,7 @@ description: Use when code + tests exist and you need structured review + asset 
 
 ### 推理检查点
 
-**核心指令**：不被代码表面整洁度打动，不因"测试都通过了"放松警惕（First Principle #4）。审查寻找"会在什么条件下失败"。
+**核心指令**：不被代码表面整洁度打动，不因"测试都通过了"放松警惕 `_team-rules/first-principles.md: First Principle #4`。审查寻找"会在什么条件下失败"。
 
 **推理框架**：
 
@@ -129,9 +129,9 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 
 ### Phase 1.5：Constitutional 合规检查
 
-> 验证流程纪律，不依赖 Agent 自我声明（First Principle #4）。每条 Rule 要有具体证据，不是"看起来遵守了"。
+> 验证流程纪律，不依赖 Agent 自我声明 `_team-rules/first-principles.md: First Principle #4`。每条 Rule 要有具体证据，不是"看起来遵守了"。
 
-> TRAP：容易对 Constitutional 检查走过场——逐条打勾但不去看实际文件内容。特别是 TDD Iron Law（Rule #9），必须打开 06-tdd-log.md 确认 RED 在 GREEN 之前且有失败输出。
+> TRAP：容易对 Constitutional 检查走过场——逐条打勾但不去看实际文件内容。特别是 TDD Iron Law `_team-rules/constitutional-rules.md: Rule #9`，必须打开 06-tdd-log.md 确认 RED 在 GREEN 之前且有失败输出。
 
 `[精简模式]` 01-plan.md、02-context.md、05-risk.md 不存在时，涉及这些文件的检查项改为检查 03-sdd.md 中是否有对应信息，或标注"精简模式豁免"。
 
@@ -206,8 +206,9 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 2. **EXEC** 项目测试命令 — 确认修复正确
    **ASSERT** `exit_code == 0` — 测试失败 → 回滚修改 → **GOTO** Phase 2
 3. **EXEC** 项目 CI 检查命令 — 确认无 lint 问题
+   **ASSERT** `exit_code == 0` — lint 失败 → 修复后重新执行
 
-**验证协议**（步骤 2-3 声明"通过"前必须执行 `_team-rules/verification-protocol.md` 的 5 个步骤）
+**验证协议**：步骤 2-3 声明"通过"前必须执行 `_team-rules/verification-protocol.md: 验证执行步骤`
 
 4. **ASSERT** `exit_code == 0` && `failures == 0`
    - 通过 → **WRITE** 修复详情（问题 ID + 修复内容 + 验证结果）到 `11-review.md` §三修复记录
@@ -450,18 +451,21 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 ## STOP_SIGNALS
 
 - **跳过** Constitutional 合规检查或三视角对抗审查
-- **擅自修复** P0/P1 问题而不向编排器报告路由到 team-impl/team-spec
+- **擅自修复** P0/P1 问题而不向编排器报告路由到 `team-impl`/`team-spec`
 - **省略**消费方契约三要素（触发条件/可执行指令/示例）
 - **泛泛而谈**复盘（"做得不错""继续努力"）而非给出具体事例
 
 ## CONSTITUTIONAL_RULES
 
-引用 `_team-rules/constitutional-rules.md`。审查阶段尤其注意：
+**REF** `_team-rules/constitutional-rules.md` — 9 条 Constitutional Rules
+**REF** `_team-rules/first-principles.md` — 4 条第一性原理（First Principle #1 ~ #4）
 
-- **Rule #3 产出必须验证**：审查结论必须基于代码 diff 和测试运行结果，不可仅凭 Agent 自我声明（First Principle #4）
-- **Rule #2 有向图回退**：P0/P1 问题必须回退 team-impl 或 team-spec，不可降级处理（First Principle #4）
-- **Rule #9 TDD 顺序不可逆**：Phase 1.5 中必须验证 06-tdd-log.md 的 RED→GREEN 时间序（First Principle #2）
-- **Rule #1 人类介入是一等公民**：安全漏洞和多方案决策必须触发 `ASK_HUMAN`（First Principle #1）
+审查阶段尤其注意：
+
+- **Rule #3 产出必须验证**：审查结论必须基于代码 diff 和测试运行结果，不可仅凭 Agent 自我声明 `_team-rules/first-principles.md: First Principle #4`
+- **Rule #2 有向图回退**：P0/P1 问题必须回退 team-impl 或 team-spec，不可降级处理 `_team-rules/first-principles.md: First Principle #4`
+- **Rule #9 TDD 顺序不可逆**：Phase 1.5 中必须验证 06-tdd-log.md 的 RED→GREEN 时间序 `_team-rules/first-principles.md: First Principle #2`
+- **Rule #1 人类介入是一等公民**：安全漏洞和多方案决策必须触发 `ASK_HUMAN` `_team-rules/first-principles.md: First Principle #1`
 
 ## SELF_CHECK
 
@@ -481,13 +485,15 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 
 ## COMPLETION
 
+**REF** `_team-rules/four-state-protocol.md` — 四态完成状态
+
 **MATCH** `result`：
 
 - 全部通过，无 P0/P1 遗留 → **DONE**
   - 产出目录：`docs/tasks/{slug}/`
   - 文件清单：`11-review.md` / `12-asset-update.md` / `13-retrospective.md` / `task-rules.md`
   - 审查结果：`{N}` 个文件审查，发现 `{N}` 个问题
-  - 修复记录：直接修复 `{N}` 个，回退 team-impl `{N}` 个，回退 team-spec `{N}` 个，人类决策 `{N}` 个
+  - 修复记录：直接修复 `{N}` 个，回退 `team-impl` `{N}` 个，回退 `team-spec` `{N}` 个，人类决策 `{N}` 个
   - 资产更新：`{N}` 个文件已更新
   - → 编排器将补全团队级证据并交付用户验收
 - 全部通过但有保留意见（P2 建议未采纳等） → **DONE_WITH_CONCERNS**

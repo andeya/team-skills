@@ -7,7 +7,7 @@
 ### 1.1 规格先于代码
 
 - 任何功能实现必须有对应的 SDD（Software Design Document）作为输入
-- SDD 是 team-impl 和 team-test 的唯一规格来源——不依赖口头约定或聊天记录
+- SDD 是 `team-impl` 和 `team-test` 的唯一规格来源——不依赖口头约定或聊天记录
 - 修改类任务使用 Delta Spec（ADDED/MODIFIED/REMOVED），新建类任务使用完整 SDD
 
 ### 1.2 SDD 九章节质量标准
@@ -17,14 +17,14 @@
 | 章节          | 内容                                                       | 消费方                       |
 | ------------- | ---------------------------------------------------------- | ---------------------------- |
 | §一 背景与动机    | 为什么做、痛点、用户场景                                   | 所有 Agent                   |
-| §二 业务规则      | RFC 2119 强度标记（MUST/SHOULD/MAY）+ Given/When/Then 场景 | team-test → 直接映射测试用例 |
-| §三 关键设计决策  | 选择方案 + 拒绝方案 + 拒绝理由                             | team-review → 审查决策合理性 |
-| §四 数据流总览    | ASCII 架构图                                               | team-impl → 理解调用链路     |
-| §五 输入规格 | 参数类型、约束、默认值、示例                               | team-impl + team-test        |
-| §六 输出规格 | 场景、HTTP 状态、输出结构、示例                            | team-impl + team-test        |
-| §七 边界条件      | 空值、极值、并发、格式异常                                 | team-test → 边界测试         |
-| §八 异常场景      | 错误码、错误消息、HTTP 状态                                | team-test → 异常测试         |
-| §九 验收 Checklist | 验收条件、验证方式、预期结果                               | team-review → 验收检查       |
+| §二 业务规则      | RFC 2119 强度标记（MUST/SHOULD/MAY）+ Given/When/Then 场景 | `team-test` → 直接映射测试用例 |
+| §三 关键设计决策  | 选择方案 + 拒绝方案 + 拒绝理由                             | `team-review` → 审查决策合理性 |
+| §四 数据流总览    | ASCII 架构图                                               | `team-impl` → 理解调用链路     |
+| §五 输入规格 | 参数类型、约束、默认值、示例                               | `team-impl` + `team-test`        |
+| §六 输出规格 | 场景、HTTP 状态、输出结构、示例                            | `team-impl` + `team-test`        |
+| §七 边界条件      | 空值、极值、并发、格式异常                                 | `team-test` → 边界测试         |
+| §八 异常场景      | 错误码、错误消息、HTTP 状态                                | `team-test` → 异常测试         |
+| §九 验收 Checklist | 验收条件、验证方式、预期结果                               | `team-review` → 验收检查       |
 
 ### 1.3 规格驱动的验证链
 
@@ -72,10 +72,10 @@ COMMIT: git commit（每个功能点一次，不攒多个功能点）
 
 | 发现者      | 问题类型         | 回退目标           |
 | ----------- | ---------------- | ------------------ |
-| team-test   | 实现 bug         | → team-impl        |
-| team-test   | SDD 未定义的场景 | → team-spec        |
-| team-review | P0/P1 实现 bug   | → team-impl        |
-| team-review | spec 遗漏        | → team-spec        |
+| `team-test`   | 实现 bug         | → `team-impl`        |
+| `team-test`   | SDD 未定义的场景 | → `team-spec`        |
+| `team-review` | P0/P1 实现 bug   | → `team-impl`        |
+| `team-review` | spec 遗漏        | → `team-spec`        |
 | 任何 Agent  | 任务不可行       | → Kill Switch → ASK_HUMAN |
 
 ### 3.2 回退携带上下文

@@ -1,6 +1,6 @@
 # 修改边界
 
-> team-spec 产出 | team-impl 必须严格遵守
+> `team-spec` 产出 | `team-impl` 必须严格遵守
 
 ## 允许修改的文件
 

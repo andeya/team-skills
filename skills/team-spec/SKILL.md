@@ -102,7 +102,7 @@ NO CODE WITHOUT SPEC FIRST
 
 ### Phase 1.5：探索结论展示 + 需求澄清（人类介入点）
 
-> 写任何文件之前先展示探索结论，获取用户确认。一次最多 3 个问题，优先用选项形式（First Principle #1）。
+> 写任何文件之前先展示探索结论，获取用户确认。一次最多 3 个问题，优先用选项形式 `_team-rules/first-principles.md: First Principle #1`。
 > 目标不是"让用户确认我已经做了探索"，而是"暴露我的理解偏差——我漏了什么、误解了什么"。
 
 **WRITE**（对话中）探索结论：
@@ -239,7 +239,7 @@ NO CODE WITHOUT SPEC FIRST
 
 > 切换到"攻击者"视角——假设这份 SDD 有致命遗漏，你的任务是找到它。"看起来完整"不等于"真的完整"。
 
-> TRAP：你刚写完 SDD，此刻最不适合评价它的质量——实现偏见会让你觉得"写了就是对的"（First Principle #2）。逐条对照检查清单，不要凭感觉。
+> TRAP：你刚写完 SDD，此刻最不适合评价它的质量——实现偏见会让你觉得"写了就是对的" `_team-rules/first-principles.md: First Principle #2`。逐条对照检查清单，不要凭感觉。
 
 **GATE** 产出前逐条检查（不通过则补全后再输出）：
 
@@ -278,11 +278,15 @@ NO CODE WITHOUT SPEC FIRST
 
 ## CONSTITUTIONAL_RULES
 
-引用 `_team-rules/constitutional-rules.md`。规格制定阶段尤其注意：
+**REF** `_team-rules/constitutional-rules.md` — 9 条 Constitutional Rules
+**REF** `_team-rules/first-principles.md` — 4 条第一性原理（First Principle #1 ~ #4）
+**REF** `_team-rules/spec-driven-workflow.md` — Spec-Driven 开发原则与 TDD 工作流
 
-- **Rule #1 人类介入是一等公民**：规格产出后必须等 CONFIRM_SPEC 确认，不可自动进入实现（First Principle #1）
-- **Rule #4 Kill Switch**：探索阶段发现不可行 → 立即暂停，不可"先写个规格再说"（First Principle #1 + First Principle #3）
-- **Rule #5 分期交付优先**：复杂任务必须拆分分期，不可一次性全量规格（First Principle #3）
+规格制定阶段尤其注意：
+
+- **Rule #1 人类介入是一等公民**：规格产出后必须等 CONFIRM_SPEC 确认，不可自动进入实现 `_team-rules/first-principles.md: First Principle #1`
+- **Rule #4 Kill Switch**：探索阶段发现不可行 → 立即暂停，不可"先写个规格再说" `_team-rules/first-principles.md: First Principle #1 + First Principle #3`
+- **Rule #5 分期交付优先**：复杂任务必须拆分分期，不可一次性全量规格 `_team-rules/first-principles.md: First Principle #3`
 
 ## SELF_CHECK
 
@@ -299,6 +303,8 @@ NO CODE WITHOUT SPEC FIRST
 - [ ] 我是否因为"应该没问题"跳过了任何边界条件或异常场景？
 
 ## COMPLETION
+
+**REF** `_team-rules/four-state-protocol.md` — 四态完成状态
 
 **MATCH** `result`：
 
