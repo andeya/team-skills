@@ -7,6 +7,15 @@
 
 ## [Unreleased]
 
+## [1.5.2] - 2026-06-28
+
+### 修复
+
+- team-review: Phase 2 P0/P1 路由硬化——从被动"向编排器报告：建议路由到"改为显式 `route_target` 赋值 + `GOTO Phase 3`，消除顺序流滑入自修的路径
+- team-review: Phase 3 重排为 MATCH `route_target` 优先分发——P0/P1 以 `DONE_WITH_CONCERNS` 硬终止执行，P2 自修入口增加 GATE 准入断言（`severity != P0 && severity != P1`）
+- team-review: COMPLETION 补充 P0/P1 路由回退的 `DONE_WITH_CONCERNS` 状态定义（仅产出 `11-review.md`，Phase 4/5 跳过）
+- team-orchestrator: Step 5 先 READ 路由决策再完成验证——P0/P1 回退场景跳过文件完整性检查（避免 team-review 提前终止后因缺少 12/13/task-rules 文件被误判导致死循环）
+
 ## [1.5.1] - 2026-06-28
 
 ### 修复

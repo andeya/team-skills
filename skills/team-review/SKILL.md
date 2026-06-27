@@ -177,15 +177,15 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 **MATCH** `severity`：
 
 - `P0` || `P1`
-  - `P0 实现 bug` && `spec 定义正确` → 向编排器报告：建议路由到 `team-impl`
-  - `P0 设计/架构缺陷` → 向编排器报告：建议路由到 `team-spec`
+  - `P0 实现 bug` && `spec 定义正确` → `route_target = team-impl` → **GOTO** Phase 3
+  - `P0 设计/架构缺陷` → `route_target = team-spec` → **GOTO** Phase 3
   - `P0 安全漏洞` → **ASK_HUMAN**（安全决策需要人类确认）
-  - `P1 实现 bug` → 向编排器报告：建议路由到 `team-impl`
-  - `P1 测试遗漏` → 向编排器报告：建议路由到 `team-impl`（需要补写测试）
-  - `P0/P1 spec 遗漏` → 向编排器报告：建议路由到 `team-spec`
+  - `P1 实现 bug` → `route_target = team-impl` → **GOTO** Phase 3
+  - `P1 测试遗漏` → `route_target = team-impl`（需要补写测试） → **GOTO** Phase 3
+  - `P0/P1 spec 遗漏` → `route_target = team-spec` → **GOTO** Phase 3
   - 需要人类决策 → **ASK_HUMAN**（有多个可行方案需要选择）
-- `P2` → 直接修复（**GOTO** Phase 3）
-- `P3` → 记录但不处理
+- `P2` → `route_target = self` → **GOTO** Phase 3
+- `P3` → 记录但不处理 → **GOTO** Phase 4
 - *DEFAULT* → **GOTO** Phase 4
 
 **回退时必须提供**：
@@ -198,32 +198,41 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 
 ### Phase 3：执行路由决策
 
-> 对于路由到自己的问题（P2 及以下），快速修复并验证。修复范围严格限制，超出即记录不执行。
-
-> TRAP：自修时容易越界——"顺手"改了超过 20 行或触及了不在自己职责内的逻辑。超范围修改应回退 team-impl。
-
-1. 直接修改代码/测试（**每个问题限 20 行以内的修改**——更大规模的重构记录为建议，不直接执行）
-2. **EXEC** 项目测试命令 — 确认修复正确
-   **ASSERT** `exit_code == 0` — 测试失败 → 回滚修改 → **GOTO** Phase 2
-3. **EXEC** 项目 CI 检查命令 — 确认无 lint 问题
-   **ASSERT** `exit_code == 0` — lint 失败 → 修复后重新执行
-
-**验证协议**：步骤 2-3 声明"通过"前必须执行 `_team-rules/verification-protocol.md: 验证执行步骤`
-
-4. **ASSERT** `exit_code == 0` && `failures == 0`
-   - 通过 → **WRITE** 修复详情（问题 ID + 修复内容 + 验证结果）到 `11-review.md` §三修复记录
-   - 修复导致新测试失败或引入新问题 → 立即停止自修 → **ROLLBACK** team-impl（通过编排器），附带修复尝试的上下文和失败详情
+> 根据 Phase 2 的 `route_target` 执行对应动作。P0/P1 必须终止执行交还编排器，不可自修。
 
 **MATCH** `route_target`：
 
 - `team-impl` || `team-spec` →
-  1. **WRITE** 问题详情到 `11-review.md`
-  2. 通过编排器传递上下文
+  1. **WRITE** 问题详情到 `11-review.md`（包含"回退时必须提供"的完整信息）
+  2. 以 **DONE_WITH_CONCERNS** 终止执行，向编排器交付路由决策和问题上下文
+
+  > TRAP：到了这里不要"顺手修一下"——P0/P1 问题必须回退给专职 Skill，这是有向图回退的硬约束 `_team-rules/first-principles.md: First Principle #4`。
+
 - `human` →
   1. **WRITE** 问题详情到 `11-review.md`
   2. 向用户展示问题 + 选项 → **ASK_HUMAN**，等待决策
   3. 根据决策执行修复
-- *DEFAULT* → 继续 Phase 4
+
+- `self`（仅 P2 及以下） →
+
+  **GATE** 自修准入：
+  - **ASSERT** `severity != P0 && severity != P1` — P0/P1 不可自修，必须回退
+
+  > TRAP：自修时容易越界——"顺手"改了超过 20 行或触及了不在自己职责内的逻辑。超范围修改应回退 team-impl。
+
+  1. 直接修改代码/测试（**每个问题限 20 行以内的修改**——更大规模的重构记录为建议，不直接执行）
+  2. **EXEC** 项目测试命令 — 确认修复正确
+     **ASSERT** `exit_code == 0` — 测试失败 → 回滚修改 → **GOTO** Phase 2
+  3. **EXEC** 项目 CI 检查命令 — 确认无 lint 问题
+     **ASSERT** `exit_code == 0` — lint 失败 → 修复后重新执行
+
+  **验证协议**：步骤 2-3 声明"通过"前必须执行 `_team-rules/verification-protocol.md: 验证执行步骤`
+
+  4. **ASSERT** `exit_code == 0` && `failures == 0`
+     - 通过 → **WRITE** 修复详情（问题 ID + 修复内容 + 验证结果）到 `11-review.md` §三修复记录
+     - 修复导致新测试失败或引入新问题 → 立即停止自修 → `route_target = team-impl` → 以 **DONE_WITH_CONCERNS** 终止执行，附带修复尝试的上下文和失败详情
+
+- *DEFAULT* → **GOTO** Phase 4
 
 ### Phase 4：AI 协作资产维护（消费方契约）
 
@@ -499,6 +508,11 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
   - 修复记录：直接修复 `{N}` 个，回退 `team-impl` `{N}` 个，回退 `team-spec` `{N}` 个，人类决策 `{N}` 个
   - 资产更新：`{N}` 个文件已更新
   - → 编排器将补全团队级证据并交付用户验收
+- 发现 P0/P1 问题，路由回退 → **DONE_WITH_CONCERNS**
+  - 产出文件：`11-review.md`（仅此文件，Phase 4/5 跳过）
+  - `route_target`：`team-impl` / `team-spec`
+  - 问题详情：包含"回退时必须提供"的完整信息
+  - → 编排器读取 route_target 执行有向图回退
 - 全部通过但有保留意见（P2 建议未采纳等） → **DONE_WITH_CONCERNS**
 - 缺少关键上下文（SDD 缺失、代码无法访问等） → **NEEDS_CONTEXT**
 - P0/P1 问题阻塞且路由失败 → **BLOCKED**，触发 **ASK_HUMAN**

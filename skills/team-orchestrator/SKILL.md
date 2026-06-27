@@ -677,6 +677,17 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 读取 skills/team-review/SKILL.md 获取完整执行步骤。
 ```
 
+**READ** `11-review.md` 中 team-review 修复/回退决策
+
+**IF** team-review 报告 `DONE_WITH_CONCERNS` 且 `route_target IN [team-impl, team-spec]`（P0/P1 回退场景，team-review 提前终止是正确行为）：
+
+> team-review 发现 P0/P1 问题后以 DONE_WITH_CONCERNS 终止执行，仅产出 11-review.md，不产出 12-asset-update.md / 13-retrospective.md / task-rules.md。这是有向图回退的正确行为，跳过完成验证直接进入回退检查。
+
+→ **WRITE**（对话中）team-review 回退摘要：P0/P1 问题描述 + 路由决策（→ team-impl / → team-spec）
+→ 直接进入下方回退检查
+
+**ELSE**（team-review 正常完成）：
+
 **完成验证**（产出门禁）：
 
 **FOR** `file` **IN** [`11-review.md`, `12-asset-update.md`, `13-retrospective.md`, `task-rules.md`]：
@@ -684,8 +695,6 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 - **ASSERT** `{file} EXISTS` && `有效行数 >= 5`
 - **ASSERT** `13-retrospective.md CONTAINS "新规则" || CONTAINS "本次沉淀"`
 - 任一不通过 → **ROLLBACK** team-review，指明缺失文件名
-
-**READ** `11-review.md` 中 team-review 修复/回退决策
 
 **WRITE**（对话中）team-review 产出摘要：五维度审查结论 + P0/P1 问题数 + 路由决策（继续/回退）。**IF** `status == DONE_WITH_CONCERNS` → 完整展示 concerns 给用户。
 
