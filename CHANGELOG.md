@@ -7,6 +7,21 @@
 
 ## [Unreleased]
 
+## [1.5.1] - 2026-06-28
+
+### 修复
+
+- team-orchestrator: slug RESOLVE 链修复——READ 动作从 RESOLVE 中独立，消除 LLM"首个命中即停"导致的重复序号 bug
+- team-orchestrator: Step 7.3.1 分期任务去掉独立 slug 解析，统一由 Step 1 处理（消除双重解析冲突）
+- team-orchestrator: Step 1 步骤编号连续性修复（5,6 重复→7,8）
+
+### 变更
+
+- 共享内容一致性同步：verify_cmd RESOLVE 5 步链（5 个 skill）、slug 解析流程（3 个 skill）、回退四要素（2 个 skill）、失败模式表 4→10 行（verification-protocol + team-verify）——全部与 canonical source 完全一致
+- CLAUDE.md §2.2：明确 REF 仅用于声明性章节（CONSTITUTIONAL_RULES/COMPLETION），STEPS 中操作性内容必须内联
+- 5 个 skill 补充 spec-driven-workflow.md 声明性 REF（team-test/review/orchestrator/debug/feedback）
+- 4 个 skill 补充 verification-protocol.md / task-lifecycle.md / ai-collaboration-standards.md 声明性 REF
+
 ## [1.5.0] - 2026-06-28
 
 ### 新增
