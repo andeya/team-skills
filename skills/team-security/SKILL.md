@@ -172,7 +172,7 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
 
 ### Phase 2：一级红线检查（绝对禁止）
 
-> 逐条检查 6 条绝对禁止红线。任何一条违规立即 `BLOCKED`，不等待后续检查完成。
+> 逐条检查 6 条绝对禁止红线。全部检查完成后，如有任何违规则进入 Phase 7。不因首个违规跳出——确保审计报告记录所有违规，而非仅首个。
 
 > TRAP：你会倾向于只检查 OWASP Top 10 等已知漏洞类型，而忽略项目特有的攻击面。先理解这个项目的数据流和信任边界，再对照红线检查。
 
@@ -189,7 +189,7 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
    - 个人信息（客户数据、员工信息）→ **违规**
    - 商业秘密 → **违规**
    - 核心仓库代码 → **违规**
-   - 违规 → 标记 `RL-1 VIOLATION` → **GOTO** Phase 7
+   - 违规 → 标记 `RL-1 VIOLATION`，继续检查下一条红线
 
 #### RL-2：凭证泄露
 
@@ -202,7 +202,7 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
    - 硬编码真实 AK/SK/Token/API Key/密码 → **违规**
    - 凭证通过 Prompt 输入 AI → **违规**
    - 账号外借/共享 → **违规**
-   - 违规 → 标记 `RL-2 VIOLATION` → **GOTO** Phase 7
+   - 违规 → 标记 `RL-2 VIOLATION`，继续检查下一条红线
 
 #### RL-3：AI 直接执行高风险操作
 
@@ -216,7 +216,7 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
    - 数据删除 → **ASSERT** `人工确认记录 EXISTS`
    - 对外发布 → **ASSERT** `人工确认记录 EXISTS`
    - *DEFAULT* → 继续下一项
-3. **IF** 任一高风险操作无人工确认 → 标记 `RL-3 VIOLATION` → **GOTO** Phase 7
+3. **IF** 任一高风险操作无人工确认 → 标记 `RL-3 VIOLATION`，继续检查下一条红线
 
 #### RL-4：未审批接入外部 AI 或 API
 
@@ -224,7 +224,7 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
 2. **EXEC** `grep -rn -E '(import|require|from)\s.*(openai|anthropic|google\.generativeai|azure.*openai|cohere|mistral|replicate)' .` — 检测外部 AI SDK 引入
    - **IF** `exit_code == 0` → 检查是否经过审批
 3. **ASSERT** `外部 AI 服务已审批`
-   - 未经审批的外部 AI 接入 → 标记 `RL-4 VIOLATION` → **GOTO** Phase 7
+   - 未经审批的外部 AI 接入 → 标记 `RL-4 VIOLATION`，继续检查下一条红线
 
 #### RL-5：使用公司数据训练外部模型
 
@@ -232,14 +232,16 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
 2. **EXEC** `grep -rn -E '(fine[_-]?tun|train|finetune|lora|qlora|sft)\b' .` — 检测训练相关代码
    - **IF** `exit_code == 0` → 检查数据来源和模型目标
 3. **ASSERT** `公司数据未用于训练外部模型`
-   - 公司数据输出到第三方训练平台 → 标记 `RL-5 VIOLATION` → **GOTO** Phase 7
+   - 公司数据输出到第三方训练平台 → 标记 `RL-5 VIOLATION`，继续检查下一条红线
 
 #### RL-6：滥用公司 AI 资源
 
 1. **READ** AI 资源使用记录/代码逻辑
 2. **ASSERT** `AI 资源用于工作职责范围内`
-   - 与工作无关的用途 → 标记 `RL-6 VIOLATION` → **GOTO** Phase 7
-   - 未授权的商业经营/外部服务/数据处理 → 标记 `RL-6 VIOLATION` → **GOTO** Phase 7
+   - 与工作无关的用途 → 标记 `RL-6 VIOLATION`
+   - 未授权的商业经营/外部服务/数据处理 → 标记 `RL-6 VIOLATION`
+
+**IF** 存在任何 `RL-* VIOLATION` → **GOTO** Phase 7（携带全部违规记录）
 
 ### Phase 3：二级红线检查（高风险限制）
 

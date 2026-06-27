@@ -99,10 +99,15 @@ NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST
 
 2. **EXEC** 最小变更验证假设 — 一次只变一个变量
 3. **IF** `exit_code != 0` → 记录执行失败详情
+
+**REPEAT** **MAX**=5（假设验证轮次）：
+
 4. **MATCH** `verify_result`：
    - 假设成立 → **GOTO** Phase 4
-   - 假设不成立 → 新假设 → **GOTO** Phase 3
-   - *DEFAULT*（证据不足以判断）→ 补充诊断埋点 → **GOTO** Phase 1
+   - 假设不成立 → 新假设 → 回到步骤 1
+
+- *REPEAT_EXHAUSTED*（5 轮假设均未成立）→ **GOTO** Phase 5（根因未确定处理）
+- *DEFAULT*（证据不足以判断）→ 补充诊断埋点 → **GOTO** Phase 1
 
 ### Phase 4：修复实现
 

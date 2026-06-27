@@ -135,6 +135,8 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 
 `[精简模式]` 01-plan.md、02-context.md、05-risk.md 不存在时，涉及这些文件的检查项改为检查 03-sdd.md 中是否有对应信息，或标注"精简模式豁免"。
 
+**IF** 检查依赖的目标文件不存在（非精简模式豁免范围）→ 标注 `N/A — 文件不存在`，不视为合规也不视为违规，在 `11-review.md` §四 中记录缺失原因。
+
 **FOR** `constitutional_rule`：执行对应检查
 
 | 规则             | 检查方式                                                                                 | 违规表现                     | 严重级别 |

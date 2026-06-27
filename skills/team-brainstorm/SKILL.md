@@ -229,7 +229,7 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 **MATCH** `user_intent`：
 
 - 用户接受默认路径 → **ROUTE** `team-spec`（用 `Skill: team-spec` 加载并执行，传递 slug 参数）
-- 用户明确要求跳过规格阶段 → **ROUTE** `team-impl`（用 `Skill: team-impl` 加载并执行）
+- 用户明确要求跳过规格阶段 → **ASSERT** `00-design-brief.md EXISTS`（跳过 spec 需要 design brief 作为 team-impl 的轻量输入）→ **ROUTE** `team-impl`（用 `Skill: team-impl` 加载并执行，传递 slug 参数。告知用户：跳过 spec 意味着无 SDD 边界约束，team-impl 将以 design brief 为规格输入）
 - 用户未表态 → 推荐 `team-spec {slug}`，等待用户确认
 - *DEFAULT*（其他意图）→ 询问用户偏好
 

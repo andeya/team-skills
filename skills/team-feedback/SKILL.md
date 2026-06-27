@@ -144,7 +144,9 @@ NO IMPLEMENTATION WITHOUT TECHNICAL VERIFICATION FIRST
 
 1. **ASSERT** `不明确项 == 0`（所有不明确项已在 Phase 1 步骤 2 中澄清）
    - `不明确项 > 0` → **GOTO** Phase 1（从步骤 2 澄清后重试）
-2. 按优先级排序：阻塞问题 → 简单修复 → 复杂修复
+2. **ASSERT** `Phase 3 触发的 ASK_HUMAN 均已获得用户回复`（决策冲突/架构问题需人类裁决后才可实施）
+   - `ASK_HUMAN 未回复` → **BLOCKED**，等待用户决策
+3. 按优先级排序：阻塞问题 → 简单修复 → 复杂修复
 3. **FOR** `impl_item`（按排序顺序）：
    - 实施修改
    - **EXEC** `verify_cmd` — 单独测试该项修改

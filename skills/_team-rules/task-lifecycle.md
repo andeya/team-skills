@@ -8,6 +8,7 @@
 
 ```
 docs/tasks/{NNNN}-{keyword}/
+├── .checkpoint.json          # 编排器断点续传状态（team-orchestrator 产出）
 ├── 00-design-brief.md      # 设计概要（team-brainstorm 产出，可选）
 ├── 01-plan.md              # 任务规划（目标 + 分期 + 预算）
 ├── 02-context.md           # 上下文选择（术语 + 引用 + 排除）

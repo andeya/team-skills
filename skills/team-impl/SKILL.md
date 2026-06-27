@@ -74,7 +74,10 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 1. **READ** `01-plan.md` → 理解任务目标和阶段拆分（**IF** `mode == compact` → 跳过）
 2. **READ** `02-context.md` → 理解业务术语和上下文（**IF** `mode == compact` → 跳过）
 3. **READ** `03-sdd.md` → 理解输入/输出/边界/异常规格
+   - **IF** `03-sdd.md NOT_EXISTS` && `00-design-brief.md EXISTS` → 以 design brief 为轻量规格输入，无 boundary 约束时按最小修改范围执行
+   - **IF** `03-sdd.md NOT_EXISTS` && `00-design-brief.md NOT_EXISTS` → **NEEDS_CONTEXT**：请用户提供规格文件或执行 `team-spec`
 4. **READ** `04-boundary.md` → 理解修改边界（**严格遵守**）
+   - **IF** `04-boundary.md NOT_EXISTS` → 记录"无显式边界约束"到 `06-tdd-log.md`，按最小修改原则自行约束
 5. **READ** `05-risk.md` → 理解风险和验证计划（**IF** `mode == compact` → 跳过）
 
 ### Phase 0.5：审计同步（Audit Sync）
@@ -227,6 +230,8 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 | 通过但感觉不对 | 检查是否只覆盖了 Happy Path |
 
 ### 并行记录：决策日志
+
+> 以下两个记录任务贯穿 Phase 1 全程，每个 TDD 循环中同步写入，不是独立的顺序阶段。
 
 > 实时捕捉"为什么这样做而不那样做"。事后回忆的决策理由会被结果偏见污染——只有实时记录才可信。
 
