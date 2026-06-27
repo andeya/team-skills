@@ -126,8 +126,9 @@ Phase 1 只分析，不写测试代码。
 
 1. `READ("05-risk.md", "§一验证计划")`（精简模式下不存在属于正常）
 2. `READ("CLAUDE.md").verify_cmd` / `READ(".cursor/rules/")`
-3. `READ("package.json").scripts.test` / `READ("Makefile")` / `READ("Cargo.toml")`
-4. *NONE* → **NEEDS_CONTEXT**：请用户提供测试命令
+3. `READ("package.json").scripts.test` / `READ("Makefile")` / `READ("Cargo.toml")` / `READ("CI 配置")`
+4. 手动验证可行（截图 / curl / 日志对比）→ 标注验证方式，继续
+5. *NONE* → **NEEDS_CONTEXT**：请用户提供测试命令
 
 ### Phase 4：补充测试（填补缺口）
 
@@ -224,9 +225,9 @@ Phase 1 只分析，不写测试代码。
 
 **回退时 MUST 提供**：
 
-- 具体问题描述
+- 具体问题描述（不是"有 bug"，而是"第 42 行空指针"）
 - 复现步骤（包括命令和输出）
-- 期望行为（引用 03-sdd.md 中的规格）
+- 期望行为（引用 SDD 条目编号）
 - 建议修复方向
 
 ## OUTPUT_TEMPLATE
@@ -247,8 +248,9 @@ Phase 1 只分析，不写测试代码。
 
 **REF** `_team-rules/constitutional-rules.md` — 9 条 Constitutional Rules
 **REF** `_team-rules/first-principles.md` — 4 条第一性原理（First Principle #1 ~ #4）
-
-测试审计阶段尤其注意：
+**REF** `_team-rules/spec-driven-workflow.md` — SDD 验证链与有向图回退规则
+**REF** `_team-rules/verification-protocol.md` — verify_cmd 解析流程与 5 步验证协议
+**REF** `_team-rules/task-lifecycle.md` — 来源标签规范（§1.3）
 
 - **Rule #8 验证先行**：覆盖率声明必须基于当次新鲜执行的完整输出，不可引用缓存结果 `_team-rules/first-principles.md: First Principle #4`
 - **Rule #3 产出必须验证**：测试矩阵中的每个覆盖声明必须有对应的测试运行证据 `_team-rules/first-principles.md: First Principle #4`

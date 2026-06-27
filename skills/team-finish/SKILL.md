@@ -66,9 +66,15 @@ NO BRANCH COMPLETION WITHOUT TEST VERIFICATION FIRST
 
 > TRAP：你会倾向于引用上一轮的测试结果来跳过重新执行。Iron Law 不允许——每次进入 finish 都必须重新运行。
 
-**EXEC** 项目测试命令 — 声明"通过"前须执行验证协议 `_team-rules/verification-protocol.md: 验证执行步骤`
+**RESOLVE** `verify_cmd`（首个命中即停）：
 
-**ASSERT** `exit_code == 0` && `failures == 0`
+1. `READ("05-risk.md", "§一验证计划")`（精简模式下不存在属于正常）
+2. `READ("CLAUDE.md").verify_cmd` / `READ(".cursor/rules/")`
+3. `READ("package.json").scripts.test` / `READ("Makefile")` / `READ("Cargo.toml")` / `READ("CI 配置")`
+4. 手动验证可行（截图 / curl / 日志对比）→ 标注验证方式，继续
+5. *NONE* → **NEEDS_CONTEXT**：请用户提供验证命令
+
+**EXEC** `verify_cmd` → **ASSERT** `exit_code == 0` && `failures == 0`
 
 - 通过 → **GOTO** Step 1.5
 - 失败 → **MATCH** `mode`：
@@ -281,6 +287,8 @@ NO BRANCH COMPLETION WITHOUT TEST VERIFICATION FIRST
 
 **REF** `_team-rules/constitutional-rules.md` — 9 条 Constitutional Rules
 **REF** `_team-rules/first-principles.md` — 4 条第一性原理（First Principle #1 ~ #4）
+**REF** `_team-rules/verification-protocol.md` — verify_cmd 解析流程与 5 步验证协议
+**REF** `_team-rules/task-lifecycle.md` — 进度追踪与知识合并（§3）
 
 分支完成阶段尤其注意：
 

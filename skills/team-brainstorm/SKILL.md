@@ -81,9 +81,12 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
    1. 从用户需求提取核心关键词（kebab-case）
    2. 从项目上下文推断关键词
    3. *NONE* → **NEEDS_CONTEXT**：请用户提供任务关键词
-6. **IF** `docs/tasks/ NOT_EXISTS` → 创建 `docs/tasks/`
-7. **READ** `docs/tasks/` 已有目录列表 → 取最大序号 +1（从 `0001` 起）→ 拼接 `slug` = `{序号}-{keyword}`（整体 ≤ 50 字符）
+6. **IF** `docs/tasks/` NOT_EXISTS → 创建目录，最大序号 = 0
+   **ELSE** → **READ** `docs/tasks/` 已有目录 → 提取所有匹配 `NNNN-*` 格式的目录名中的四位数字前缀 → 取最大值记为最大序号（无匹配目录则最大序号 = 0）
+7. 最大序号 +1，零填充四位，拼接 `slug` = `{NNNN}-{keyword}`（整体 ≤ 50 字符）
 8. **EXEC** 创建 `docs/tasks/{slug}/` 目录（**IF** 已存在 → 跳过）→ **ASSERT** `exit_code == 0`
+
+> TRAP：序号计算必须基于目录扫描结果，不可硬编码 `0001`。
 
 ### Phase 2：需求澄清（一次性提问）
 

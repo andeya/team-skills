@@ -370,20 +370,24 @@ NO AGENT DISPATCH WITHOUT CONFIRM_GOAL HUMAN CONFIRMATION FIRST
 > 确保任务目标被准确理解，用户对方案方向有明确确认。跳过 CONFIRM_GOAL 是编排器最危险的错误——后续所有 Agent 的工作都建立在这个确认之上。
 
 1. **READ** 用户参数 → 提取任务描述
-2. **RESOLVE** `slug`（首个命中即停）：
-   1. **READ** `docs/tasks/` 已有目录（**IF** NOT_EXISTS → 创建）
-   2. **IF** 用户传入已有 slug 且 `docs/tasks/{slug}/00-design-brief.md EXISTS` → 复用该 slug
-   3. **IF** 分期任务（HUMAN_ACCEPT 后续分期触发）→ slug 包含 `-p{N}` 后缀，checkpoint 记录 `parent_slug`
-   4. *DEFAULT* → 取最大序号 +1（从 `0001` 起），拼接 `{NNNN}-{关键词}`（kebab-case，≤ 50 字符）
-3. **EXEC** 创建 `docs/tasks/{slug}/` 目录（**IF** 已存在 → 跳过）→ **ASSERT** `exit_code == 0`
-4. **WRITE** checkpoint：`current_step=Step 1, next_step=CONFIRM_GOAL, phase=init, status=IN_PROGRESS`
-5. **READ** `docs/tasks/progress.md`（**IF** NOT_EXISTS → 创建含表头）→ **ASSERT** `{slug} 不在 progress.md 已完成列表中`
+2. **IF** `docs/tasks/` NOT_EXISTS → 创建目录，最大序号 = 0
+   **ELSE** → **READ** `docs/tasks/` 已有目录 → 提取所有匹配 `NNNN-*` 格式的目录名中的四位数字前缀 → 取最大值记为最大序号（无匹配目录则最大序号 = 0）
+3. **RESOLVE** `slug`（首个命中即停）：
+   1. **IF** 用户传入已有 slug 且 `docs/tasks/{slug}/00-design-brief.md EXISTS` → 复用该 slug
+   2. **IF** 分期继承任务（checkpoint 含 `parent_slug`）→ 最大序号 +1，零填充四位，关键词追加 `-p{N}` 后缀
+   3. *DEFAULT* → 最大序号 +1，零填充四位，拼接 `{NNNN}-{keyword}`（kebab-case，≤ 50 字符）
+
+   > TRAP：序号计算必须基于目录扫描结果，不可硬编码 `0001`。"从 `0001` 起"仅指无已有目录时的初始值（最大序号 0 + 1 = 1）。
+
+4. **EXEC** 创建 `docs/tasks/{slug}/` 目录（**IF** 已存在 → 跳过）→ **ASSERT** `exit_code == 0`
+5. **WRITE** checkpoint：`current_step=Step 1, next_step=CONFIRM_GOAL, phase=init, status=IN_PROGRESS`
+6. **READ** `docs/tasks/progress.md`（**IF** NOT_EXISTS → 创建含表头）→ **ASSERT** `{slug} 不在 progress.md 已完成列表中`
    - **IF** 已存在且状态 `DONE` → 提示用户，询问是否新建变体任务
 
    > progress.md 是跨任务进度索引，位于 `docs/tasks/` 根目录，不在 slug 子目录中。
 
-6. **WRITE** checkpoint：`current_step=CONFIRM_GOAL, next_step=Step 1.5, status=IN_PROGRESS, pending_decision=确认目标理解`
-7. **WRITE**（对话中）向用户展示：任务理解 + 初步方案 + 风险预判 + 分期建议
+7. **WRITE** checkpoint：`current_step=CONFIRM_GOAL, next_step=Step 1.5, status=IN_PROGRESS, pending_decision=确认目标理解`
+8. **WRITE**（对话中）向用户展示：任务理解 + 初步方案 + 风险预判 + 分期建议
    - **IF** `00-design-brief.md EXISTS` → **READ** 并将摘要纳入展示
 
 **MATCH** `user_response`：
@@ -854,10 +858,8 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 
 1. **WRITE**（对话中）候选项 + 触发条件给用户
 2. **IF** 用户批准：
-   - **RESOLVE** 新 slug：取最大序号 +1，关键词追加 `-p{N}`
-   - **EXEC** 创建新目录 `docs/tasks/{新slug}/` → **ASSERT** `exit_code == 0`
-   - **WRITE** 新 `.checkpoint.json`，含 `parent_slug` 指向上期
-   - **GOTO** Step 1（CONFIRM_GOAL 简化为单句确认）
+   - **WRITE** checkpoint：`phase=phasing, parent_slug={当前slug}, next_phase_n={N}`
+   - **GOTO** Step 1（CONFIRM_GOAL 简化为单句确认；Step 1 的 RESOLVE `slug` 将检测 checkpoint 中 `parent_slug` 触发分期任务分支，自动扫描目录生成新序号）
    - team-spec 调度时额外传递上期 `01-plan.md` 候选表和 `03-sdd.md` 路径
 
    **ELSE** → 记录用户决策，流程结束
@@ -982,6 +984,7 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 **REF** `_team-rules/constitutional-rules.md` — 9 条 Constitutional Rules
 **REF** `_team-rules/first-principles.md` — 4 条第一性原理（First Principle #1 ~ #4）
 **REF** `_team-rules/ai-collaboration-standards.md` — AI 协作资产与 Prompt 工程规范
+**REF** `_team-rules/spec-driven-workflow.md` — 有向图回退规则与回退次数上限
 
 编排阶段尤其注意：
 

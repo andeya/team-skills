@@ -67,8 +67,13 @@ NO CODE WITHOUT SPEC FIRST
 
 **RESOLVE** `slug`（首个命中即停）：
 
-1. 扫描 `docs/tasks/` 取最大序号 +1（从 `0001` 起），拼接 kebab-case 关键词，整体 ≤ 50 字符
-2. *NONE*（`docs/tasks/` 不存在）→ 创建目录，序号从 `0001` 起
+1. **IF** `docs/tasks/` NOT_EXISTS → 创建目录，最大序号 = 0
+   **ELSE** → **READ** `docs/tasks/` 已有目录 → 提取所有匹配 `NNNN-*` 格式的目录名中的四位数字前缀 → 取最大值记为最大序号（无匹配目录则最大序号 = 0）
+2. **IF** 用户传入已有 slug 且 `docs/tasks/{slug}/` EXISTS → 复用该 slug
+3. *DEFAULT* → 最大序号 +1，零填充四位，拼接 `{NNNN}-{keyword}`（kebab-case，≤ 50 字符）
+4. **EXEC** 创建 `docs/tasks/{slug}/` 目录（**IF** 已存在 → 跳过）→ **ASSERT** `exit_code == 0`
+
+> TRAP：序号计算必须基于目录扫描结果，不可硬编码 `0001`。
 
 产出到 `docs/tasks/{slug}/`。
 
@@ -294,6 +299,7 @@ NO CODE WITHOUT SPEC FIRST
 **REF** `_team-rules/constitutional-rules.md` — 9 条 Constitutional Rules
 **REF** `_team-rules/first-principles.md` — 4 条第一性原理（First Principle #1 ~ #4）
 **REF** `_team-rules/spec-driven-workflow.md` — Spec-Driven 开发原则与 TDD 工作流
+**REF** `_team-rules/task-lifecycle.md` — 来源标签规范（§1.3）
 
 规格制定阶段尤其注意：
 

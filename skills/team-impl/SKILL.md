@@ -290,10 +290,11 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 > 用独立的全量验证确认实现正确。此阶段的每个"通过"声明必须基于刚执行的命令输出，不是 Phase 1 的记忆。
 
 1. **RESOLVE** `verify_cmd`（首个命中即停）：
-   1. `READ("05-risk.md", "§一验证计划")`
+   1. `READ("05-risk.md", "§一验证计划")`（精简模式下不存在属于正常）
    2. `READ("CLAUDE.md").verify_cmd` / `READ(".cursor/rules/")`
    3. `READ("package.json").scripts.test` / `READ("Makefile")` / `READ("Cargo.toml")` / `READ("CI 配置")`
-   4. *NONE* → **NEEDS_CONTEXT**：请用户提供验证命令，记录到 `06-tdd-log.md`
+   4. 手动验证可行（截图 / curl / 日志对比）→ 标注验证方式，继续
+   5. *NONE* → **NEEDS_CONTEXT**：请用户提供验证命令，记录到 `06-tdd-log.md`
 
 2. **EXEC** `verify_cmd`（测试）→ **ASSERT** `exit_code == 0` && `failures == 0`
 3. **EXEC** 项目 lint 命令 → **ASSERT** `exit_code == 0`

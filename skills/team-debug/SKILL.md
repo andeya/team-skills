@@ -207,6 +207,7 @@ NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST
 **REF** `_team-rules/constitutional-rules.md` — 9 条 Constitutional Rules
 **REF** `_team-rules/first-principles.md` — 4 条第一性原理（First Principle #1 ~ #4）
 **REF** `_team-rules/verification-protocol.md` — 5 步验证协议
+**REF** `_team-rules/spec-driven-workflow.md` — TDD 修复循环与有向图回退规则
 
 调试阶段尤其注意：
 

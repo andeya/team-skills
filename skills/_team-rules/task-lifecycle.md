@@ -33,11 +33,24 @@ docs/tasks/{NNNN}-{keyword}/
 
 格式：`{NNNN}-{keyword}`
 
-- 序号：扫描 `docs/tasks/` 已有目录取最大序号 +1，从 `0001` 起
 - 关键词：从任务描述提取，kebab-case
 - 整体 ≤ 50 字符
 - 示例：`0001-add-tooltip`、`0012-refactor-auth`
-- 分期继承任务：在上期关键词后追加 `-p{N}`（N 从 2 起），使用新序号。如 `0001-add-tooltip`（P1）→ `0002-add-tooltip-p2`（P2）→ `0005-add-tooltip-p3`（P3）
+- 分期继承任务：使用新序号，在上期关键词后追加 `-p{N}`（N 从 2 起）。如 `0001-add-tooltip`（P1）→ `0002-add-tooltip-p2`（P2）→ `0005-add-tooltip-p3`（P3）
+
+#### Slug 解析流程
+
+> 所有需要生成 slug 的 Skill（`team-orchestrator`、`team-spec`、`team-brainstorm`）统一遵循此流程，不可自行实现序号计算。
+
+1. **IF** `docs/tasks/` NOT_EXISTS → 创建目录，最大序号 = 0
+   **ELSE** → **READ** `docs/tasks/` 已有目录 → 提取所有匹配 `NNNN-*` 格式的目录名中的四位数字前缀 → 取最大值记为最大序号（无匹配目录则最大序号 = 0）
+2. **RESOLVE** `slug`（首个命中即停）：
+   1. **IF** 用户传入已有 slug 且 `docs/tasks/{slug}/` EXISTS → 复用该 slug
+   2. **IF** 分期继承任务（上下文含 `parent_slug`）→ 最大序号 +1，零填充四位，关键词追加 `-p{N}` 后缀
+   3. *DEFAULT* → 最大序号 +1，零填充四位，拼接 `{NNNN}-{keyword}`
+3. **EXEC** 创建 `docs/tasks/{slug}/` 目录（**IF** 已存在 → 跳过）→ **ASSERT** `exit_code == 0`
+
+> TRAP：序号计算必须基于目录扫描结果，不可硬编码 `0001`。"从 `0001` 起"仅指无已有目录时的初始值（最大序号 0 + 1 = 1）。
 
 ### 1.3 信息来源标签
 

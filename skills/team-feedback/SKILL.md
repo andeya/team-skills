@@ -135,10 +135,11 @@ NO IMPLEMENTATION WITHOUT TECHNICAL VERIFICATION FIRST
 
 **RESOLVE** `verify_cmd`（首个命中即停）：
 
-1. `READ("05-risk.md", "§一验证计划")`
+1. `READ("05-risk.md", "§一验证计划")`（精简模式下不存在属于正常）
 2. `READ("CLAUDE.md").verify_cmd` / `READ(".cursor/rules/")`
-3. `READ("package.json").scripts.test` / `READ("Makefile")` / `READ("Cargo.toml")`
-4. *NONE* → **NEEDS_CONTEXT**：请用户提供验证命令
+3. `READ("package.json").scripts.test` / `READ("Makefile")` / `READ("Cargo.toml")` / `READ("CI 配置")`
+4. 手动验证可行（截图 / curl / 日志对比）→ 标注验证方式，继续
+5. *NONE* → **NEEDS_CONTEXT**：请用户提供验证命令
 
 实施顺序：
 
@@ -222,6 +223,8 @@ NO IMPLEMENTATION WITHOUT TECHNICAL VERIFICATION FIRST
 
 **REF** `_team-rules/constitutional-rules.md` — 9 条 Constitutional Rules
 **REF** `_team-rules/first-principles.md` — 4 条第一性原理（First Principle #1 ~ #4）
+**REF** `_team-rules/spec-driven-workflow.md` — TDD 逐项验证与有向图回退规则
+**REF** `_team-rules/verification-protocol.md` — verify_cmd 解析流程与 5 步验证协议
 
 反馈处理阶段尤其注意：
 

@@ -192,7 +192,7 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 
 - 问题 ID 和严重级别
 - 具体位置（文件 + 行号）
-- 问题描述
+- 问题描述（不是"有 bug"，而是"第 42 行空指针"）
 - 建议的修复方案
 - **IF** 回退到 team-impl → 提供修复后的期望测试用例
 
@@ -459,6 +459,9 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 
 **REF** `_team-rules/constitutional-rules.md` — 9 条 Constitutional Rules
 **REF** `_team-rules/first-principles.md` — 4 条第一性原理（First Principle #1 ~ #4）
+**REF** `_team-rules/spec-driven-workflow.md` — SDD 验证链与有向图回退规则
+**REF** `_team-rules/task-lifecycle.md` — 来源标签规范（§1.3）
+**REF** `_team-rules/ai-collaboration-standards.md` — 消费方契约原则（§1.2）与资产维护机制（§1.3）
 
 审查阶段尤其注意：
 

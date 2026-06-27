@@ -60,10 +60,9 @@ NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE FIRST
 
 1. `READ("05-risk.md", "§一验证计划")`
 2. `READ("CLAUDE.md").verify_cmd` / `READ(".cursor/rules/")`
-3. `READ("package.json").scripts.test` / `READ("Makefile")` / `READ("Cargo.toml")`
-4. *NONE*：
-   - 手动验证可行（`截图` / `curl` / `日志对比`）→ 标注验证方式
-   - *DEFAULT* → **NEEDS_CONTEXT**：请用户提供验证命令
+3. `READ("package.json").scripts.test` / `READ("Makefile")` / `READ("Cargo.toml")` / `READ("CI 配置")`
+4. 手动验证可行（截图 / curl / 日志对比）→ 标注验证方式，继续
+5. *NONE* → **NEEDS_CONTEXT**：请用户提供验证命令
 
 ### Step 2：执行验证
 
@@ -148,7 +147,7 @@ NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE FIRST
 | 测试通过 | `failures == 0` + `exit_code == 0` | 上一轮运行、"应该能过" |
 | Lint 干净 | `errors == 0` + `exit_code == 0` | 只检查部分文件、推测 |
 | 构建成功 | `exit_code == 0` + 无 error | Lint 通过了、日志看起来对 |
-| Bug 已修复 | 原始症状复现测试通过 | 代码改了、假设修好了 |
+| Bug 已修复 | 原始症状复现测试通过 + 回归通过 | 代码改了、假设修好了 |
 | 回归测试通过 | 红-绿循环验证通过 | 测试通过一次 |
 | Agent 完成 | `git diff` 显示变更 | Agent 报告"成功了" |
 | 需求满足 | 逐条对照 checklist | 测试通过了 |
