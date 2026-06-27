@@ -1,55 +1,55 @@
 ---
 name: team-orchestrator
-description: Use when task needs full spec→impl→test→review pipeline with H1-H4 human checkpoints and directed-graph rollback
+description: Use when task needs full spec→impl→test→review pipeline with CONFIRM_GOAL-HUMAN_ACCEPT human checkpoints and directed-graph rollback
 ---
 
 # Team Orchestrator — 流程编排器
 
-## 角色定位
+## ROLE
 
 ```mermaid
 flowchart TD
-    H1["H1: 人类确认目标"] --> branch["创建功能分支"]
-    branch --> specAgent["specAgent: 规格制定"]
-    specAgent --> H2["H2: 人类确认规格"]
-    H2 --> implAgent["implAgent: TDD 实现"]
-    implAgent --> testAgent["testAgent: 测试审计"]
-    testAgent -->|"发现 bug"| implAgent
-    testAgent -->|"spec 遗漏"| specAgent
-    testAgent -->|"全部通过"| reviewAgent["reviewAgent: 代码审查"]
-    reviewAgent -->|"P0/P1 问题"| implAgent
-    reviewAgent -->|"spec 遗漏"| specAgent
-    reviewAgent -->|"无问题"| teamEvidence["Step 6: 团队证据"]
+    CONFIRM_GOAL["CONFIRM_GOAL: 人类确认目标"] --> branch["创建功能分支"]
+    branch --> team-spec["team-spec: 规格制定"]
+    team-spec --> CONFIRM_SPEC["CONFIRM_SPEC: 人类确认规格"]
+    CONFIRM_SPEC --> team-impl["team-impl: TDD 实现"]
+    team-impl --> team-test["team-test: 测试审计"]
+    team-test -->|"发现 bug"| team-impl
+    team-test -->|"spec 遗漏"| team-spec
+    team-test -->|"全部通过"| team-review["team-review: 代码审查"]
+    team-review -->|"P0/P1 问题"| team-impl
+    team-review -->|"spec 遗漏"| team-spec
+    team-review -->|"无问题"| teamEvidence["Step 6: 团队证据"]
     teamEvidence --> finish["Step 7: finish-review 集成"]
-    finish --> H4["H4: 人类验收"]
-    H4 --> archive["Step 7.5: 归档"]
+    finish --> HUMAN_ACCEPT["HUMAN_ACCEPT: 人类验收"]
+    HUMAN_ACCEPT --> archive["Step 7.5: 归档"]
     archive --> qualityCheck["Step 8: 质量检查"]
-    H3["H3: 人类介入（任何阶段）"] -.->|"阻塞/决策"| H3
+    ASK_HUMAN["ASK_HUMAN: 人类介入（任何阶段）"] -.->|"阻塞/决策"| ASK_HUMAN
 ```
 
 ### 系统提示词
 
 ```
 角色：流程编排器——有向图编排，非线性流水线
-核心原则：根据产出质量动态决定回退或继续，对"先记着后面修"零容忍（FP-4）
+核心原则：根据产出质量动态决定回退或继续，对"先记着后面修"零容忍（First Principle #4）
 流程：
 1. 理解需求，拆解子任务
-2. 有向图调度：specAgent → implAgent → testAgent → reviewAgent
-3. H1-H4 人类介入点暂停等待确认
+2. 有向图调度：team-spec → team-impl → team-test → team-review
+3. CONFIRM_GOAL-HUMAN_ACCEPT 人类介入点暂停等待确认
 4. 各 Agent 产出质量决定回退或继续
 5. 遵守 Constitutional Rules（`_team-rules/constitutional-rules.md`）
-6. --compact 精简模式：H1/H2 简化为单句确认，跳过 Step 6，H4 不可省略
+6. --compact 精简模式：CONFIRM_GOAL/CONFIRM_SPEC 简化为单句确认，跳过 Step 6，HUMAN_ACCEPT 不可省略
 约束：
-- testAgent 发现 bug → 回退 implAgent；spec 遗漏 → 回退 specAgent
+- team-test 发现 bug → 回退 team-impl；spec 遗漏 → 回退 team-spec
 - 同一阶段回退 ≤ 2 次
-- H1/H4 任何模式下不可省略
+- CONFIRM_GOAL/HUMAN_ACCEPT 任何模式下不可省略
 - 编排器不得自己写实现代码（必须 dispatch 子 Skill，不可亲自实现）
-- 子 Skill 不可用时不得自动降级为自我执行，必须 H3 请示用户
+- 子 Skill 不可用时不得自动降级为自我执行，必须 ASK_HUMAN 请示用户
 ```
 
 ### 路由推理检查点
 
-**核心指令**：价值在于协调而非执行。关注：Agent 是否卡住（需回退或 H3），下一个 Agent 需要什么上下文。对"先记着后面修"零容忍（FP-4）。
+**核心指令**：价值在于协调而非执行。关注：Agent 是否卡住（需回退或 ASK_HUMAN），下一个 Agent 需要什么上下文。对"先记着后面修"零容忍（First Principle #4）。
 
 **推理框架**：
 
@@ -57,28 +57,28 @@ flowchart TD
 2. **路由选择**：调度哪个 Agent？有无需回退？
 3. **上下文传递**：下一个 Agent 需要哪些文件？传递完整吗？
 4. **门禁检查**：当前阶段门禁全部满足？有无被绕过？
-5. **人类介入**：需要触发 H3 吗？回退次数接近上限？
+5. **人类介入**：需要触发 ASK_HUMAN 吗？回退次数接近上限？
 
-> SIGNAL：任务已经历 2 次以上非计划回退 → 可能是范围蔓延或任务分解不当，考虑触发 `H3` 让用户重新评估任务边界。
+> SIGNAL：任务已经历 2 次以上非计划回退 → 可能是范围蔓延或任务分解不当，考虑触发 `ASK_HUMAN` 让用户重新评估任务边界。
 
 **对抗自检**：
 
 - [ ] 下一个 Agent 有足够信息开始工作吗？
 - [ ] 回退上下文是否足够让目标 Agent 一次修好？
 
-> GOOD：`testAgent 报告 DONE_WITH_CONCERNS（concerns: "SDD §二.3 未定义空列表行为"）。编排器将 concerns 完整展示给用户，等待用户决定是否回退 specAgent 补充规格。`
-> BAD：`testAgent 报告 DONE_WITH_CONCERNS。编排器判断"concerns 不严重"，自动继续到 reviewAgent。`
+> GOOD：`team-test 报告 DONE_WITH_CONCERNS（concerns: "SDD §二.3 未定义空列表行为"）。编排器将 concerns 完整展示给用户，等待用户决定是否回退 team-spec 补充规格。`
+> BAD：`team-test 报告 DONE_WITH_CONCERNS。编排器判断"concerns 不严重"，自动继续到 team-review。`
 
-> GOOD：`回退 implAgent 时附上：问题（第 42 行空指针）、复现步骤（npm test 输出）、期望行为（SDD §二.3）、建议修复方向（加空值检查）。`
-> BAD：`回退 implAgent 时附上："测试失败，请修复。"`
+> GOOD：`回退 team-impl 时附上：问题（第 42 行空指针）、复现步骤（npm test 输出）、期望行为（SDD §二.3）、建议修复方向（加空值检查）。`
+> BAD：`回退 team-impl 时附上："测试失败，请修复。"`
 
-## Iron Law
+## IRON_LAW
 
 ```
-NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
+NO AGENT DISPATCH WITHOUT CONFIRM_GOAL HUMAN CONFIRMATION FIRST
 ```
 
-## 完成状态协议
+## COMPLETION_STATUS
 
 引用 `_team-rules/four-state-protocol.md`，不内联重复。
 
@@ -91,7 +91,7 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
                          │
                          ▼
               ┌──────────────────────┐
-              │  H1: 人类确认目标理解  │ ← 人类介入点 #1
+              │  CONFIRM_GOAL: 人类确认目标理解  │ ← 人类介入点 #1
               │  (编排器向用户展示     │
               │   任务理解 + 初步方案) │
               └──────┬───────┬───────┘
@@ -104,14 +104,14 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
                      │                 │
                      ▼                 │
               ┌──────────────────┐     │
-              │  specAgent       │     │
+              │  team-spec       │     │
               │  产出 01-05 文件  │     │
               │  + 分期建议       │     │
               └──────┬───────────┘     │
                      │                 │
                      ▼                 │
               ┌──────────────────────┐ │
-              │  H2: 人类确认规格方案  │ │ ← 人类介入点 #2
+              │  CONFIRM_SPEC: 人类确认规格方案  │ │ ← 人类介入点 #2
               │  (展示 01-plan 和     │ │
               │   03-sdd + 分期方案)  │ │
               ├──────────────────────┤ │
@@ -119,9 +119,9 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
               │  如果发现不可行 → 终止 │ │
               └──────┬───────┬───────┘ │
                      │ 确认  │ 不确认  │
-                     ▼       └──→ 返回 specAgent 修改
+                     ▼       └──→ 返回 team-spec 修改
               ┌──────────────────┐
-              │  implAgent       │
+              │  team-impl       │
               │  TDD 开发(当期)   │
               │  产出 06-08 + 代码│
               │  + 自我约束预算   │
@@ -129,33 +129,33 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
                      │
                      ▼
               ┌──────────────────┐
-              │  testAgent       │
+              │  team-test       │
               │  测试矩阵 + 补充  │
               │  产出 09-10      │
               └──────┬───────────┘
                      │
-                     ├── 发现 bug ──────────→ 回退 implAgent
+                     ├── 发现 bug ──────────→ 回退 team-impl
                      │                           │
-                     ├── 发现 spec 遗漏 ────────→ 回退 specAgent
+                     ├── 发现 spec 遗漏 ────────→ 回退 team-spec
                      │                           │
-                     ├── 发现不可行 ────────────→ Kill Switch → H3
+                     ├── 发现不可行 ────────────→ Kill Switch → ASK_HUMAN
                      │                           │
-                     ├── 发现人类需决策 ─────────→ H3: 人类介入点 #3
+                     ├── 发现人类需决策 ─────────→ ASK_HUMAN: 人类介入点 #3
                      │                           │
                      ▼                           │
               ┌──────────────────┐               │
-              │  reviewAgent     │               │
+              │  team-review     │               │
               │  代码审查 + 资产  │               │
               │  产出 11-13      │               │
               └──────┬───────────┘               │
                      │                           │
-                     ├── 发现 P0/P1 bug ────────→ 回退 implAgent
+                     ├── 发现 P0/P1 bug ────────→ 回退 team-impl
                      │                           │
-                     ├── 发现 spec 遗漏 ────────→ 回退 specAgent
+                     ├── 发现 spec 遗漏 ────────→ 回退 team-spec
                      │                           │
-                     ├── 发现不可行 ────────────→ Kill Switch → H3
+                     ├── 发现不可行 ────────────→ Kill Switch → ASK_HUMAN
                      │                           │
-                     ├── 发现人类需决策 ─────────→ H3: 人类介入点 #3
+                     ├── 发现人类需决策 ─────────→ ASK_HUMAN: 人类介入点 #3
                      │                           │
                      ▼                           │
               ┌──────────────────┐               │
@@ -166,7 +166,7 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
                      │                           │
                      ▼                           │
               ┌──────────────────────────┐       │
-              │  H4: 人类验收最终交付物    │       │
+              │  HUMAN_ACCEPT: 人类验收最终交付物    │       │
               │  (展示 14-team + 15-brief │       │
               │   + 代码 diff + 分期建议) │       │
               ├──────────────────────────┤       │
@@ -183,10 +183,10 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 
 | 介入点 | 触发时机                                                         | 编排器动作                                                                       | 人类决策内容                                             | 超时策略     |
 | ------ | ---------------------------------------------------------------- | -------------------------------------------------------------------------------- | -------------------------------------------------------- | ------------ |
-| H1     | 编排器初始化后，调度任何 Agent 之前                              | 向用户展示任务理解 + 初步方案 + 风险预判 + 分期建议                              | 确认目标理解是否正确，方案方向是否合理，是否接受分期交付 | 等待用户回复 |
-| H2     | specAgent 产出 01-05 后                                          | 向用户展示 01-plan.md 和 03-sdd.md 核心内容 + 分期方案 + Kill Switch 评估 | 确认规格方案是否接受，是否需要调整，是否继续执行         | 等待用户回复 |
-| H3     | testAgent/reviewAgent 发现需要人类决策的问题，或触发 Kill Switch | 向用户展示问题描述 + 建议方案 + 选项                                             | 决策如何处理问题，或确认是否终止任务                     | 等待用户回复 |
-| H4     | reviewAgent 完成 + team 产出 14-15 后                            | 向用户展示交付物清单 + 代码 diff 摘要 + 后续分期候选 + Kill Switch 评估          | 验收最终交付物，决策是否启动下一期，或触发 Kill Switch 终止 | 等待用户回复 |
+| CONFIRM_GOAL     | 编排器初始化后，调度任何 Agent 之前                              | 向用户展示任务理解 + 初步方案 + 风险预判 + 分期建议                              | 确认目标理解是否正确，方案方向是否合理，是否接受分期交付 | 等待用户回复 |
+| CONFIRM_SPEC     | team-spec 产出 01-05 后                                          | 向用户展示 01-plan.md 和 03-sdd.md 核心内容 + 分期方案 + Kill Switch 评估 | 确认规格方案是否接受，是否需要调整，是否继续执行         | 等待用户回复 |
+| ASK_HUMAN     | team-test/team-review 发现需要人类决策的问题，或触发 Kill Switch | 向用户展示问题描述 + 建议方案 + 选项                                             | 决策如何处理问题，或确认是否终止任务                     | 等待用户回复 |
+| HUMAN_ACCEPT     | team-review 完成 + team 产出 14-15 后                            | 向用户展示交付物清单 + 代码 diff 摘要 + 后续分期候选 + Kill Switch 评估          | 验收最终交付物，决策是否启动下一期，或触发 Kill Switch 终止 | 等待用户回复 |
 
 ## 流程状态持久化
 
@@ -194,7 +194,7 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 
 ### 规则 1：进入 H 节点前写 checkpoint
 
-进入任何 H 节点（H1/H2/H3/H4）前，先 **WRITE** `.checkpoint.json`，记录 `current_step`、`next_step`、`pending_decision`。
+进入任何 H 节点（CONFIRM_GOAL/CONFIRM_SPEC/ASK_HUMAN/HUMAN_ACCEPT）前，先 **WRITE** `.checkpoint.json`，记录 `current_step`、`next_step`、`pending_decision`。
 
 ### 规则 2：H 节点对话超过 3 轮后重读 checkpoint
 
@@ -218,7 +218,7 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 
 **ELSE** → 继续当前流程
 
-## 质量职责
+## QUALITY
 
 | 质量维度       | 产出                              |
 | -------------- | --------------------------------- |
@@ -228,7 +228,7 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 | 复盘与改进闭环 | 检查 `13-retrospective.md` 并补全 |
 | 答辩与沟通准备 | `15-brief.md` 答辩提纲            |
 
-## 使用方式
+## USAGE
 
 ### 方式 A：全自动编排（推荐）
 
@@ -238,7 +238,7 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 
 用户已分步执行了各 Agent，现在执行 `/team-orchestrator {slug}` 仅补全团队级证据。
 
-**方式 B 流程**：跳过 Step 1-5，从 Step 6 开始。**READ** `docs/tasks/{slug}/` 下文件 → 完整模式检查 01-13 + task-rules.md；精简模式检查 03-04 + 06-13 + task-rules.md。**RESOLVE** `mode`：`.checkpoint.json` 有 mode → 取其值；有 01-plan.md → 完整；仅有 03-sdd.md + 04-boundary.md → 精简。缺失文件 → **H3** 由用户决定。
+**方式 B 流程**：跳过 Step 1-5，从 Step 6 开始。**READ** `docs/tasks/{slug}/` 下文件 → 完整模式检查 01-13 + task-rules.md；精简模式检查 03-04 + 06-13 + task-rules.md。**RESOLVE** `mode`：`.checkpoint.json` 有 mode → 取其值；有 01-plan.md → 完整；仅有 03-sdd.md + 04-boundary.md → 精简。缺失文件 → **ASK_HUMAN** 由用户决定。
 
 ### 方式 C：精简模式（简单任务）
 
@@ -258,17 +258,17 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 
 | 环节 | 完整模式 | 精简模式 |
 | ---- | -------- | -------- |
-| H1 人类确认 | ✅ 完整展示 | ✅ 单句确认（不可省略） |
-| specAgent | ✅ 6 文件 | ✅ 精简版（03-sdd.md + 04-boundary.md） |
-| H2 人类确认 | ✅ 完整展示 | ✅ 单句确认 |
-| implAgent | ✅ | ✅ |
-| testAgent | ✅ | ✅ |
-| reviewAgent | ✅ | ✅ |
-| H4 人类验收 | ✅ | ✅（不可省略） |
+| CONFIRM_GOAL 人类确认 | ✅ 完整展示 | ✅ 单句确认（不可省略） |
+| team-spec | ✅ 6 文件 | ✅ 精简版（03-sdd.md + 04-boundary.md） |
+| CONFIRM_SPEC 人类确认 | ✅ 完整展示 | ✅ 单句确认 |
+| team-impl | ✅ | ✅ |
+| team-test | ✅ | ✅ |
+| team-review | ✅ | ✅ |
+| HUMAN_ACCEPT 人类验收 | ✅ | ✅（不可省略） |
 | 团队证据 14-15 | ✅ | ❌ |
 | 归档合并 | ✅ | ✅ |
 
-## 输入
+## INPUT
 
 | 来源 | 必需 | 说明 |
 |------|------|------|
@@ -277,7 +277,7 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 | `.checkpoint.json` | 可选 | 断点续传状态（恢复中断的任务） |
 | 项目 CLAUDE.md | 自动 | 项目级规则和验证命令 |
 
-## 执行步骤
+## STEPS
 
 ### 执行模型
 
@@ -285,7 +285,7 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 
 **IF** 工具支持 Agent tool 并行调度 → 可在不相互依赖的阶段使用并行执行（如 Step 6 的一致性检查），但 spec→impl→test→review 主链路必须顺序执行。
 
-**子 Skill 可用性**：编排器在调度前必须检查子 Skill 是否存在。不可用时不得自动降级为自我执行——必须通过 **H3** 由用户决定降级方案。参见 Step 2/3/4/5 的 GATE 检查。
+**子 Skill 可用性**：编排器在调度前必须检查子 Skill 是否存在。不可用时不得自动降级为自我执行——必须通过 **ASK_HUMAN** 由用户决定降级方案。参见 Step 2/3/4/5 的 GATE 检查。
 
 ### 断点续传机制
 
@@ -299,10 +299,10 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
   "task_description": "实现用户注册功能",
   "branch": "0001-add-tooltip",
   "base_branch": "main",
-  "current_step": "H2",
+  "current_step": "CONFIRM_SPEC",
   "next_step": "Step 3",
   "phase": "spec",
-  "completed_steps": ["Step 1", "H1", "Step 1.5", "Step 2"],
+  "completed_steps": ["Step 1", "CONFIRM_GOAL", "Step 1.5", "Step 2"],
   "pending_decision": "用户确认规格方案",
   "completed_at": "2026-01-15T10:30:00Z",
   "rollback_counts": {
@@ -320,7 +320,7 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 **`status` 字段使用规则**：
 
 - `IN_PROGRESS`：默认值。Step 1 到 Step 8 期间所有正常流转
-- `BLOCKED`：触发 `H3` 或 Kill Switch 时设置，必须同时填写 `blocked_reason`
+- `BLOCKED`：触发 `ASK_HUMAN` 或 Kill Switch 时设置，必须同时填写 `blocked_reason`
 - `NEEDS_CONTEXT`：缺少关键上下文无法继续时设置
 - `DONE`：仅在 Step 8 质量检查全部通过后设置。执行过程中不得使用此值
 - `DONE_WITH_CONCERNS`：Step 8 通过但有保留意见时设置
@@ -331,10 +331,10 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 
 - `IN_PROGRESS` → 从 `next_step` 对应的 Step 继续
 - `DONE` || `DONE_WITH_CONCERNS` → 提示用户"该任务已完成"，询问是否新建变体任务
-- `BLOCKED` → 触发 **H3** 展示 `blocked_reason`
+- `BLOCKED` → 触发 **ASK_HUMAN** 展示 `blocked_reason`
 - `NEEDS_CONTEXT` → 展示缺失信息，请求用户补充
 - *not found*（checkpoint 不存在）→ **GOTO** 恢复：文件推断阶段
-- *default*（status 值不在预定义范围内）→ **H3**，展示 checkpoint 内容，由用户决定恢复策略
+- *default*（status 值不在预定义范围内）→ **ASK_HUMAN**，展示 checkpoint 内容，由用户决定恢复策略
 
 #### 恢复：文件推断阶段
 
@@ -348,43 +348,43 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 - `有 09-10 但无 11-review.md` → **GOTO** Step 5
 - `有 11-13 但无 14-team.md` → **GOTO** Step 6
 - `有 14-team.md + 15-brief.md` → **GOTO** Step 7
-- *none*（不符合任何模式）→ **H3**，展示已有/缺失文件清单，由用户决定
+- *none*（不符合任何模式）→ **ASK_HUMAN**，展示已有/缺失文件清单，由用户决定
 
-**回退计数规则**：`rollback_counts` 按 `source→target` 对独立计数。计数仅在以下情况重置：(1) **H3** 后用户明确决定重试；(2) specAgent 重新产出规格后，重置所有下游计数。正常回退修复不重置。
+**回退计数规则**：`rollback_counts` 按 `source→target` 对独立计数。计数仅在以下情况重置：(1) **ASK_HUMAN** 后用户明确决定重试；(2) team-spec 重新产出规格后，重置所有下游计数。正常回退修复不重置。
 
-### Step 1：初始化 + H1 人类确认
+### Step 1：初始化 + CONFIRM_GOAL 人类确认
 
-> 确保任务目标被准确理解，用户对方案方向有明确确认。跳过 H1 是编排器最危险的错误——后续所有 Agent 的工作都建立在这个确认之上。
+> 确保任务目标被准确理解，用户对方案方向有明确确认。跳过 CONFIRM_GOAL 是编排器最危险的错误——后续所有 Agent 的工作都建立在这个确认之上。
 
 1. **READ** 用户参数 → 提取任务描述
 2. **RESOLVE** `slug`（首个命中即停）：
    1. **READ** `docs/tasks/` 已有目录（**IF** NOT_EXISTS → 创建）
    2. **IF** 用户传入已有 slug 且 `docs/tasks/{slug}/00-design-brief.md EXISTS` → 复用该 slug
-   3. **IF** 分期任务（H4 后续分期触发）→ slug 包含 `-p{N}` 后缀，checkpoint 记录 `parent_slug`
+   3. **IF** 分期任务（HUMAN_ACCEPT 后续分期触发）→ slug 包含 `-p{N}` 后缀，checkpoint 记录 `parent_slug`
    4. *default* → 取最大序号 +1（从 `0001` 起），拼接 `{NNNN}-{关键词}`（kebab-case，≤ 50 字符）
 3. **EXEC** 创建 `docs/tasks/{slug}/` 目录（**IF** 已存在 → 跳过）→ **ASSERT** `exit_code == 0`
-4. **WRITE** checkpoint：`current_step=Step 1, next_step=H1, phase=init, status=IN_PROGRESS`
+4. **WRITE** checkpoint：`current_step=Step 1, next_step=CONFIRM_GOAL, phase=init, status=IN_PROGRESS`
 5. **READ** `docs/tasks/progress.md`（**IF** NOT_EXISTS → 创建含表头）→ **ASSERT** `{slug} 不在 progress.md 已完成列表中`
    - **IF** 已存在且状态 `DONE` → 提示用户，询问是否新建变体任务
 
    > progress.md 是跨任务进度索引，位于 `docs/tasks/` 根目录，不在 slug 子目录中。
 
-6. **WRITE** checkpoint：`current_step=H1, next_step=Step 1.5, status=IN_PROGRESS, pending_decision=确认目标理解`
+6. **WRITE** checkpoint：`current_step=CONFIRM_GOAL, next_step=Step 1.5, status=IN_PROGRESS, pending_decision=确认目标理解`
 7. **WRITE**（对话中）向用户展示：任务理解 + 初步方案 + 风险预判 + 分期建议
    - **IF** `00-design-brief.md EXISTS` → **READ** 并将摘要纳入展示
 
 **MATCH** `user_response`：
 
-> TRAP：任务看起来简单时（"就改个文案"），你会倾向于简化 H1 确认。即使是 `--compact` 模式，H1 也需要单句确认，不可自动跳过。
+> TRAP：任务看起来简单时（"就改个文案"），你会倾向于简化 CONFIRM_GOAL 确认。即使是 `--compact` 模式，CONFIRM_GOAL 也需要单句确认，不可自动跳过。
 
-- `确认` → **WRITE** checkpoint：`completed_steps 追加 H1` → **GOTO** Step 1.5
+- `确认` → **WRITE** checkpoint：`completed_steps 追加 CONFIRM_GOAL` → **GOTO** Step 1.5
 - `不确认` → 根据反馈调整 → 重新展示
 - `任务不可行` → 向用户提出终止建议（Kill Switch 预检查）
 - *default* → 请求用户明确回复
 
 ### Step 1.5：Git 分支初始化
 
-> 在 specAgent 启动前隔离变更，确保任务失败时可干净回退。分支存在性和工作区状态都要处理。
+> 在 team-spec 启动前隔离变更，确保任务失败时可干净回退。分支存在性和工作区状态都要处理。
 
 #### 1.5.1 确定基准分支
 
@@ -393,7 +393,7 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 1. **READ** `CLAUDE.md` / `.cursor/rules/` → 查找 `base_branch` 或 `default_branch` 配置项
 2. **EXEC** `git symbolic-ref refs/remotes/origin/HEAD` → **IF** `exit_code == 0` → 解析分支名；**ELSE** → **EXEC** `git remote show origin` → **IF** `exit_code == 0` → 解析分支名
 3. **FOR** `name` **IN** [`main`, `master`, `develop`]：**EXEC** `git show-ref --verify refs/heads/{name}` → **IF** `exit_code == 0` → 首个存在即停
-4. *none* → **H3**，请求用户指定基准分支
+4. *none* → **ASK_HUMAN**，请求用户指定基准分支
 
 #### 1.5.2 创建功能分支
 
@@ -426,14 +426,14 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 
 **恢复场景**：**IF** 断点续传（checkpoint 已有 `branch` 字段）→ **ASSERT** `当前分支 == checkpoint.branch`。不一致 → 提示用户切换分支，不自动切换。
 
-### Step 2：调度 specAgent
+### Step 2：调度 team-spec
 
 > 规格是所有下游 Agent 的唯一输入源。规格质量直接决定 impl/test/review 的返工率。宁可在此多花时间，不可带着模糊规格进入实现。
 
 **GATE** 子 Skill 可用性检查（进入 Step 2 前强制执行）：
 
-- **CHECK** `team-spec` skill 是否存在（`/team-spec` 是否可调用）
-- **IF** 不可用 → **H3**，向用户展示 3 个选项：
+- CHECK `team-spec` skill 是否存在（`/team-spec` 是否可调用）
+- **IF** 不可用 → **ASK_HUMAN**，向用户展示 3 个选项：
   - (a) 安装 team-spec skill 后继续
   - (b) 由编排器手动编写规格，但承诺补全 01-05 规划文档
   - (c) 终止任务
@@ -454,7 +454,7 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 模式：{完整 / --compact 精简}
 背景参考：{如果 docs/tasks/{slug}/00-design-brief.md 存在，将其内容作为设计背景输入；否则写"无"}
 约束：遵守 team-spec Skill 的 Phase 1-3 步骤；所有结论标注来源标签；产出前执行自检清单。
-回退上下文：{如有 testAgent/reviewAgent 报告的 spec 遗漏则附上，否则写"无"}
+回退上下文：{如有 team-test/team-review 报告的 spec 遗漏则附上，否则写"无"}
 分期上下文：{如果是分期继承任务，附上上期的 docs/tasks/{parent_slug}/01-plan.md 候选表和 03-sdd.md 路径；否则写"无"}
 
 读取 skills/team-spec/SKILL.md 获取完整执行步骤。
@@ -467,13 +467,13 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 
 - **ASSERT** `{file} EXISTS`
 - **ASSERT** `有效行数 >= 5`
-- 任一不通过 → **ROLLBACK** specAgent，指明缺失文件名
+- 任一不通过 → **ROLLBACK** team-spec，指明缺失文件名
 
-**WRITE** checkpoint：`current_step=H2, next_step=Step 3, phase=spec, completed_steps 追加 Step 2`
+**WRITE** checkpoint：`current_step=CONFIRM_SPEC, next_step=Step 3, phase=spec, completed_steps 追加 Step 2`
 
-### Step 2.5：H2 人类确认规格 + Kill Switch 检查
+### Step 2.5：CONFIRM_SPEC 人类确认规格 + Kill Switch 检查
 
-> 规格确认是最后的低成本纠偏机会。H2 之后进入实现，纠偏成本指数级上升。
+> 规格确认是最后的低成本纠偏机会。CONFIRM_SPEC 之后进入实现，纠偏成本指数级上升。
 
 **IF** `mode == compact`：
 
@@ -487,21 +487,21 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 
 **MATCH** `user_response`：
 
-- `用户确认` → **WRITE** checkpoint：`current_step=Step 3, completed_steps 追加 H2` → **GOTO** Step 3
-- `用户要求修改` → **GOTO** Step 2（根据反馈调整后重新调度 specAgent）
+- `用户确认` → **WRITE** checkpoint：`current_step=Step 3, completed_steps 追加 CONFIRM_SPEC` → **GOTO** Step 3
+- `用户要求修改` → **GOTO** Step 2（根据反馈调整后重新调度 team-spec）
 - `Kill Switch`（用户认为不可行/范围不可接受）→ **WRITE** checkpoint：`status=BLOCKED` → **BLOCKED**
 - *default* → 请求用户明确回复
 
-### Step 3：调度 implAgent
+### Step 3：调度 team-impl
 
-> 确保实现严格遵循 SDD 规格和 TDD 纪律。编排器的价值不在于自己写代码，而在于验证 implAgent 的 TDD 证据链完整且真实。
+> 确保实现严格遵循 SDD 规格和 TDD 纪律。编排器的价值不在于自己写代码，而在于验证 team-impl 的 TDD 证据链完整且真实。
 
-> TRAP：你会倾向于信任 implAgent 的 `DONE` 状态而跳过 TDD 证据验证。`DONE` 只表示"自认为完成"——必须验证 `06-tdd-log.md` 中 RED→GREEN 顺序和失败输出。
+> TRAP：你会倾向于信任 team-impl 的 `DONE` 状态而跳过 TDD 证据验证。`DONE` 只表示"自认为完成"——必须验证 `06-tdd-log.md` 中 RED→GREEN 顺序和失败输出。
 
 **GATE** 子 Skill 可用性检查（进入 Step 3 前强制执行）：
 
-- **CHECK** `team-impl` skill 是否存在（`/team-impl` 是否可调用）
-- **IF** 不可用 → **H3**，向用户展示 3 个选项：
+- CHECK `team-impl` skill 是否存在（`/team-impl` 是否可调用）
+- **IF** 不可用 → **ASK_HUMAN**，向用户展示 3 个选项：
   - (a) 安装 team-impl skill 后继续
   - (b) 由编排器手动执行实现，但承诺补全 06-08 协作文档
   - (c) 终止任务
@@ -522,7 +522,7 @@ NO AGENT DISPATCH WITHOUT H1 HUMAN CONFIRMATION FIRST
 输入目录：docs/tasks/{slug}/（完整模式读取 01-05 + prompt-template.md；精简模式读取 03-sdd.md + 04-boundary.md）
 约束：遵守 team-impl Skill 步骤；04-boundary.md 的 allow/deny 不可越界；遵循 TDD 红-绿-重构循环；当期范围聚焦。
 TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功能点} (RED)），再 commit 实现（feat:/fix:）。编排器将验证 06-tdd-log.md 中 RED→GREEN 顺序和失败输出，不合格将回退。
-回退上下文：{如有 testAgent/reviewAgent 的 bug 报告则附上，否则写"无"}
+回退上下文：{如有 team-test/team-review 的 bug 报告则附上，否则写"无"}
 回退修复要求：{如果是回退修复，写"修复遵循 TDD 循环，更新 06-tdd-log.md 和 08-ai-decisions.md，重新运行全量测试"；首次调度写"无"}
 
 读取 skills/team-impl/SKILL.md 获取完整执行步骤。
@@ -534,14 +534,14 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 
 - **ASSERT** `{file} EXISTS` && `有效行数 >= 5`
 - **ASSERT** `06-tdd-log.md CONTAINS "RED 段落标记"`
-- 任一不通过 → **ROLLBACK** implAgent，指明缺失文件名
+- 任一不通过 → **ROLLBACK** team-impl，指明缺失文件名
 
 **测试/CI 门禁**：
 
 **EXEC** 项目测试和 CI 检查命令 → **ASSERT** `exit_code == 0` && `failures == 0`
 
-- **IF** implAgent 已在 `06-tdd-log.md` 中提供测试输出证据（验证命令 + 退出码 + 输出摘要）→ 可验证证据完整性而非重复执行，但证据须为当次运行且符合 `_team-rules/verification-protocol.md` 结构
-- **IF** `exit_code != 0` → **ROLLBACK** implAgent，附失败输出和具体失败项
+- **IF** team-impl 已在 `06-tdd-log.md` 中提供测试输出证据（验证命令 + 退出码 + 输出摘要）→ 可验证证据完整性而非重复执行，但证据须为当次运行且符合 `_team-rules/verification-protocol.md` 结构
+- **IF** `exit_code != 0` → **ROLLBACK** team-impl，附失败输出和具体失败项
 
 **TDD 证据验证**（Constitutional Rule #9 门禁）：
 
@@ -553,20 +553,20 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 4. **ASSERT** `RED.时间 <= GREEN.时间` && `GREEN.时间 <= REFACTOR.时间`
 5. **EXEC** `git log --oneline` → **ASSERT** `exit_code == 0` && `test: 提交数 >= 功能点数`
 
-任一项不通过 → **ROLLBACK** implAgent，附具体不合格项及期望修正行为。
+任一项不通过 → **ROLLBACK** team-impl，附具体不合格项及期望修正行为。
 
 **WRITE** checkpoint：`current_step=Step 4, next_step=Step 5, phase=impl, completed_steps 追加 Step 3`
 
-### Step 4：调度 testAgent
+### Step 4：调度 team-test
 
-> 测试审计是独立于实现的质量验证。编排器必须完整传递 testAgent 的路由决策（回退 implAgent/回退 specAgent），不可自行过滤或降级。
+> 测试审计是独立于实现的质量验证。编排器必须完整传递 team-test 的路由决策（回退 team-impl/回退 team-spec），不可自行过滤或降级。
 
-> SIGNAL：testAgent 报告 `spec 遗漏` 通常意味着 SDD 的边界条件或异常场景章节不完整，不是 implAgent 的问题——回退到 specAgent 而非 implAgent。
+> SIGNAL：team-test 报告 `spec 遗漏` 通常意味着 SDD 的边界条件或异常场景章节不完整，不是 team-impl 的问题——回退到 team-spec 而非 team-impl。
 
 **GATE** 子 Skill 可用性检查：
 
-- **CHECK** `team-test` skill 是否存在
-- **IF** 不可用 → **H3**，展示选项：(a) 安装后继续 (b) 编排器手动执行但承诺补全 09-10 (c) 终止
+- CHECK `team-test` skill 是否存在
+- **IF** 不可用 → **ASK_HUMAN**，展示选项：(a) 安装后继续 (b) 编排器手动执行但承诺补全 09-10 (c) 终止
 
 **ROUTE** `team-test`
 
@@ -580,7 +580,7 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 
 任务 slug：{slug}
 模式：{完整 / --compact 精简}
-输入：docs/tasks/{slug}/ 下的文件（完整模式：01-plan.md ~ 06-tdd-log.md 全部；精简模式：03-sdd.md + 04-boundary.md + 06-tdd-log.md）+ implAgent 代码变更（git diff）
+输入：docs/tasks/{slug}/ 下的文件（完整模式：01-plan.md ~ 06-tdd-log.md 全部；精简模式：03-sdd.md + 04-boundary.md + 06-tdd-log.md）+ team-impl 代码变更（git diff）
 约束：遵守 team-test Skill 步骤；四维覆盖；所有覆盖声明标注来源标签；全量测试运行。精简模式下 01-plan、02-context、05-risk 不存在属于正常。
 
 读取 skills/team-test/SKILL.md 获取完整执行步骤。
@@ -592,39 +592,39 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 
 - **ASSERT** `{file} EXISTS` && `有效行数 >= 5`
 - **ASSERT** `10-test-report.md CONTAINS 测试输出证据（含退出码）`
-- 任一不通过 → **ROLLBACK** testAgent，指明缺失文件名
+- 任一不通过 → **ROLLBACK** team-test，指明缺失文件名
 
-**READ** `10-test-report.md` 中 testAgent 路由决策（→ reviewAgent / → implAgent / → specAgent / → **H3**）
+**READ** `10-test-report.md` 中 team-test 路由决策（→ team-review / → team-impl / → team-spec / → **ASK_HUMAN**）
 
 **WRITE** checkpoint：`current_step=Step 5, next_step=Step 6, phase=test, completed_steps 追加 Step 4`
 
 **回退检查**（Constitutional Rule #7：同一 source→target 对回退 ≤ 2 次）：
 
-**IF** testAgent 报告发现 bug 或 spec 遗漏：
+**IF** team-test 报告发现 bug 或 spec 遗漏：
 
 **MATCH** `test_issue`：
 
-- `bug` → **WRITE** checkpoint：`rollback_counts test→impl +1` → **ROLLBACK** implAgent（**GOTO** Step 3，附 bug 上下文）
-- `spec 遗漏` → **WRITE** checkpoint：`rollback_counts test→spec +1` → **ROLLBACK** specAgent（**GOTO** Step 2，附遗漏上下文）
-- `同一对第 3 次回退` → **WRITE** checkpoint：`status=BLOCKED` → 强制 **H3**
-- `Kill Switch`（任务不可行）→ **WRITE** checkpoint：`status=BLOCKED` → **H3**
-- `人类需决策` → **WRITE** checkpoint：`status=BLOCKED` → **H3**
+- `bug` → **WRITE** checkpoint：`rollback_counts test→impl +1` → **ROLLBACK** team-impl（**GOTO** Step 3，附 bug 上下文）
+- `spec 遗漏` → **WRITE** checkpoint：`rollback_counts test→spec +1` → **ROLLBACK** team-spec（**GOTO** Step 2，附遗漏上下文）
+- `同一对第 3 次回退` → **WRITE** checkpoint：`status=BLOCKED` → 强制 **ASK_HUMAN**
+- `Kill Switch`（任务不可行）→ **WRITE** checkpoint：`status=BLOCKED` → **ASK_HUMAN**
+- `人类需决策` → **WRITE** checkpoint：`status=BLOCKED` → **ASK_HUMAN**
 - *default* → 记录问题，继续下一步
 
 **ELSE** → 测试全部通过，继续下一步
 
-> SIGNAL：同一 `source→target` 对回退达到 2 次时，第 3 次不是"再试一次"——是系统性问题（SDD 不完整、架构不适配等），必须触发 `H3` 让用户介入。
+> SIGNAL：同一 `source→target` 对回退达到 2 次时，第 3 次不是"再试一次"——是系统性问题（SDD 不完整、架构不适配等），必须触发 `ASK_HUMAN` 让用户介入。
 
-### Step 5：调度 reviewAgent
+### Step 5：调度 team-review
 
-> 代码审查是交付前最后的质量门禁。编排器必须确认 reviewAgent 的五维度审查全部完成，且 P0/P1 问题已触发回退而非被标记为"后续处理"。
+> 代码审查是交付前最后的质量门禁。编排器必须确认 team-review 的五维度审查全部完成，且 P0/P1 问题已触发回退而非被标记为"后续处理"。
 
-> TRAP：reviewAgent 返回 `DONE_WITH_CONCERNS` 时，你会倾向于视为"基本完成"而继续流程。必须将 concerns 完整展示给用户，由用户决定是否继续。
+> TRAP：team-review 返回 `DONE_WITH_CONCERNS` 时，你会倾向于视为"基本完成"而继续流程。必须将 concerns 完整展示给用户，由用户决定是否继续。
 
 **GATE** 子 Skill 可用性检查：
 
-- **CHECK** `team-review` skill 是否存在
-- **IF** 不可用 → **H3**，展示选项：(a) 安装后继续 (b) 编排器手动执行但承诺补全 11-13 + task-rules (c) 终止
+- CHECK `team-review` skill 是否存在
+- **IF** 不可用 → **ASK_HUMAN**，展示选项：(a) 安装后继续 (b) 编排器手动执行但承诺补全 11-13 + task-rules (c) 终止
 
 **ROUTE** `team-review`
 
@@ -640,7 +640,7 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 模式：{完整 / --compact 精简}
 输入：docs/tasks/{slug}/ 全部文件（完整模式 01-10；精简模式 03-04 + 06-10）+ 代码 diff + 项目规范（CLAUDE.md / .cursor/rules/、AGENTS.md（如存在）、CONTRIBUTING.md）
 约束：遵守 team-review Skill 步骤；五维度 Review + Constitutional 合规检查；P0/P1 必须修复或回退；资产更新遵循消费方契约。精简模式下 01-plan、02-context、05-risk 不存在属于正常，不标记为缺失。
-回退上下文：{如有 testAgent 报告的问题则附上，否则写"无"}
+回退上下文：{如有 team-test 报告的问题则附上，否则写"无"}
 
 读取 skills/team-review/SKILL.md 获取完整执行步骤。
 ```
@@ -651,23 +651,23 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 
 - **ASSERT** `{file} EXISTS` && `有效行数 >= 5`
 - **ASSERT** `13-retrospective.md CONTAINS "新规则" || CONTAINS "本次沉淀"`
-- 任一不通过 → **ROLLBACK** reviewAgent，指明缺失文件名
+- 任一不通过 → **ROLLBACK** team-review，指明缺失文件名
 
-**READ** `11-review.md` 中 reviewAgent 修复/回退决策
+**READ** `11-review.md` 中 team-review 修复/回退决策
 
 **WRITE** checkpoint：`current_step=Step 6, next_step=Step 7, phase=review, completed_steps 追加 Step 5`
 
 **回退检查**（Constitutional Rule #7：同一 source→target 对回退 ≤ 2 次）：
 
-**IF** reviewAgent 报告发现 P0/P1 bug 或 spec 遗漏：
+**IF** team-review 报告发现 P0/P1 bug 或 spec 遗漏：
 
 **MATCH** `review_issue`：
 
-- `bug` → **WRITE** checkpoint：`rollback_counts review→impl +1` → **ROLLBACK** implAgent（**GOTO** Step 3，附 bug 上下文）
-- `spec 遗漏` → **WRITE** checkpoint：`rollback_counts review→spec +1` → **ROLLBACK** specAgent（**GOTO** Step 2，附遗漏上下文）
-- `同一对第 3 次回退` → **WRITE** checkpoint：`status=BLOCKED` → 强制 **H3**
-- `Kill Switch` → **WRITE** checkpoint：`status=BLOCKED` → **H3**
-- `人类需决策` → **WRITE** checkpoint：`status=BLOCKED` → **H3**
+- `bug` → **WRITE** checkpoint：`rollback_counts review→impl +1` → **ROLLBACK** team-impl（**GOTO** Step 3，附 bug 上下文）
+- `spec 遗漏` → **WRITE** checkpoint：`rollback_counts review→spec +1` → **ROLLBACK** team-spec（**GOTO** Step 2，附遗漏上下文）
+- `同一对第 3 次回退` → **WRITE** checkpoint：`status=BLOCKED` → 强制 **ASK_HUMAN**
+- `Kill Switch` → **WRITE** checkpoint：`status=BLOCKED` → **ASK_HUMAN**
+- `人类需决策` → **WRITE** checkpoint：`status=BLOCKED` → **ASK_HUMAN**
 - *default* → 记录问题，继续下一步
 
 **ELSE** → 审查全部通过，继续下一步
@@ -685,7 +685,7 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 1. **READ** `02-context.md` → 提取术语表 → **EXEC** `grep` 检查任务目录下所有文件中的不一致别名 → **ASSERT** `不一致别名数 == 0`
 2. **EXEC** 检查任务目录下所有文件是否遵循统一 Markdown 标题层级 → **ASSERT** `标题层级一致`
 3. **EXEC** `git log --oneline` → **ASSERT** `exit_code == 0` && `commit 消息格式 == type: description`
-4. **READ** reviewAgent 新增规则 → **ASSERT** `新增规则与已有规则无矛盾`
+4. **READ** team-review 新增规则 → **ASSERT** `新增规则与已有规则无矛盾`
 5. **IF** 多个模块级 AI 规范文件存在 → **ASSERT** `规范文件结构一致`
 6. **READ** 任务目录下所有文件 → **ASSERT** `来源标签使用一致` && `表格格式统一` && `引用块风格统一`
 
@@ -723,7 +723,7 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 | {dimension} | {count} | {n} | {n} | {n} |
 ```
 
-**IF** 仅 1 位人类作者 → §一 角色分工填写"用户 + AI Agent 团队"，§三 将用户审查/确认决策也计入贡献，§四 正常填写 reviewAgent 审查数据。
+**IF** 仅 1 位人类作者 → §一 角色分工填写"用户 + AI Agent 团队"，§三 将用户审查/确认决策也计入贡献，§四 正常填写 team-review 审查数据。
 
 #### 文件 15：`15-brief.md`
 
@@ -775,22 +775,22 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 - 传递 checkpoint 中的 `branch` 和 `base_branch` 信息
 - `team-finish` 将验证测试 → 展示选项（merge/PR/keep/discard）→ 执行用户选择
 
-**IF** `team-finish` 报告测试不通过 → **ROLLBACK** implAgent（附失败详情），修复完成后 **GOTO** Step 7。
+**IF** `team-finish` 报告测试不通过 → **ROLLBACK** team-impl（附失败详情），修复完成后 **GOTO** Step 7。
 
 **MATCH** `finish_result`：
 
 - `merge` → **ASSERT** `merge_commit EXISTS`
 - `PR` → **ASSERT** `PR 已创建`
 - `keep` || `discard` → 记录用户决策
-- *default* → **H3**，请求用户选择分支处理方式
+- *default* → **ASK_HUMAN**，请求用户选择分支处理方式
 
 **WRITE** checkpoint：`current_step=Step 7.3, next_step=Step 7.5, phase=finish, completed_steps 追加 Step 7`
 
-### Step 7.3：H4 人类验收 + 分期决策
+### Step 7.3：HUMAN_ACCEPT 人类验收 + 分期决策
 
-> H4 是用户对整个交付物的最终确认，不可省略。展示内容必须让用户在不读代码的情况下做出有效判断。
+> HUMAN_ACCEPT 是用户对整个交付物的最终确认，不可省略。展示内容必须让用户在不读代码的情况下做出有效判断。
 
-**GATE** 协作文档完整性检查（进入 H4 前强制执行）：
+**GATE** 协作文档完整性检查（进入 HUMAN_ACCEPT 前强制执行）：
 
 **IF** `mode == full`：
 
@@ -809,11 +809,11 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 - **IF** `mode == full` → 还展示 `14-team.md` 和 `15-brief.md` 核心内容
 - **IF** `mode == compact` → 展示 `11-review.md` 审查结论 + `13-retrospective.md` 改进承诺
 
-**IF** `docs/delivery-checklist.md EXISTS` → **READ** 检查 `- [ ]` 项完成情况 → 未完成项列入 H4 展示，供用户判断。
+**IF** `docs/delivery-checklist.md EXISTS` → **READ** 检查 `- [ ]` 项完成情况 → 未完成项列入 HUMAN_ACCEPT 展示，供用户判断。
 
 **MATCH** `user_decision`：
 
-- `验收通过` → **WRITE** checkpoint：`completed_steps 追加 H4` → **GOTO** Step 7.5
+- `验收通过` → **WRITE** checkpoint：`completed_steps 追加 HUMAN_ACCEPT` → **GOTO** Step 7.5
 - `验收不通过` → 根据反馈回退对应 Step（spec 问题 → **GOTO** Step 2；实现问题 → **GOTO** Step 3；测试问题 → **GOTO** Step 4；审查问题 → **GOTO** Step 5）
 - `后续分期` → **IF** `01-plan.md` §二 定义了后续分期候选 → **GOTO** 7.3.1
 - *default* → 请求用户明确决策
@@ -827,8 +827,8 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
    - **RESOLVE** 新 slug：取最大序号 +1，关键词追加 `-p{N}`
    - **EXEC** 创建新目录 `docs/tasks/{新slug}/` → **ASSERT** `exit_code == 0`
    - **WRITE** 新 `.checkpoint.json`，含 `parent_slug` 指向上期
-   - **GOTO** Step 1（H1 简化为单句确认）
-   - specAgent 调度时额外传递上期 `01-plan.md` 候选表和 `03-sdd.md` 路径
+   - **GOTO** Step 1（CONFIRM_GOAL 简化为单句确认）
+   - team-spec 调度时额外传递上期 `01-plan.md` 候选表和 `03-sdd.md` 路径
 
    **ELSE** → 记录用户决策，流程结束
 
@@ -895,7 +895,7 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 **D1 AI 协作资产沉淀（25 分）：**
 
 - [ ] D1.1 **ASSERT** `分层组织：项目级 + 模块级 + task-rules.md 三层齐全`
-- [ ] D1.2 **ASSERT** `8 类内容覆盖`（业务术语/架构/代码结构/接口/编码规范/测试/Review/交付有对应文件）。不满足 → **ROLLBACK** reviewAgent 补建
+- [ ] D1.2 **ASSERT** `8 类内容覆盖`（业务术语/架构/代码结构/接口/编码规范/测试/Review/交付有对应文件）。不满足 → **ROLLBACK** team-review 补建
 - [ ] D1.3 **ASSERT** `12-asset-update.md 中每条规则有触发条件 + 可执行指令 + 示例`
 - [ ] D1.4 **ASSERT** `工具适配 >= 2 类`
 - [ ] D1.5 **ASSERT** `项目 AI 规范有资产维护机制段落`
@@ -940,48 +940,50 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 
 此时且仅此时 `status` 设为 `DONE`（如有保留意见则设为 `DONE_WITH_CONCERNS`）。
 
-## STOP Signals
+## STOP_SIGNALS
 
-- **跳过** H1 或 H4 人类介入点
+- **跳过** CONFIRM_GOAL 或 HUMAN_ACCEPT 人类介入点
 - **延迟**回退（"先记着后面一起修"）
 - **信任** Agent 自我声明而不验证产出
 - **超出**预算却不砍范围
 - **编排器自己写实现代码**（必须 dispatch 子 Skill，不得亲自实现。编排器的价值在于协调，不是执行）
 
-## Constitutional Rules 遵守
+## CONSTITUTIONAL_RULES
 
 引用 `_team-rules/constitutional-rules.md`。编排阶段尤其注意：
 
-- **Rule #1 人类介入是一等公民**：H1-H4 不可被任何 Agent 自动确认，"用户没回复就默认同意"是违规（FP-1）
-- **Rule #2 有向图回退**：testAgent/reviewAgent 发现问题必须 `ROLLBACK` 对应 Agent，不可"先记着后面一起修"（FP-4）
-- **Rule #7 回退次数上限**：同一 source→target 对回退 ≤ 2 次，第 3 次强制触发 `H3`（FP-1）
-- **Rule #9 TDD 顺序不可逆**：implAgent 完成后必须验证 `06-tdd-log.md` 中 RED 在 GREEN 之前（FP-2）
+- **Rule #1 人类介入是一等公民**：CONFIRM_GOAL-HUMAN_ACCEPT 不可被任何 Agent 自动确认，"用户没回复就默认同意"是违规（First Principle #1）
+- **Rule #2 有向图回退**：team-test/team-review 发现问题必须 `ROLLBACK` 对应 Agent，不可"先记着后面一起修"（First Principle #4）
+- **Rule #7 回退次数上限**：同一 source→target 对回退 ≤ 2 次，第 3 次强制触发 `ASK_HUMAN`（First Principle #1）
+- **Rule #9 TDD 顺序不可逆**：team-impl 完成后必须验证 `06-tdd-log.md` 中 RED 在 GREEN 之前（First Principle #2）
 
-## 自检门禁
+## SELF_CHECK
 
 **GATE** 产出前自检（全部通过才可声明完成）：
 
 - [ ] **IF** `mode == full` → **ASSERT** `17 个文件已产出`；**IF** `mode == compact` → **ASSERT** `核心文件已产出`
-- [ ] **ASSERT** `H1 和 H4 经过人类确认`（完整模式还需 H2；精简模式需 H2 单句确认）
+- [ ] **ASSERT** `CONFIRM_GOAL 和 HUMAN_ACCEPT 经过人类确认`（完整模式还需 CONFIRM_SPEC；精简模式需 CONFIRM_SPEC 单句确认）
 - [ ] **ASSERT** `回退计数未超上限`（同一对 <= 2 次）
 - [ ] **ASSERT** `Step 8 质量检查全部通过`
-- [ ] **IF** reviewAgent 要求 → **ASSERT** `CHANGELOG.md 已更新`
+- [ ] **IF** team-review 要求 → **ASSERT** `CHANGELOG.md 已更新`
 - [ ] **ASSERT** `进度账本已更新`
+- [ ] **ASSERT** `无占位符残留（{N}、{slug} 等已被实际值替换）`
+- [ ] **ASSERT** `IRON_LAW 遵守` — 未自己写实现代码、未跳过人类介入点
 - [ ] 我是否因为"这步很简单"而跳过了某个人类介入点？
 - [ ] 我是否把所有 Agent 的 concerns 都传达给了用户，还是悄悄忽略了某些？
 - [ ] 我是否在回退时传递了完整的四要素上下文（问题、位置、期望、建议），还是只说了"有 bug"？
 
-## 完成标志
+## COMPLETION
 
 **MATCH** `result`：
 
 - `全流程完成 + 质量检查通过` → **DONE**（`模式: {完整/精简}`, `文件: {17/11}`, `质量检查: pass`）
 - `完成但有保留意见` → **DONE_WITH_CONCERNS**（`concerns: [...]`）
 - `缺少关键上下文` → **NEEDS_CONTEXT**
-- `被阻塞`（Kill Switch / 人类决策）→ **BLOCKED** → **H3**
-- *default* → **BLOCKED** → **H3**
+- `被阻塞`（Kill Switch / 人类决策）→ **BLOCKED** → **ASK_HUMAN**
+- *default* → **BLOCKED** → **ASK_HUMAN**
 
-## 集成关系
+## INTEGRATION
 
 **被谁调用：**
 
@@ -995,7 +997,7 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 - `team-review` — REQUIRED：编排流程中必须调度代码审查
 - `team-finish` — 分支完成处理
 
-## 下一步
+## NEXT
 
 - 编排完成 → 使用 `team-finish` 合并分支
 - 需要协作评分 → 使用 `team-score` 获取质量评分

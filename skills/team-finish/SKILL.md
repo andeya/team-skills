@@ -5,9 +5,9 @@ description: Use when implementation is complete, all tests pass, and you need t
 
 # Team Finish — 分支完成处理
 
-## 角色定位
+## ROLE
 
-> **分支生命周期**：`team-orchestrator` 在 H1 确认后创建功能分支（Step 1.5），本 Skill 在流程尾部（Step 7）负责分支收尾。
+> **分支生命周期**：`team-orchestrator` 在 CONFIRM_GOAL 确认后创建功能分支（Step 1.5），本 Skill 在流程尾部（Step 7）负责分支收尾。
 
 ### 系统提示词
 
@@ -18,7 +18,7 @@ description: Use when implementation is complete, all tests pass, and you need t
 
 ### 推理检查点
 
-> 测试未通过 = 不展示合并选项（FP-4）。用户未选择 = 不执行操作（FP-1）。每步有明确前置条件。
+> 测试未通过 = 不展示合并选项（First Principle #4）。用户未选择 = 不执行操作（First Principle #1）。每步有明确前置条件。
 
 **推理框架**：
 
@@ -33,13 +33,13 @@ description: Use when implementation is complete, all tests pass, and you need t
 - [ ] 前置条件是否真的满足？未满足时最坏后果？
 - [ ] 用户后悔时操作是否可逆？
 
-## Iron Law
+## IRON_LAW
 
 ```
 NO BRANCH COMPLETION WITHOUT TEST VERIFICATION FIRST
 ```
 
-## 质量职责
+## QUALITY
 
 | 质量维度 | 产出文件 |
 | -------- | -------- |
@@ -49,7 +49,7 @@ NO BRANCH COMPLETION WITHOUT TEST VERIFICATION FIRST
 | 知识沉淀 | `13-retrospective.md`、`15-brief.md`（编排模式） |
 | 进度追踪 | `progress.md` 更新（编排模式） |
 
-## 输入
+## INPUT
 
 | 来源 | 必需 | 说明 |
 |------|------|------|
@@ -58,7 +58,7 @@ NO BRANCH COMPLETION WITHOUT TEST VERIFICATION FIRST
 | `task-rules.md` | 可选 | 任务级规则（`mode == orchestrated` 时需合并到项目级） |
 | `progress.md` | 可选 | 进度账本（`mode == orchestrated` 时需更新） |
 
-## 执行步骤
+## STEPS
 
 ### Step 1：验证测试
 
@@ -72,10 +72,10 @@ NO BRANCH COMPLETION WITHOUT TEST VERIFICATION FIRST
 
 - 通过 → **GOTO** Step 1.5
 - 失败 → **MATCH** `mode`：
-  - `orchestrated` → **ROLLBACK** 编排器，由编排器 **ROUTE** `team-impl`（附上失败输出）
-  - *default* → **WRITE**（对话中）失败详情，推荐 `team-debug`，修复后 **GOTO** Step 1
+  - `orchestrated` → **ROLLBACK** 编排器，向编排器报告：建议路由到 `team-impl`（附上失败输出）
+  - *DEFAULT* → **WRITE**（对话中）失败详情，推荐 `team-debug`，修复后 **GOTO** Step 1
 
-> 不可忽略失败继续展示选项（FP-4）。
+> 不可忽略失败继续展示选项（First Principle #4）。
 
 ### Step 1.5：凭证泄露扫描
 
@@ -96,13 +96,13 @@ NO BRANCH COMPLETION WITHOUT TEST VERIFICATION FIRST
 2. `READ("CLAUDE.md").base_branch` / `READ(".cursor/rules/").default_branch`
 3. `EXEC("git symbolic-ref refs/remotes/origin/HEAD")` → 解析分支名
 4. **FOR** `name` **IN** [`main`, `master`, `develop`] → `EXEC("git show-ref --verify refs/heads/{name}")` 首个存在即停
-5. *none* → **H3**：向用户展示 `git branch --list` 和 `git remote -v`，让用户指定
+5. *NONE* → **ASK_HUMAN**：向用户展示 `git branch --list` 和 `git remote -v`，让用户指定
 
 **EXEC** `git merge-base HEAD {base_branch}` → 获取合并基点
 
 **ASSERT** `exit_code == 0`
 
-- 失败（分支无公共祖先）→ **BLOCKED**，触发 **H3**
+- 失败（分支无公共祖先）→ **BLOCKED**，触发 **ASK_HUMAN**
 
 ### Step 3：展示选项
 
@@ -150,7 +150,7 @@ NO BRANCH COMPLETION WITHOUT TEST VERIFICATION FIRST
        - 失败（auth 错误、远程未配置）→ **WRITE**（对话中）错误信息给用户，**BLOCKED**
   2. **RESOLVE** `pr_cmd`（首个命中即停）：
      1. `READ("CLAUDE.md").pr_cmd` / `READ(".cursor/rules/").pr_cmd`
-     2. *default* → `gh pr create --title "{slug}: {一句话描述}" --body "{变更摘要}"`
+     2. *DEFAULT* → `gh pr create --title "{slug}: {一句话描述}" --body "{变更摘要}"`
   3. **EXEC** `{pr_cmd}`
      - **ASSERT** `exit_code == 0`
        - 通过 → **WRITE**（对话中）PR URL
@@ -167,7 +167,7 @@ NO BRANCH COMPLETION WITHOUT TEST VERIFICATION FIRST
   2. **EXEC** `git branch -D {branch}`
      - **ASSERT** `exit_code == 0`
 
-- *default*（无效输入）→ **WRITE**（对话中）"请选择 1-4"，重新展示选项
+- *DEFAULT*（无效输入）→ **WRITE**（对话中）"请选择 1-4"，重新展示选项
 
 #### 子步骤 4.1：冲突处理
 
@@ -178,7 +178,7 @@ NO BRANCH COMPLETION WITHOUT TEST VERIFICATION FIRST
 - `A` → 手动解决冲突后继续
 - `B` → 中止合并，改为创建 PR
 - `C` → 中止合并，保留分支
-- *default* → **WRITE**（对话中）"请选择 A/B/C"
+- *DEFAULT* → **WRITE**（对话中）"请选择 A/B/C"
 
 ### Step 5：清理工作目录
 
@@ -262,7 +262,7 @@ NO BRANCH COMPLETION WITHOUT TEST VERIFICATION FIRST
 
 - 无需知识沉淀（独立使用模式）
 
-## STOP Signals
+## STOP_SIGNALS
 
 - **展示**选项在测试未通过时
 - **声明**完成在合并后未重新测试时
@@ -277,30 +277,32 @@ NO BRANCH COMPLETION WITHOUT TEST VERIFICATION FIRST
 > BAD：引用"上次测试通过了"跳过 Step 1 → 合并后未重新测试 → `progress.md` 未更新 → `task-rules.md` 有可泛化规则但"下次再合并" → 工作区残留未提交文件。
 > 典型的"终于要结束了"心态——降低标准换取速度。
 
-## Constitutional Rules 遵守
+## CONSTITUTIONAL_RULES
 
 引用 `_team-rules/constitutional-rules.md`。分支完成阶段尤其注意：
 
-- **Rule #1 人类介入是一等公民**：所有分支操作（合并/PR/丢弃）必须等待用户明确选择（FP-1）
-- **Rule #8 验证先行**：展示选项前必须通过新鲜测试执行验证（FP-4）
-- **Rule #3 产出必须验证**：合并后必须重新运行测试确认无回归（FP-4）
+- **Rule #1 人类介入是一等公民**：所有分支操作（合并/PR/丢弃）必须等待用户明确选择（First Principle #1）
+- **Rule #8 验证先行**：展示选项前必须通过新鲜测试执行验证（First Principle #4）
+- **Rule #3 产出必须验证**：合并后必须重新运行测试确认无回归（First Principle #4）
 
-## 自检门禁
+## SELF_CHECK
 
 **GATE** 完成前自检（全部通过才放行）：
 
 - [ ] **ASSERT** `exit_code == 0` && `failures == 0`（测试已通过）
 - [ ] **ASSERT** `base_branch` NOT_EMPTY
-- [ ] **ASSERT** `user_choice` NOT_EMPTY（用户已选择，非自行决定）
+- [ ] **ASSERT** `user_choice` NOT_EMPTY（用户已选择，非擅自决定）
 - [ ] `[Option 4]` **ASSERT** `user_input == "discard"`
 - [ ] **IF** `user_choice == Option 1` → **ASSERT** `merge_test_exit_code == 0`（合并后测试通过）
 - [ ] **IF** `user_choice` **IN** [`Option 1`, `Option 2`, `Option 4`] → **ASSERT** `worktree` 已清理
+- [ ] **ASSERT** `无占位符残留（{N}、{slug} 等已被实际值替换）`
+- [ ] **ASSERT** `IRON_LAW 遵守` — 测试通过后才展示选项，未跳过验证
 - [ ] **IF** `mode == orchestrated` → **ASSERT** `progress.md` 已更新
 - [ ] **IF** `mode == orchestrated` && `task-rules.md` 有可泛化规则 → **ASSERT** 已合并到 CLAUDE.md
 - [ ] 如果我明天用全新视角审视这个交付物，哪部分会让我不安？
 - [ ] 我是否因为"终于要结束了"而降低了完成标准？
 
-## 完成标志
+## COMPLETION
 
 **MATCH** `result`：
 
@@ -308,9 +310,9 @@ NO BRANCH COMPLETION WITHOUT TEST VERIFICATION FIRST
 - `操作成功但有 warning` → **DONE_WITH_CONCERNS**
 - `无法确定基准分支` → **NEEDS_CONTEXT**
 - `测试失败` || `合并冲突` → **BLOCKED**
-- *default* → **BLOCKED**，触发 **H3**
+- *DEFAULT* → **BLOCKED**，触发 **ASK_HUMAN**
 
-## 集成关系
+## INTEGRATION
 
 **被谁调用：**
 
@@ -322,7 +324,7 @@ NO BRANCH COMPLETION WITHOUT TEST VERIFICATION FIRST
 - `team-review` — 合并前确认审查已完成
 - `team-brainstorm` / `team-spec` — 下一个功能
 
-## 下一步
+## NEXT
 
 - 分支合并完成 → 开始下一个功能的 `team-brainstorm` 或 `team-spec`
 - 合并前审查未完成 → 先使用 `team-review`

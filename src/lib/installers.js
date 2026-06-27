@@ -27,6 +27,7 @@ export function logInstallResult(label, result) {
 export function installSkillsGlobal(targets, skills, rules, { dryRun, verb = '安装' }) {
   const tag = dryRun ? '[dry-run] ' : '';
   let count = 0;
+  const currentRuleNames = new Set(rules.map(r => r.name));
 
   for (const t of targets) {
     log.heading(`${verb} → ${t.label}`);
@@ -40,6 +41,7 @@ export function installSkillsGlobal(targets, skills, rules, { dryRun, verb = '�
     }
 
     const rulesDir = join(t.dir, '_team-rules');
+    cleanStaleRules(t.dir, currentRuleNames, { dryRun });
     if (!dryRun) ensureDir(rulesDir);
     for (const rule of rules) {
       const dest = join(rulesDir, rule.name);
@@ -103,6 +105,7 @@ export function verifyGlobalSymlinks(targets, skills, rules) {
 export function installSkillsProject(projectDir, ides, skills, rules, { dryRun, verb = '复制' }) {
   const tag = dryRun ? '[dry-run] ' : '';
   let count = 0;
+  const currentRuleNames = new Set(rules.map(r => r.name));
 
   for (const ideName of ides) {
     const ideSubdir = PROJECT_IDE_DIRS[ideName];
@@ -139,6 +142,7 @@ export function installSkillsProject(projectDir, ides, skills, rules, { dryRun, 
 
     const rulesDst = join(skillsDst, '_team-rules');
     if (!dryRun) ensureDir(rulesDst);
+    cleanStaleRules(skillsDst, currentRuleNames, { dryRun });
     for (const r of rules) {
       if (!dryRun) {
         const ruleDest = join(rulesDst, r.name);
@@ -171,6 +175,19 @@ export function cleanStaleSkills(targetDir, currentNames, { dryRun, exclude = []
       const tag = dryRun ? '[dry-run] ' : '';
       if (!dryRun) rmSync(join(targetDir, name), { recursive: true });
       log.warn(`${tag}移除旧 Skill: ${name}`);
+    }
+  }
+}
+
+export function cleanStaleRules(targetDir, currentRuleNames, { dryRun }) {
+  const rulesDir = join(targetDir, '_team-rules');
+  if (!existsSync(rulesDir)) return;
+  const existing = readdirSync(rulesDir).filter(name => name.endsWith('.md'));
+  for (const name of existing) {
+    if (!currentRuleNames.has(name)) {
+      const tag = dryRun ? '[dry-run] ' : '';
+      if (!dryRun) rmSync(join(rulesDir, name), { recursive: true });
+      log.warn(`${tag}移除旧规则: ${name}`);
     }
   }
 }

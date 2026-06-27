@@ -1,6 +1,6 @@
 # Review Checklist
 
-> reviewAgent 产出 | {slug} | {日期}
+> team-review 产出 | {slug} | {日期}
 
 ## 一、正确性
 

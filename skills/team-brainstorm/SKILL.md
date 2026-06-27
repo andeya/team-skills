@@ -5,7 +5,7 @@ description: Use when requirements are fuzzy, need to discuss and form a plan be
 
 # Team Brainstorm — 讨论形成方案
 
-## 角色定位
+## ROLE
 
 ### 系统提示词
 
@@ -41,13 +41,13 @@ description: Use when requirements are fuzzy, need to discuss and form a plan be
 - [ ] 方案如果是错的，最可能错在哪？
 - [ ] 六个月后维护者会对什么不满？
 
-## Iron Law
+## IRON_LAW
 
 ```
 NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 ```
 
-## 质量职责
+## QUALITY
 
 | 质量维度 | 产出文件 |
 | -------- | -------- |
@@ -55,16 +55,16 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 | 方案对比 | 方案比较表（对话中） |
 | 用户确认 | 确认记录（对话中） |
 
-## 输入
+## INPUT
 
 - 用户传入的参数即为任务描述
 - 项目源码和文档（探索阶段读取）
 
-## 产出目录
+## OUTPUT_TEMPLATE
 
 `docs/tasks/{slug}/`（slug 由 Phase 1 **RESOLVE**）
 
-## 执行步骤
+## STEPS
 
 ### Phase 1：探索
 
@@ -80,7 +80,7 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 5. **RESOLVE** `keyword`（首个命中即停）：
    1. 从用户需求提取核心关键词（kebab-case）
    2. 从项目上下文推断关键词
-   3. *none* → **NEEDS_CONTEXT**：请用户提供任务关键词
+   3. *NONE* → **NEEDS_CONTEXT**：请用户提供任务关键词
 6. **IF** `docs/tasks/ NOT_EXISTS` → 创建 `docs/tasks/`
 7. **READ** `docs/tasks/` 已有目录列表 → 取最大序号 +1（从 `0001` 起）→ 拼接 `slug` = `{序号}-{keyword}`（整体 ≤ 50 字符）
 8. **EXEC** 创建 `docs/tasks/{slug}/` 目录（**IF** 已存在 → 跳过）→ **ASSERT** `exit_code == 0`
@@ -92,7 +92,7 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 > TRAP：你会倾向于接受用户的初始框架，不质疑其前提假设。
 > 用户说"我需要一个缓存层"——但也许问题根源是查询太慢，缓存只是用户想到的第一个方案。
 
-> 一次最多 3 个问题，优先用选项形式降低用户认知负担（FP-1）。
+> 一次最多 3 个问题，优先用选项形式降低用户认知负担（First Principle #1）。
 
 向用户展示最多 3 个关键问题，等待用户一次回复：
 
@@ -102,7 +102,7 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 
 **IF** 用户回复揭示需求不可行：
 
-- **H3**：暂停设计，展示不可行原因，请用户决策（Kill Switch / 调整需求）
+- **ASK_HUMAN**：暂停设计，展示不可行原因，请用户决策（Kill Switch / 调整需求）
 
 **ELSE**：
 
@@ -137,7 +137,7 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 
 ### Phase 4：展示设计
 
-> 逐段确认而非一次倾倒，每段确认后再展示下一段。目标是让用户在每个维度上做出知情决策，而非被信息量压垮后草率同意（FP-1）。
+> 逐段确认而非一次倾倒，每段确认后再展示下一段。目标是让用户在每个维度上做出知情决策，而非被信息量压垮后草率同意（First Principle #1）。
 
 逐段展示设计，每段后等待用户确认：
 
@@ -159,7 +159,7 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 - 用户确认通过 → 继续 Phase 5
 - 用户要求修改 → **GOTO** Phase 3（仅重新展示修改后的方案，无需重新生成全部选项）
 - 用户决定放弃 → **BLOCKED**，记录原因
-- *default* → 向用户澄清确认意图
+- *DEFAULT* → 向用户澄清确认意图
 
 ### Phase 5：产出 00-design-brief.md
 
@@ -201,14 +201,14 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 | 当期（最小闭环） | {核心功能} | {具体交付物} | {估算} |
 | 后续分期（增强，可选） | {扩展功能} | {具体交付物} | {估算} |
 
-> 如任务范围小（预计修改 ≤ 3 文件），可标注"无需分期，一次交付"。后续分期经 H4 批准后将以新序号启动独立任务。
+> 如任务范围小（预计修改 ≤ 3 文件），可标注"无需分期，一次交付"。后续分期经 HUMAN_ACCEPT 批准后将以新序号启动独立任务。
 
 ## 用户确认记录
 
 - 确认时间：{YYYY-MM-DD}
 - 确认内容：{用户同意的方案和范围}
 
-## 下一步建议
+## NEXT
 
 - 推荐使用：{team-spec / team-impl}
 - 理由：{...}
@@ -228,40 +228,41 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 
 **MATCH** `user_intent`：
 
-- 用户接受默认路径 → **ROUTE** `team-spec {slug}`（在同一 slug 目录中产出完整 SDD）
-- 用户明确要求跳过规格阶段 → **ROUTE** `team-impl`（直接 TDD 实现）
+- 用户接受默认路径 → **ROUTE** `team-spec`（用 `Skill: team-spec` 加载并执行，传递 slug 参数）
+- 用户明确要求跳过规格阶段 → **ROUTE** `team-impl`（用 `Skill: team-impl` 加载并执行）
 - 用户未表态 → 推荐 `team-spec {slug}`，等待用户确认
-- *default*（其他意图）→ 询问用户偏好
+- *DEFAULT*（其他意图）→ 询问用户偏好
 
-## STOP Signals
+## STOP_SIGNALS
 
 - **跳过**代码库探索，凭空设计方案
 - **抛出**所有问题而不等用户逐个回复
 - **提供**单一方案，没有备选方案对比
 - **跳过**用户确认就进入实现或产出 `01-plan.md`
 
-## Constitutional Rules 遵守
+## CONSTITUTIONAL_RULES
 
 引用 `_team-rules/constitutional-rules.md`。brainstorm 阶段尤其注意：
 
-- **Rule #1 人类介入是一等公民**：每个方案设计决策必须等待用户确认，不可自行决定（FP-1）
-- **Rule #5 分期交付优先**：方案设计时主动考虑分期交付（FP-3）
-- **Rule #4 Kill Switch**：如果探索阶段发现需求不可行，立即暂停而非继续设计（FP-1 + FP-3）
+- **Rule #1 人类介入是一等公民**：每个方案设计决策必须等待用户确认，不可擅自决定（First Principle #1）
+- **Rule #5 分期交付优先**：方案设计时主动考虑分期交付（First Principle #3）
+- **Rule #4 Kill Switch**：如果探索阶段发现需求不可行，立即暂停而非继续设计（First Principle #1 + First Principle #3）
 
-## 自检门禁
+## SELF_CHECK
 
 **GATE** 产出前自检（全部通过才放行）：
 
 - [ ] 已 **READ** 代码库和现有实现（不是凭空设计）
 - [ ] **ASSERT** `方案数 >= 2`（不是只有一个选项）
-- [ ] **ASSERT** `用户已确认设计方案`（不是自行决定）
+- [ ] **ASSERT** `用户已确认设计方案`（不是擅自决定）
 - [ ] **ASSERT** `00-design-brief.md EXISTS`（已 **WRITE** 到 `docs/tasks/{slug}/`）
 - [ ] **ASSERT** `00-design-brief.md 无占位符残留`
 - [ ] **ASSERT** `01-plan.md NOT_EXISTS`（那是 team-spec 的职责）
-- [ ] 我是否真的探索了不同方向，还是只是同一个想法的变体？
+- [ ] - [ ] **ASSERT** `IRON_LAW 遵守` — 设计方案已获用户确认，未擅自决定
+我是否真的探索了不同方向，还是只是同一个想法的变体？
 - [ ] 如果用户的前提假设是错的，我的方案还成立吗？
 
-## 完成标志
+## COMPLETION
 
 **MATCH** `result`：
 
@@ -270,9 +271,9 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 - 需求信息不足，无法形成方案 → **NEEDS_CONTEXT**
 - 需求不可行 → **BLOCKED**
 - 用户决定放弃 → **DONE**（`状态: 用户主动终止`）
-- *default* → **NEEDS_CONTEXT**
+- *DEFAULT* → **NEEDS_CONTEXT**
 
-## 集成关系
+## INTEGRATION
 
 **被谁调用：**
 
@@ -283,7 +284,7 @@ NO IMPLEMENTATION WITHOUT USER APPROVED DESIGN FIRST
 - `team-spec` — REQUIRED：讨论完成后必须进行规格定义
 - `team-impl` — 仅当用户明确要求跳过规格阶段时可直接实现
 
-## 下一步
+## NEXT
 
 - 方案确定后 → 使用 `team-spec` 编写完整 SDD
 - 需要技术验证 → 使用 `team-debug` 进行原型验证

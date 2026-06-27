@@ -1,6 +1,6 @@
 # AI 协作资产更新记录
 
-> reviewAgent 产出
+> team-review 产出
 
 ## 资产层级概览
 
@@ -42,4 +42,4 @@
 
 | 日期         | 更新者      | 更新内容   | 关联任务 |
 | ------------ | ----------- | ---------- | -------- |
-| {YYYY-MM-DD} | reviewAgent | {更新摘要} | {slug}   |
+| {YYYY-MM-DD} | team-review | {更新摘要} | {slug}   |

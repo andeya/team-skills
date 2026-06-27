@@ -392,7 +392,7 @@ npm run setup      # 安装 Skills 到全局目录
 
 ### Skill 编写规范
 
-编写或修改 Skill 时，请参考 `skills/_team-rules/skill-spec.md`（Skill Spec v1.0：格式约定 + 关键词参考 + 20 条设计原则）。
+编写或修改 Skill 时，请参考 `CLAUDE.md` §2.8（Skill Spec：格式约定 + 关键词参考 + 设计原则）。
 
 ### 开发者斜杠命令（Claude Code）
 

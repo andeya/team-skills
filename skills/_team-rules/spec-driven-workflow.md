@@ -7,7 +7,7 @@
 ### 1.1 规格先于代码
 
 - 任何功能实现必须有对应的 SDD（Software Design Document）作为输入
-- SDD 是 implAgent 和 testAgent 的唯一规格来源——不依赖口头约定或聊天记录
+- SDD 是 team-impl 和 team-test 的唯一规格来源——不依赖口头约定或聊天记录
 - 修改类任务使用 Delta Spec（ADDED/MODIFIED/REMOVED），新建类任务使用完整 SDD
 
 ### 1.2 SDD 七部分质量标准
@@ -17,23 +17,23 @@
 | 部分          | 内容                                                       | 消费方                       |
 | ------------- | ---------------------------------------------------------- | ---------------------------- |
 | 背景与动机    | 为什么做、痛点、用户场景                                   | 所有 Agent                   |
-| 业务规则      | RFC 2119 强度标记（MUST/SHOULD/MAY）+ Given/When/Then 场景 | testAgent → 直接映射测试用例 |
-| 关键设计决策  | 选择方案 + 拒绝方案 + 拒绝理由                             | reviewAgent → 审查决策合理性 |
-| 数据流总览    | ASCII 架构图                                               | implAgent → 理解调用链路     |
-| 输入/输出规格 | 参数类型、约束、默认值、示例                               | implAgent + testAgent        |
-| 边界条件      | 空值、极值、并发、格式异常                                 | testAgent → 边界测试         |
-| 异常场景      | 错误码、错误消息、HTTP 状态                                | testAgent → 异常测试         |
+| 业务规则      | RFC 2119 强度标记（MUST/SHOULD/MAY）+ Given/When/Then 场景 | team-test → 直接映射测试用例 |
+| 关键设计决策  | 选择方案 + 拒绝方案 + 拒绝理由                             | team-review → 审查决策合理性 |
+| 数据流总览    | ASCII 架构图                                               | team-impl → 理解调用链路     |
+| 输入/输出规格 | 参数类型、约束、默认值、示例                               | team-impl + team-test        |
+| 边界条件      | 空值、极值、并发、格式异常                                 | team-test → 边界测试         |
+| 异常场景      | 错误码、错误消息、HTTP 状态                                | team-test → 异常测试         |
 
 ### 1.3 规格驱动的验证链
 
 ```
 SDD §二 业务规则（GWT 场景）
     ↓ 直接映射
-testAgent 测试用例
+team-test 测试用例
     ↓ 验证
-implAgent 实现代码
+team-impl 实现代码
     ↓ 审查
-reviewAgent 对照 SDD 逐条检查
+team-review 对照 SDD 逐条检查
 ```
 
 每个验证环节 **MUST** 引用 SDD 条目编号（如 B1、E2、M1），形成闭环可追溯链。
@@ -70,11 +70,11 @@ COMMIT: git commit（每个功能点一次，不攒多个功能点）
 
 | 发现者      | 问题类型         | 回退目标           |
 | ----------- | ---------------- | ------------------ |
-| testAgent   | 实现 bug         | → implAgent        |
-| testAgent   | SDD 未定义的场景 | → specAgent        |
-| reviewAgent | P0/P1 实现 bug   | → implAgent        |
-| reviewAgent | spec 遗漏        | → specAgent        |
-| 任何 Agent  | 任务不可行       | → Kill Switch → H3 |
+| team-test   | 实现 bug         | → team-impl        |
+| team-test   | SDD 未定义的场景 | → team-spec        |
+| team-review | P0/P1 实现 bug   | → team-impl        |
+| team-review | spec 遗漏        | → team-spec        |
+| 任何 Agent  | 任务不可行       | → Kill Switch → ASK_HUMAN |
 
 ### 3.2 回退携带上下文
 
@@ -87,4 +87,4 @@ COMMIT: git commit（每个功能点一次，不攒多个功能点）
 
 ### 3.3 回退次数上限
 
-同一阶段回退 ≤ 2 次。第 3 次强制触发 H3 人类介入。
+同一阶段回退 ≤ 2 次。第 3 次强制触发 ASK_HUMAN 人类介入。

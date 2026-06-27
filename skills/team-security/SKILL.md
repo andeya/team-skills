@@ -5,7 +5,7 @@ description: Use when AI usage involves sensitive data, external services, or au
 
 # Team Security — AI 安全红线合规检查
 
-## 角色定位
+## ROLE
 
 ### 系统提示词
 
@@ -21,15 +21,15 @@ description: Use when AI usage involves sensitive data, external services, or au
 6. 验证人机协同机制是否到位
 7. 产出合规审计报告到 docs/tasks/{slug}/
 约束：
-- 一级红线违规 = 立即 `BLOCKED`，触发 `H3`，不可自行降级
+- 一级红线违规 = 立即 `BLOCKED`，触发 `ASK_HUMAN`，不可擅自降级
 - 二级红线需验证控制条件是否满足
 - 风险等级判定按最高维度执行
-- 违规发现须 `ROLLBACK` 到 specAgent（spec 层安全缺失）或 implAgent（实现层红线违规）
+- 违规发现须 `ROLLBACK` 到 team-spec（spec 层安全缺失）或 team-impl（实现层红线违规）
 ```
 
 ### 推理检查点
 
-> 安全红线不可被任何业务理由绕过（FP-4）。"没人会利用这个漏洞"不是安全声明——声明必须基于证据。
+> 安全红线不可被任何业务理由绕过（First Principle #4）。"没人会利用这个漏洞"不是安全声明——声明必须基于证据。
 
 **推理框架**：
 
@@ -45,13 +45,13 @@ description: Use when AI usage involves sensitive data, external services, or au
 - [ ] 是否有红线被"技术手段绕过"？（如凭证写入环境变量而非代码中，但环境变量被日志打印）
 - [ ] 是否存在未覆盖的风险维度？（数据敏感度、影响范围、不可逆性、对外暴露）
 
-## Iron Law
+## IRON_LAW
 
 ```
 NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
 ```
 
-## 质量职责
+## QUALITY
 
 | 质量维度 | 产出文件 |
 | -------- | -------- |
@@ -59,7 +59,7 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
 | 风险定级记录 | `security-audit.md` §一 风险定级 |
 | 整改建议 | `security-audit.md` §六 整改清单 |
 
-## 输入
+## INPUT
 
 ### 最小输入（独立运行）
 
@@ -67,7 +67,7 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
 
 ### 完整输入（任务目录存在时）
 
-> 以下文件由 specAgent 产出（如存在），位于 `docs/tasks/{slug}/`。
+> 以下文件由 team-spec 产出（如存在），位于 `docs/tasks/{slug}/`。
 
 - `03-sdd.md` — 规格（§四 数据流、§五 输入/输出规格中 AI 使用方式）
 - `04-boundary.md` — 修改边界（allow/deny 列表）
@@ -115,7 +115,7 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
 | 审批人 | 对所审批的 AI 使用事项负管理责任，须实质性审核，未尽审核义务的承担连带责任 |
 | 管理人 | 对本部门 AI 使用的整体安全负管理责任，须确保团队知晓规范并定期培训 |
 
-## 执行步骤
+## STEPS
 
 ### Phase 0：上下文解析
 
@@ -125,13 +125,13 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
    1. 调用方传入的 slug 参数
    2. `READ(".checkpoint.json").slug`
    3. 用户指定的任务目录
-   4. *none* → **NEEDS_CONTEXT**：请用户提供任务 slug 或待审查范围
+   4. *NONE* → **NEEDS_CONTEXT**：请用户提供任务 slug 或待审查范围
 
 2. **RESOLVE** `mode`（首个命中即停）：
    1. `READ("docs/tasks/{slug}/.checkpoint.json").mode`
    2. 调用方传入的 mode 参数
    3. `docs/tasks/{slug}/01-plan.md EXISTS` → `full`
-   4. *default* → `compact`
+   4. *DEFAULT* → `compact`
 
 3. **IF** `docs/tasks/{slug}/ EXISTS`：
    - **READ** `docs/tasks/{slug}/03-sdd.md` — 提取 AI 使用场景
@@ -150,7 +150,7 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
    1. `git diff`（代码中的 AI 调用、模型接入、Prompt 构造）
    2. `docs/tasks/{slug}/03-sdd.md`（规格中的 AI 使用方式）
    3. 用户描述（口头/文字描述的 AI 使用场景）
-   4. *none* → **NEEDS_CONTEXT**：请用户提供 AI 使用场景描述
+   4. *NONE* → **NEEDS_CONTEXT**：请用户提供 AI 使用场景描述
 
 3. **FOR** `scenario`：
 
@@ -160,7 +160,7 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
    - 代码生成 / 数据分析 / 内部报告撰写 → `L2`（中风险）
    - Agent 自主执行 / Workflow 自动化 / 跨系统调用 → `L3`（高风险）
    - 资金操作 / 权限变更 / 对外信息发布 / 客户接触 → `L3`（高风险）
-   - *default* → `L2`（未明确归类按中风险处理）
+   - *DEFAULT* → `L2`（未明确归类按中风险处理）
 
 4. **WRITE**（对话中）风险定级结果：
 
@@ -215,7 +215,7 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
    - 权限变更 → **ASSERT** `人工确认记录 EXISTS`
    - 数据删除 → **ASSERT** `人工确认记录 EXISTS`
    - 对外发布 → **ASSERT** `人工确认记录 EXISTS`
-   - *default* → 继续下一项
+   - *DEFAULT* → 继续下一项
 3. **IF** 任一高风险操作无人工确认 → 标记 `RL-3 VIOLATION` → **GOTO** Phase 7
 
 #### RL-4：未审批接入外部 AI 或 API
@@ -394,7 +394,7 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
 - `权限变更` → **ASSERT** `安全负责人确认记录 EXISTS`
 - `对外发布` → **ASSERT** `业务负责人审核确认记录 EXISTS`
 - `资金操作` → **ASSERT** `财务授权人员双人确认记录 EXISTS`
-- *default* → 记录操作类型，无特定确认要求
+- *DEFAULT* → 记录操作类型，无特定确认要求
 
 **IF** 确认记录存在 → **ASSERT** `确认为实质性审核` — 非形式审查
 **ELSE** → 标记 `HITL_MISSING:{operation_type}`
@@ -477,7 +477,7 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
 > 本章由 team-security 自动生成，供后续实现和审查参考。
 
 - **实现约束**：{从红线检查和分场景控制中提取的实现层约束，如"禁止硬编码凭证""数据输入须脱敏"等}
-- **Review 检查项**：{从整改清单中提取的需 reviewAgent 验证的条目}
+- **Review 检查项**：{从整改清单中提取的需 team-review 验证的条目}
 - **人机协同要求**：{从 Phase 5 提取的必须插入人工确认的操作列表}
 ```
 
@@ -506,41 +506,41 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
      ```
 
   3. **MATCH** `violation_source`：
-     - 实现层问题（代码中硬编码凭证、未脱敏数据输入）→ **ROLLBACK** implAgent，附：红线编号 + 违规位置 + 整改要求
-     - 规格层问题（SDD 设计违反安全原则、缺少安全约束）→ **ROLLBACK** specAgent，附：缺失的安全要求 + 建议补充内容
-     - 流程/审批问题（未审批接入外部 AI、资源滥用）→ **H3**：人类立即介入
-     - *default* → **BLOCKED** + **H3**
+     - 实现层问题（代码中硬编码凭证、未脱敏数据输入）→ **ROLLBACK** team-impl，附：红线编号 + 违规位置 + 整改要求
+     - 规格层问题（SDD 设计违反安全原则、缺少安全约束）→ **ROLLBACK** team-spec，附：缺失的安全要求 + 建议补充内容
+     - 流程/审批问题（未审批接入外部 AI、资源滥用）→ **ASK_HUMAN**：人类立即介入
+     - *DEFAULT* → **BLOCKED** + **ASK_HUMAN**
 - `HR-*`（二级红线不合规）：
   1. **WRITE** 整改建议到 `docs/security-audit.md` §六
   2. **MATCH** `hr_source`：
-     - 实现层缺失控制机制 → **ROLLBACK** implAgent，附：需补充的控制机制
-     - 规格层缺失安全设计 → **ROLLBACK** specAgent，附：需补充的安全设计
-     - *default* → **DONE_WITH_CONCERNS** — 附整改清单
-- *default* → 返回当前检查 Phase 继续
+     - 实现层缺失控制机制 → **ROLLBACK** team-impl，附：需补充的控制机制
+     - 规格层缺失安全设计 → **ROLLBACK** team-spec，附：需补充的安全设计
+     - *DEFAULT* → **DONE_WITH_CONCERNS** — 附整改清单
+- *DEFAULT* → 返回当前检查 Phase 继续
 
-## 产出文件
+## OUTPUT_TEMPLATE
 
 | 文件 | 路径 | 说明 |
 | ---- | ---- | ---- |
 | `security-audit.md` | `docs/security-audit.md` | AI 安全红线合规审计报告（每次重写，只保留最终结果） |
 
-## STOP Signals
+## STOP_SIGNALS
 
 - **降级**一级红线违规为"建议整改"而不立即 `BLOCKED`
 - **跳过**任何一条红线检查（"这条明显不涉及"需有证据支撑）
 - **接受**"业务紧急""领导同意""影响很小"作为红线豁免理由
 - **省略**人机协同机制的实质性审核验证（确认记录存在 ≠ 确认有效）
 
-## Constitutional Rules 遵守
+## CONSTITUTIONAL_RULES
 
 引用 `_team-rules/constitutional-rules.md`。安全审计阶段尤其注意：
 
-- **Rule #1 人类介入是一等公民**：一级红线违规必须触发 `H3` 人类介入，不可自行处置（FP-1）
-- **Rule #2 有向图回退**：违规发现须 `ROLLBACK` 到对应上游 Agent（specAgent / implAgent），不可降级忽略（FP-4）
-- **Rule #4 Kill Switch**：发现一级红线违规立即暂停，不可在违规基础上继续工作（FP-1 + FP-3）
-- **Rule #8 验证先行**：每项合规判定基于当次检查的完整输出，不引用历史检查结果（FP-4）
+- **Rule #1 人类介入是一等公民**：一级红线违规必须触发 `ASK_HUMAN` 人类介入，不可擅自处置（First Principle #1）
+- **Rule #2 有向图回退**：违规发现须 `ROLLBACK` 到对应上游 Agent（team-spec / team-impl），不可降级忽略（First Principle #4）
+- **Rule #4 Kill Switch**：发现一级红线违规立即暂停，不可在违规基础上继续工作（First Principle #1 + First Principle #3）
+- **Rule #8 验证先行**：每项合规判定基于当次检查的完整输出，不引用历史检查结果（First Principle #4）
 
-## 自检门禁
+## SELF_CHECK
 
 **GATE** 产出前自检（全部通过才放行）：
 
@@ -548,14 +548,16 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
 - [ ] **ASSERT** `risk_level` 已确定 — 每个场景有明确的 L1/L2/L3 定级
 - [ ] **ASSERT** `red_line_checked == 6` — 6 条一级红线全部检查（含 N/A 标注）
 - [ ] **ASSERT** `high_risk_checked == 4` — 4 条二级红线全部检查（含 N/A 标注）
-- [ ] **ASSERT** `RL_violation == 0` || `H3 已触发` — 一级红线违规已触发人类介入
+- [ ] **ASSERT** `RL_violation == 0` || `ASK_HUMAN 已触发` — 一级红线违规已触发人类介入
 - [ ] **ASSERT** `docs/security-audit.md EXISTS` && CONTAINS 八个章节（含 §八 安全约束参考）
 - [ ] **EXEC** `grep -cE 'RL-[1-6]|HR-[1-4]' docs/security-audit.md` → **ASSERT** `output >= 10` — 红线编号均已记录
 - [ ] **ASSERT** `整改清单` NOT_EMPTY（如有不合规项）|| `全部合规`
-- [ ] 我是否只检查了已知漏洞类型，而忽略了这个项目特有的攻击面？
+- [ ] - [ ] **ASSERT** `无占位符残留（{N}、{slug} 等已被实际值替换）`
+- [ ] **ASSERT** `IRON_LAW 遵守` — 一级红线违规已触发 ASK_HUMAN，未擅自降级
+我是否只检查了已知漏洞类型，而忽略了这个项目特有的攻击面？
 - [ ] 如果我是攻击者，我会从哪里入手？我检查了那里吗？
 
-## 完成标志
+## COMPLETION
 
 **MATCH** `result`：
 
@@ -569,11 +571,11 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
 - 二级红线存在不合规项 → **DONE_WITH_CONCERNS**
   - 附：整改清单 + 控制条件缺失说明
 - 一级红线违规 → **BLOCKED**
-  - 触发 **H3**：违规详情 + 影响评估 + 处置建议
+  - 触发 **ASK_HUMAN**：违规详情 + 影响评估 + 处置建议
 - 无法判定（缺少关键信息） → **NEEDS_CONTEXT**
-- *default* → **NEEDS_CONTEXT**
+- *DEFAULT* → **NEEDS_CONTEXT**
 
-## 集成关系
+## INTEGRATION
 
 **被谁调用：**
 
@@ -598,14 +600,14 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
 **配对使用：**
 
 - `team-score` — REQUIRED 上游：评分时主动调用本 Skill 获取安全合规证据
-- `team-review` — 推荐：reviewAgent 安全维度可引用审计结论（如已存在）
+- `team-review` — 推荐：team-review 安全维度可引用审计结论（如已存在）
 
 **team-score 调度协议（`ROUTE` 模板）：**
 
-> team-score Step 1 扫描维度 6 使用以下模板调度。
+> team-score Step 1 扫描维度 6 使用以下模板调度。调用方式：`Skill: team-security` 加载执行，或通过 Agent tool 传递以下 prompt。
 
 ```
-执行 team-security skill。
+加载并执行 team-security skill。
 
 任务 slug：{slug}
 模式：{完整 / --compact 精简}
@@ -616,7 +618,7 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
 读取 skills/team-security/SKILL.md 获取完整执行步骤。
 ```
 
-## 下一步
+## NEXT
 
 - 安全合规不通过 → 查看 `security-audit.md` §六 整改清单，按优先级修复
 - 独立运行后 → 可使用 `team-score` 获取整体协作评分

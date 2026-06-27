@@ -28,7 +28,7 @@
   - ❌ 错误：{坏的做法}
 ```
 
-不满足三要素的规则视为"空口号"，reviewAgent **MUST** 补全或删除。
+不满足三要素的规则视为"空口号"，team-review **MUST** 补全或删除。
 
 ### 1.3 资产维护机制
 
@@ -45,13 +45,13 @@
 
 | 内容类别    | 定义位置                                                                  |
 | ----------- | ------------------------------------------------------------------------- |
-| 业务术语    | specAgent `02-context.md` 模板（术语表）                                  |
-| 系统架构    | orchestrator 有向图流程图 + specAgent `03-sdd.md` §四 数据流              |
+| 业务术语    | team-spec `02-context.md` 模板（术语表）                                  |
+| 系统架构    | orchestrator 有向图流程图 + team-spec `03-sdd.md` §四 数据流              |
 | 代码结构    | `_team-rules/task-lifecycle.md` §1（17 文件目录结构）                     |
-| 接口约定    | specAgent `02-context.md`（接口约束表）+ `03-sdd.md` §五/§六              |
-| 编码规范    | `_team-rules/spec-driven-workflow.md` §2 TDD + 本文件 §2.3 输出质量约束 + implAgent 各阶段禁止项 |
-| 测试要求    | `_team-rules/verification-protocol.md` + testAgent 四维测试矩阵           |
-| Review 标准 | reviewAgent 五维度审查 + 严重级别校准（P0-P3 实例）                       |
+| 接口约定    | team-spec `02-context.md`（接口约束表）+ `03-sdd.md` §五/§六              |
+| 编码规范    | `_team-rules/spec-driven-workflow.md` §2 TDD + 本文件 §2.3 输出质量约束 + team-impl 各阶段禁止项 |
+| 测试要求    | `_team-rules/verification-protocol.md` + team-test 四维测试矩阵           |
+| Review 标准 | team-review 五维度审查 + 严重级别校准（P0-P3 实例）                       |
 | 交付要求    | orchestrator Step 8 完整性检查                                            |
 
 ## §2 Prompt 工程规范

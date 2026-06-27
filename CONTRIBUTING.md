@@ -22,7 +22,7 @@
 
 ### 添加新 Skill
 
-1. 按照 `CLAUDE.md` §二 和 `skills/_team-rules/skill-spec.md` 定义的结构创建 `skills/你的-skill/SKILL.md`
+1. 按照 `CLAUDE.md` §二 和 §2.8（Skill Spec）定义的结构创建 `skills/你的-skill/SKILL.md`
 2. 更新 `README.md` 中的 Skills 清单表格
 3. 如果该 Skill 应被自动发现，更新 `using-team-skills/SKILL.md`
 
@@ -57,7 +57,7 @@ test: 添加验证协议测试用例
 由于 Team Skills 是一个提示词和规则的框架，测试意味着：
 
 - **可读性**：新用户能否一次读懂这个 Skill？
-- **一致性**：是否遵循 `CLAUDE.md` §二 和 `skills/_team-rules/skill-spec.md` 中的规范？
+- **一致性**：是否遵循 `CLAUDE.md` §二 和 §2.8（Skill Spec）中的规范？
 - **完整性**：是否包含所有必需章节？
 - **引用完整性**：所有交叉引用是否正确？
 

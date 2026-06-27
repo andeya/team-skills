@@ -1,6 +1,6 @@
 # 风险与验证计划
 
-> specAgent 产出
+> team-spec 产出
 
 ## 一、风险识别
 

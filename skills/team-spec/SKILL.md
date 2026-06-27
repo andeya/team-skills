@@ -5,7 +5,7 @@ description: Use when starting a new feature, need SDD spec, or requirements are
 
 # Team Spec — 规格制定
 
-## 角色定位
+## ROLE
 
 ### 系统提示词
 
@@ -37,13 +37,13 @@ description: Use when starting a new feature, need SDD spec, or requirements are
 - [ ] 实现者：拿到规格有足够信息开始编码吗？
 - [ ] 测试者：每条业务规则都能写出对应测试吗？
 
-## Iron Law
+## IRON_LAW
 
 ```
 NO CODE WITHOUT SPEC FIRST
 ```
 
-## 质量职责
+## QUALITY
 
 | 质量维度             | 产出文件         |
 | -------------------- | ---------------- |
@@ -53,7 +53,7 @@ NO CODE WITHOUT SPEC FIRST
 | 修改边界与依赖约束   | `04-boundary.md` |
 | 风险识别与验证计划   | `05-risk.md`     |
 
-## 输入
+## INPUT
 
 ### 最小输入（独立运行）
 
@@ -63,12 +63,12 @@ NO CODE WITHOUT SPEC FIRST
 
 - 用户任务描述 + 回退上下文（如有）
 
-## 产出目录
+## OUTPUT_TEMPLATE
 
 **RESOLVE** `slug`（首个命中即停）：
 
 1. 扫描 `docs/tasks/` 取最大序号 +1（从 `0001` 起），拼接 kebab-case 关键词，整体 ≤ 50 字符
-2. *none*（`docs/tasks/` 不存在）→ 创建目录，序号从 `0001` 起
+2. *NONE*（`docs/tasks/` 不存在）→ 创建目录，序号从 `0001` 起
 
 产出到 `docs/tasks/{slug}/`。
 
@@ -78,7 +78,7 @@ NO CODE WITHOUT SPEC FIRST
 
 **IF** `mode == compact` → 仅产出 `03-sdd.md`（可省略 §四）+ `04-boundary.md`，跳过其余 4 文件。Phase 1 和 Phase 1.5 仍执行。
 
-## 执行步骤
+## STEPS
 
 ### Phase 1：探索（不写文件）
 
@@ -88,9 +88,9 @@ NO CODE WITHOUT SPEC FIRST
 
 1. **READ** 用户需求 → 提取核心问题
 2. **READ** 项目规范：`CLAUDE.md` / `.cursor/rules/`（必读）；`AGENTS.md`、`CONTRIBUTING.md`、`docs/architecture.md`、`docs/pm-truth-ledger.yaml`（存在则读，不存在跳过）
-3. **EXEC** `grep` / `find` [探索性] → 定位 3-5 个最相关源文件，精读后按依赖关系向外扩展
+3. **EXEC** `grep` / `find` [EXPLORATORY] → 定位 3-5 个最相关源文件，精读后按依赖关系向外扩展
 4. **READ** 任务涉及的接口、数据结构、已有测试
-5. 影响范围分析（**EXEC** `grep` + `git log` [探索性] 定位三类依赖）：
+5. 影响范围分析（**EXEC** `grep` + `git log` [EXPLORATORY] 定位三类依赖）：
    - 直接依赖（import/require/use）
    - 反向依赖（导出符号被谁引用）
    - 时序耦合（`git log --follow` 常一起改的文件）
@@ -98,11 +98,11 @@ NO CODE WITHOUT SPEC FIRST
 7. **MATCH** `task_type`：
    - `新建功能`（代码中无对应实现）→ `sdd_template = 完整 SDD`
    - `修改已有功能`（变更/增强/修复）→ `sdd_template = Delta Spec`
-   - *default*（混合型或无法判断）→ `sdd_template = 完整 SDD`，§一 标注混合范围
+   - *DEFAULT*（混合型或无法判断）→ `sdd_template = 完整 SDD`，§一 标注混合范围
 
 ### Phase 1.5：探索结论展示 + 需求澄清（人类介入点）
 
-> 写任何文件之前先展示探索结论，获取用户确认。一次最多 3 个问题，优先用选项形式（FP-1）。
+> 写任何文件之前先展示探索结论，获取用户确认。一次最多 3 个问题，优先用选项形式（First Principle #1）。
 > 目标不是"让用户确认我已经做了探索"，而是"暴露我的理解偏差——我漏了什么、误解了什么"。
 
 **WRITE**（对话中）探索结论：
@@ -135,7 +135,7 @@ NO CODE WITHOUT SPEC FIRST
 - `确认` → **GOTO** Phase 2
 - `要求修改` → 调整后重新展示
 - `否决任务` → **DONE**（`结果: 用户主动终止，不进入实现阶段`）
-- *default* → 澄清用户意图后重新匹配
+- *DEFAULT* → 澄清用户意图后重新匹配
 
 ### Phase 2：写规格文档
 
@@ -164,7 +164,7 @@ NO CODE WITHOUT SPEC FIRST
 
 > SIGNAL：Given/When/Then 场景中没有出现具体值（数字、字符串、状态码）→ 规则太模糊，无法直接映射测试用例。
 > SIGNAL：业务规则中没有 RFC 2119 标记（MUST/SHOULD/MAY）→ 优先级不明确，实现者无法判断哪些是硬约束。
-> SIGNAL：关键设计决策中没有"拒绝方案"→ 分析不完整，reviewAgent 无法审查决策合理性。
+> SIGNAL：关键设计决策中没有"拒绝方案"→ 分析不完整，team-review 无法审查决策合理性。
 
 > GOOD：`§二 业务规则 B1：Given 用户输入金额 = 0，When 提交订单，Then 系统 MUST 返回 400 错误码，错误消息 = "金额不能为零"。`
 > BAD：`§二 业务规则 B1：Given 用户输入无效金额，When 提交订单，Then 系统应该返回错误。`
@@ -239,7 +239,7 @@ NO CODE WITHOUT SPEC FIRST
 
 > 切换到"攻击者"视角——假设这份 SDD 有致命遗漏，你的任务是找到它。"看起来完整"不等于"真的完整"。
 
-> TRAP：你刚写完 SDD，此刻最不适合评价它的质量——实现偏见会让你觉得"写了就是对的"（FP-2）。逐条对照检查清单，不要凭感觉。
+> TRAP：你刚写完 SDD，此刻最不适合评价它的质量——实现偏见会让你觉得"写了就是对的"（First Principle #2）。逐条对照检查清单，不要凭感觉。
 
 **GATE** 产出前逐条检查（不通过则补全后再输出）：
 
@@ -269,22 +269,22 @@ NO CODE WITHOUT SPEC FIRST
 | 架构 | SDD 含 ASCII 数据流图 |
 | 工具 | prompt-template.md 独立产出（五要素）、pm-truth-ledger 已追加（`IF` EXISTS） |
 
-## STOP Signals
+## STOP_SIGNALS
 
 - **跳过**用户确认直接写文件，或一次抛出所有问题不等回复
 - **列出**文件名却不列依赖关系
 - **声明**"无风险"，或产出后发现遗漏不补全
 - **凭空**推断而非扫描源码
 
-## Constitutional Rules 遵守
+## CONSTITUTIONAL_RULES
 
 引用 `_team-rules/constitutional-rules.md`。规格制定阶段尤其注意：
 
-- **Rule #1 人类介入是一等公民**：规格产出后必须等 H2 确认，不可自动进入实现（FP-1）
-- **Rule #4 Kill Switch**：探索阶段发现不可行 → 立即暂停，不可"先写个规格再说"（FP-1 + FP-3）
-- **Rule #5 分期交付优先**：复杂任务必须拆分分期，不可一次性全量规格（FP-3）
+- **Rule #1 人类介入是一等公民**：规格产出后必须等 CONFIRM_SPEC 确认，不可自动进入实现（First Principle #1）
+- **Rule #4 Kill Switch**：探索阶段发现不可行 → 立即暂停，不可"先写个规格再说"（First Principle #1 + First Principle #3）
+- **Rule #5 分期交付优先**：复杂任务必须拆分分期，不可一次性全量规格（First Principle #3）
 
-## 自检门禁
+## SELF_CHECK
 
 **GATE** Skill 完成前自检（全部通过才声明完成）：
 
@@ -293,10 +293,12 @@ NO CODE WITHOUT SPEC FIRST
 - [ ] **ASSERT** `Phase 1.5 用户确认 == true`
 - [ ] **ASSERT** `"TBD"/"TODO"/"待补充" 匹配数 == 0`
 - [ ] **ASSERT** `来源标签使用数 >= 1`
-- [ ] 如果有人现在审查我的 SDD，我会为哪部分心虚？那部分需要补全。
+- [ ] - [ ] **ASSERT** `无占位符残留（{N}、{slug} 等已被实际值替换）`
+- [ ] **ASSERT** `IRON_LAW 遵守` — 规格产出后已获用户确认，未自动进入实现
+如果有人现在审查我的 SDD，我会为哪部分心虚？那部分需要补全。
 - [ ] 我是否因为"应该没问题"跳过了任何边界条件或异常场景？
 
-## 完成标志
+## COMPLETION
 
 **MATCH** `result`：
 
@@ -305,9 +307,9 @@ NO CODE WITHOUT SPEC FIRST
 - `用户否决任务` → **DONE**（`结果: 用户主动终止`）
 - `需求信息不足` → **NEEDS_CONTEXT**
 - `需求不可行` → **BLOCKED**
-- *default* → **NEEDS_CONTEXT**
+- *DEFAULT* → **NEEDS_CONTEXT**
 
-## 集成关系
+## INTEGRATION
 
 **被谁调用：**
 
@@ -319,6 +321,6 @@ NO CODE WITHOUT SPEC FIRST
 
 - `team-impl` — REQUIRED：规格完成后必须进入实现
 
-## 下一步
+## NEXT
 
 - 规格完成且用户确认 → 使用 `team-impl` 开始 TDD 实现

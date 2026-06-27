@@ -3,22 +3,19 @@
 > 本文件是 team-skills **仓库本身**的开发规则，供贡献者编写或修改 Skill 时参考。
 > Skill 运行时规则已提取到 `skills/_team-rules/`（随 skills 分发，不依赖本文件）。
 
-## 快速开始：不确定从哪开始？
-
-如果你不确定当前场景该用哪个 Skill，先加载 `using-team-skills` meta-skill：
-
-```
-Skill: using-team-skills
-```
-
-它会根据你的场景推荐合适的 Skill。也可直接参考 README.md 中的 Skill 选择矩阵。
-
 ## 一、项目结构
 
 ```
 team-skills/
 ├── skills/                    # 所有 Skill 定义
 │   ├── _team-rules/           # 共享规则文件（被所有 Skill 引用）
+│   │   ├── first-principles.md         # 4 条第一性原理（First Principle #1 ~ First Principle #4）
+│   │   ├── constitutional-rules.md     # 9 条 Constitutional Rules
+│   │   ├── verification-protocol.md    # 5 步验证协议
+│   │   ├── four-state-protocol.md      # 四态完成状态
+│   │   ├── spec-driven-workflow.md     # Spec-Driven 开发原则 + TDD 工作流
+│   │   ├── task-lifecycle.md           # 任务目录结构 + CONFIRM_GOAL-HUMAN_ACCEPT 介入点协议
+│   │   └── ai-collaboration-standards.md # AI 协作资产 + Prompt 工程规范
 │   ├── team-brainstorm/       # 讨论引导
 │   ├── team-spec/             # 规格设计
 │   ├── team-impl/             # TDD 实现
@@ -44,35 +41,40 @@ team-skills/
 
 > 本章是 skills/ 目录下所有 SKILL.md 的共享约定。
 
-### 2.1 SKILL.md 结构约定
+### 2.1 结构约定
 
 每个 SKILL.md **MUST** 包含以下结构（顺序可调）：
 
 1. **YAML Frontmatter**：`name` + `description`（`---` 分隔，非 `------`）
-2. **角色定位**：系统提示词 + 推理指引
-3. **Iron Law**（Discipline Skill 必须包含）
-4. **质量职责**：产出文件表
-5. **输入**：读取哪些文件
-6. **执行步骤**：分 Phase 描述
-7. **产出文件模板**：内联 Markdown 模板或引用 `references/` 目录下的模板文件
-8. **自检门禁**：产出前强制自检清单
-9. **完成标志**：四态状态 + 产出清单
-10. **STOP Signals**：关键违规行为的即时停止信号
-11. **集成关系**：被谁调用 + 配对使用
-12. **下一步**：完成后推荐操作
+2. **ROLE**：系统提示词 + 推理指引
+3. **IRON_LAW**（Discipline Skill 必须包含）
+4. **QUALITY**：产出文件表
+5. **INPUT**：读取哪些文件
+6. **STEPS**：分 Phase 描述
+7. **OUTPUT_TEMPLATE**：内联 Markdown 模板或引用 `references/` 目录下的模板文件。**如果 Skill 不产出文件（如纯对话输出或操作执行），或执行步骤中已包含完整输出骨架，可省略此章节**
+8. **SELF_CHECK**：产出前强制自检清单
+9. **COMPLETION**：四态状态 + 产出清单
+10. **STOP_SIGNALS**：关键违规行为的即时停止信号
+11. **INTEGRATION**：被谁调用 + 配对使用
+12. **NEXT**：完成后推荐操作
 
-### 2.2 跨 Skill 一致性规则
+**额外章节**（按需添加）：
+
+- **CONSTITUTIONAL_RULES**：引用 `_team-rules/constitutional-rules.md`，列出本 Skill 最相关的规则
+
+### 2.2 一致性规则
 
 - 验证协议引用：所有需要声明"通过"的 Skill **MUST** 引用 `_team-rules/verification-protocol.md`，不内联重复
 - 四态协议引用：所有完成状态 **MUST** 引用 `_team-rules/four-state-protocol.md`，不内联重复
 - Constitutional Rules 引用：所有涉及质量红线的 Skill **MUST** 引用 `_team-rules/constitutional-rules.md`
-- 指令风格：优先使用正向指令（"每步必须：A → B → C"），减少负向禁止（"禁止 X"）
+- 指令风格：优先使用正向指令（"每步必须：A → B → C"），减少负向禁止
 - 模板变量：使用 `{slug}`、`{日期}`、`{N}` 等统一占位符
 - 完成状态：统一使用四态协议（DONE / DONE_WITH_CONCERNS / NEEDS_CONTEXT / BLOCKED）
+- 工具无关性：Skill 定义中 **MUST NOT** 硬编码特定工具的命令（如 `bun test`），使用"项目测试命令"等通用表述，具体命令从项目的 CLAUDE.md / package.json / Makefile 中动态获取
+- Key-Value 结构：章节标题、关键词、标识用英文全大写（Key），说明、意图、TRAP、SIGNAL 等内容用中文（Value）。骨架一眼可识别，内容自然可理解
+- 角色命名统一：引用子 Skill 时使用标准 Skill 名称（`team-impl`/`team-spec`/`team-test`/`team-review`），不使用 Agent 类名（`team-impl`/`team-spec`/`team-test`/`team-review`）
 
-### 2.3 目录命名规范
-
-本套 skills 设计为可全局安装到 `~/.agents/skills/`，与其它 skill 集共存：
+### 2.3 目录命名
 
 | 规则 | 说明 | 示例 |
 | ---- | ---- | ---- |
@@ -82,9 +84,9 @@ team-skills/
 | 名称使用动词或名词 | 动词表示动作，名词表示角色 | `team-debug`(动词), `team-spec`(名词) |
 | 不使用 `-agent` 后缀 | 冗余，skill 本身就是 agent | ✅ `team-spec` ❌ `team-spec-agent` |
 
-### 2.4 Iron Law 规范
+### 2.4 IRON_LAW
 
-每个 Discipline Skill **MUST** 包含一条 Iron Law — 全大写、代码块、不可协商的原则：
+每个 Discipline Skill **MUST** 包含一条 IRON_LAW — 全大写、代码块、不可协商的原则：
 
 ```
 NO {违规行为} WITHOUT {前置条件} FIRST
@@ -92,88 +94,177 @@ NO {违规行为} WITHOUT {前置条件} FIRST
 
 示例：
 
-| Skill | Iron Law |
+| Skill | IRON_LAW |
 |-------|----------|
 | team-debug | `NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST` |
 | team-verify | `NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE FIRST` |
 | team-finish | `NO BRANCH COMPLETION WITHOUT TEST VERIFICATION FIRST` |
 
-Iron Law **MUST** 出现在执行步骤之前，作为不可协商的门禁。
+IRON_LAW **MUST** 出现在 STEPS 之前，作为不可协商的门禁。
 
-### 2.5 STOP Signals 规范
+### 2.5 STOP_SIGNALS
 
-每个 Skill **MUST** 包含 `## STOP Signals` 章节，从该 Skill 最关键的 3-4 个违规行为中提炼，每条以动词开头。
+每个 Skill **MUST** 包含 `## STOP_SIGNALS` 章节，从该 Skill 最关键的 3-4 个违规行为中提炼，每条以动词开头。
 
-### 2.6 自检门禁规范
+### 2.6 SELF_CHECK
 
 每个 Skill **MUST** 在产出前执行自检，至少包含：
 
 1. 产出文件完整性检查
 2. 占位符残留检查（`{N}`、`{slug}` 等是否被实际值替换）
-3. Iron Law 遵守检查（如果有）
+3. IRON_LAW 遵守检查（如果有）
 4. 四态状态声明
 
-### 2.7 集成关系规范
+### 2.7 格式规范（Skill Spec）
 
-每个 Skill **MUST** 包含 `## 集成关系` 章节，记录：
+> 本规范定义 SKILL.md 的格式约定和关键词参考，供贡献者编写或修改 Skill 时遵守。
+> **LLM 执行 SKILL.md 时不依赖本规范**——所有关键词和构造必须是自解释的。
 
-- **被谁调用**：哪些上游 Skill 或场景会调用本 Skill
-- **配对使用**：本 Skill 完成后应该调用哪些下游 Skill，标注 REQUIRED（必须）或推荐
+#### 2.7.1 设计原则
 
-## 三、工具兼容性
+| 编号 | 名称 | 要点 |
+|------|------|------|
+| DP-1 | 视觉锚定 | `**粗体大写**` 关键词是 LLM 扫描文档的注意力锚点 |
+| DP-2 | 模式驱动 | 示例 > 形式语法，每个构造用示例定义而非 BNF |
+| DP-3 | 显式优先 | 反引号表达式 > 描述性文本 |
+| DP-4 | Markdown 原生 | 仅使用标准 Markdown 语法，不引入自定义标记 |
+| DP-5 | 最小充分 | 关键词集覆盖 95% 场景，LLM 已具备的能力不重复规定 |
+| DP-6 | 信噪分离 | 设计解释放在 `>` 引用块中，不混入执行规则 |
+| DP-7 | 单义映射 | 每个 Markdown 构造有且仅有一个语义。例外：`**RESOLVE**` 后的有序列表为优先级链 |
+| DP-8 | 格式即角色 | 粗体=执行，反引号=引用，纯文本=代码块 |
+| DP-9 | 关键词即 API | 关键词表封闭，表外 `**粗体大写**` 不是关键词 |
+| DP-10 | 描述性是退路 | `READ`/`WRITE`/`EXEC` 后首选反引号确切值 |
+| DP-11 | RESOLVE 唯一切换 | 有序列表语义由前置标记（`**RESOLVE**`）唯一确定 |
+| DP-12 | 显式集合优先 | `**FOR** ... **IN** [...]` 显式枚举优先于隐式推断 |
+| DP-13 | ASSERT ≠ GATE | `**ASSERT**`（单条件断言）失败执行 fallback 动作；`**GATE**`（多条件门禁）失败阻塞放行 |
+| DP-14 | 变量是名字 | 无形式作用域/类型系统，LLM 从上下文自然理解 |
+| DP-15 | 表达式是伪代码 | 传达意图即可，无需精确到可编译 |
+| DP-16 | 默认安全 | 未捕获错误 → `**BLOCKED**` + `**ASK_HUMAN**`（Human intervention required） |
+| DP-17 | 对抗认知偏差 | `> TRAP：`（认知陷阱）/ `> SIGNAL：`（诊断信号）/ `> GOOD：`/`> BAD：`（校准示例）在 LLM 即将犯错的精确位置触发自我审视 |
+| DP-18 | 骨架消灭模糊 | `**WRITE**` 后附带结构模板，消除"写什么"的猜测空间 |
+| DP-19 | 门禁要审问 | `**GATE**`（多条件检查点）中至少包含一条第一人称自我审问，检测偷懒和模糊 |
+| DP-20 | 意图赋予纠偏 | `###` 后紧跟 `>` 意图行，让 LLM 在边缘情况自主纠偏 |
+| DP-21 | English Self-Explanatory | 所有关键词、运算符、构造定义**必须使用英文**，且自解释。LLM 即使没读过本规范也能从自然语言猜出含义。禁止中文定义规格关键词 |
 
-### 3.1 支持的工具
+#### 2.7.2 Markdown ↔ Skill 语义映射
 
-| 工具        | 调用方式                | 自动发现              |
-| ----------- | ----------------------- | --------------------- |
-| Claude Code | `/team-{name}` 斜杠命令 | `~/.claude/skills/` |
-| Cursor      | Skill 机制              | `~/.agents/skills/`   |
+| 构造 | 语义 | 示例 |
+|------|------|------|
+| `###` heading | Step / Phase 边界 | `### Phase 1：根因调查` |
+| `**ALLCAPS**` | 执行关键词 | `**READ**` `**ASSERT**` `**DONE**` |
+| `` `backtick` `` | 标识符 / 可求值表达式 | `` `exit_code == 0` `` |
+| `1. 2. 3.` ordered list | 顺序执行（全部执行） | 步骤 1 → 2 → 3 |
+| `-` unordered + indent | 条件分支 | 顶层=条件，缩进子项=动作 |
+| `→` | Then | `失败 → **GOTO** Step 2` |
+| `>` blockquote | 非执行注解（不参与控制流） | 设计意图、认知陷阱、诊断信号 |
+| `*ALLCAPS italic*` | 兜底标签 | `*DEFAULT*` `*NONE*` `*NOT_FOUND*` `*REPEAT_EXHAUSTED*` |
+| `####` | 命名子步骤（嵌套超 2 层时提取使用） | `#### 子步骤 1.1` |
+| `A / B` | 二选一，`/` 连接两个完整关键词语句 | `全部通过 / 发现 bug` |
+| `[标签]` | 条件注解，同行的多个互斥 | `[完整模式]` `[精简替代]` |
 
-### 3.2 工具无关性原则
+**引用块子类型**（不参与控制流，提供校准信号）：
 
-- Skill 定义中 **MUST NOT** 硬编码特定工具的命令（如 `bun test`）
-- 使用"项目测试命令""项目 CI 检查命令"等通用表述
-- 具体命令从项目的 CLAUDE.md / package.json / Makefile 中动态获取
+| 前缀 | 含义 | 何时使用 |
+|------|------|---------|
+| 无前缀 / `> WHY：` | 设计意图 | 解释规则或步骤存在的工程理由 |
+| `> TRAP：` | 认知陷阱 | 命名 LLM 在此步骤最可能犯的具体错误 |
+| `> SIGNAL：` | 诊断信号 | 将 output 特征映射到可能原因 |
+| `> GOOD：` / `> BAD：` | 校准示例 | 好产出 vs 坏产出的具体对比 |
 
-## 四、共享规则文件索引
+#### 2.7.3 关键词参考
 
-以下共享文件位于 `skills/_team-rules/`，被所有 Skill 引用，不内联重复：
+**关键词视觉格式**：关键词**永远全大写**。Step 内的指令行用 `**KEYWORD**`（粗体），引用块/表格中用 `` `KEYWORD` ``（反引号），代码块中用纯大写。
 
-| 文件 | 内容 |
-| ---- | ---- |
-| `first-principles.md` | 4 条第一性原理（FP-1 ~ FP-4）+ 使用指南 |
-| `constitutional-rules.md` | 9 条 Constitutional Rules + 常见规避借口 |
-| `verification-protocol.md` | 5 步验证协议 + Iron Law + 常见失败模式 |
-| `four-state-protocol.md` | 四态完成状态（DONE / DONE_WITH_CONCERNS / NEEDS_CONTEXT / BLOCKED） |
-| `skill-spec.md` | Skill Spec：格式约定 + 关键词参考 + 引用块子类型 + 20 条设计原则 |
-| `spec-driven-workflow.md` | Spec-Driven 开发原则 + TDD 工作流 + 有向图回退规则 |
-| `task-lifecycle.md` | 任务目录结构 + 人类介入点协议（H1-H4）+ 进度追踪 |
-| `ai-collaboration-standards.md` | AI 协作资产管理 + Prompt 工程规范 + Agent 输出质量约束 |
+**关键词表**：
 
-## 五、贡献指南
+| 类别 | 关键词 | 语义 |
+|------|--------|------|
+| 动作 | `READ` `WRITE` `EXEC` `RESOLVE` | 读取、写入、执行命令、按优先级解析变量 |
+| 控制流 | `IF` `ELSE` `MATCH` `FOR` `IN` `REPEAT` `MAX` `GOTO` | 条件、否则、多路分发、遍历、集合/成员、有限重试、上限、跳转 |
+| 验证 | `ASSERT` `GATE` | 单条件断言（失败执行 fallback）、多条件门禁（全部通过才放行） |
+| 状态 | `DONE` `DONE_WITH_CONCERNS` `NEEDS_CONTEXT` `BLOCKED` | 四态完成状态 |
+| 组合 | `ROUTE` `ROLLBACK` `ASK_HUMAN` | 调用 Skill、回退上游、人类介入 |
 
-详见 [CONTRIBUTING.md](CONTRIBUTING.md)。
+**表达式运算符**（反引号内使用，不加粗）：`EXISTS` `NOT_EXISTS` `NOT_EMPTY` `CONTAINS` `==` `!=` `&&` `||` `.`
 
-## 六、版本记录
+**各关键词使用方式**：
 
-| 日期       | 更新者 | 更新内容                     | 关联任务        |
-| ---------- | ------ | ---------------------------- | --------------- |
-| 2026-06-18 | Andeya | 初始版本：Spec-Driven 全规范 | 项目初始化      |
-| 2026-06-18 | Andeya | 第一性原理审查：14 项改进    | 首轮飞轮迭代    |
-| 2026-06-19 | Andeya | team-score 校准 + 自评补全   | team-score 校准 |
-| 2026-06-23 | Andeya | 竞品审查 18 项改进：P0 逻辑矛盾修复、P1 门禁强化、P2 完善度补齐 | 竞品对标审查 |
-| 2026-06-23 | Andeya | IDE 对等：所有 Skill 引用扩展为 CLAUDE.md / .cursor/rules/ | IDE 对等改进 |
-| 2026-06-23 | Andeya | 文档布局标准化：brainstorm 纳入 slug 体系（00-design-brief.md）| 文档布局改进 |
-| 2026-06-23 | Andeya | 全量缺陷修复：compact 模式一致性（9 文件）、断点续传增强、回退计数规则、质量检查条件化 | 场景模拟缺陷修复 |
-| 2026-06-23 | Andeya | CLAUDE.md/AGENTS.md 区分说明 + TDD 纪律强制执行 + 交付清单模板与追踪 | 交互细节审查修复 |
-| 2026-06-23 | Andeya | 第一性原理注魂：§第零原则（FP-1~FP-4）+ 12 个 Skill 推理指引升级 + Constitutional Rules WHY 追溯 | 角色专精与第一性原理渗透 |
-| 2026-06-23 | Andeya | 第一性原理下沉：FP 定义迁移到 `_team-rules/first-principles.md`，skills 内所有 `CLAUDE.md §` 引用改为指向共享规则文件 | 分发兼容性修复 |
-| 2026-06-25 | Andeya | skill-spec v0.3→v1.0：执行模型 + 变量模型 + 组合模型 + 形式语法（BNF）+ 12 约定/12 模式/12 反模式 | 编程语言级审查 |
-| 2026-06-25 | Andeya | AP#10/AP#11 conformance：MATCH 兜底补全（team-spec/team-finish）+ EXEC exit_code 检查补全（3 文件 6 处） | v1.0 conformance 修复 |
-| 2026-06-25 | Andeya | 5 轮 LLM 消费者视角审查：R1 ASSERT 表达式化 + 关键词粗体化、R2 执行流歧义修复、R3 术语一致性、R4 跨文件结构对齐、R5 LLM 模拟执行终审（test_cmd 排序修复 + AP#4 残留清零） | 全量 SKILL.md 打磨 |
-| 2026-06-25 | Andeya | 逐字符 3 轮打磨（12 skills）：R1 结构/逻辑、R2 语言/信噪比、R3 韵律/优雅 + 跨 skill 流转连接 3 轮：集成关系修正 + RESOLVE 链一致性 + 完成→下游衔接验证 | 诗级打磨 |
-| 2026-06-25 | Andeya | Score+AI-consumer 双审查 3 轮：R1 业务规则GWT门禁+TDD commit数量验证+测试覆盖量化+风格一致性检查+功能点数交叉验证+模板阈值提升（5文件8处）、R2 SDD七部分ASSERT准确化、R3 24项AI稳定性验证全通过 | 双审查迭代修复 |
-| 2026-06-26 | Andeya | skill-spec 重设计：删除 BNF/变量作用域/类型系统（-30%行数），新增引用块子类型（TRAP/SIGNAL/GOOD-BAD）+ 输出骨架 + GATE 自我审问 + Step 意图 + 错误处理；20 条 DP 设计原则；EACH/MAX 关键词移除 | LLM 执行质量优化 |
-| 2026-06-26 | Andeya | CLAUDE.md 职责分离：运行时规则提取到 `_team-rules/`（spec-driven-workflow + task-lifecycle + ai-collaboration-standards），CLAUDE.md 仅保留项目开发规范 | 架构解耦 |
-| 2026-06-26 | Andeya | team-adversarial → team-refine：融合 LLM 执行质量打磨（5 维度）到对抗审计（10 维度），默认 10→5 轮，按编排流程顺序逐 Skill 精炼 | 开发者命令升级 |
-| 2026-06-26 | Andeya | 开发者命令精简：删除 team-pull/push/setup/uninstall（4 个），新增 team-release（版本发布），team-refine 优化（199→131 行）；hooks 全量清理；v1.3.2 发布 | 命令瘦身 + 发版 |
+- **READ** `file` — 读取文件。**READ** `file` §章节 — 读取指定章节
+- **WRITE** `file` — 写入文件。**WRITE**（对话中）— 展示给用户。**WRITE** checkpoint：`{...}` — 更新断点
+- **WRITE** 后可附带结构模板（输出骨架），LLM 按骨架填充内容
+- **EXEC** `command` — 执行命令。后必须 **ASSERT** `exit_code == 0`
+- **EXEC** `grep/find/git log` [EXPLORATORY] — 探索性命令，exit_code != 0 仅表示未找到，不阻塞
+- **RESOLVE** `var`：— 按优先级链解析变量，首个命中即停。**必须**以 `*NONE*` / `*DEFAULT*` 结尾
+- **IF** `cond` → action — 守卫形式（单行，不满足则跳过）
+- **IF** `cond`：... **ELSE**：... — 分支形式（多行）
+- **MATCH** `var`：— 多路分发。分支**必须**穷尽（`*DEFAULT*` 兜底）
+- **FOR** `item` **IN** `[...]`：— 遍历显式集合
+- **REPEAT** **MAX**=N：— 有限重试。`*REPEAT_EXHAUSTED*` 兜底**必须**提供
+- **GOTO** Step N — 跳转到 `###` 或 `####` 标题
+- **ASSERT** `expr` — 单条件断言，失败执行 fallback 分支
+- **GATE** — 多条件检查点，全部通过才放行。不通过则补全重检，仍不通过 → `**BLOCKED**`
+- **ROUTE** `team-xxx` — 调用另一个 Skill。仅编排器或直接调度方使用。子 Skill 应写"向编排器报告：建议路由到 `team-xxx`"
+- **ROLLBACK** agent — 回退上游。必须携带：问题、位置、期望、建议
+- **ASK_HUMAN** — 暂停执行，触发人类介入
+- **DONE** / **DONE_WITH_CONCERNS** / **NEEDS_CONTEXT** / **BLOCKED** — 四态终止状态
+
+#### 2.7.4 文档结构与执行顺序
+
+```
+---
+name: skill-name
+description: one-line description
+---
+# Skill Title
+## ROLE / IRON_LAW / INPUT ...
+## STEPS
+### Phase 1：标题       ← Step 边界（###）
+1. **READ** ...          ← 顺序执行
+2. **EXEC** ...
+#### 子步骤 1.1：标题   ← 命名子步骤（####）
+### Phase 2：标题
+## SELF_CHECK / COMPLETION / INTEGRATION ...
+```
+
+**顺序流**：`###` Step 按文档顺序执行。`**GOTO**` / `**DONE**` / `**BLOCKED**` / `**ROLLBACK**` / `**ASK_HUMAN**` 中断顺序流。
+
+**子步骤返回**：`####` 执行完后回到父 `###` 的下一条指令。被 `**GOTO**` 跳入的子步骤执行完后向下继续（不返回跳出点）。
+
+#### 2.7.5 变量与表达式
+
+| 产生方式 | 变量 | 有效期 |
+|----------|------|--------|
+| `**EXEC**` | `exit_code`、`output` | 到下一个 `**EXEC**` |
+| `**RESOLVE**` | 解析结果 | 当前 Step 及后续 |
+| `**READ**` | 读取内容进入 LLM 上下文 | 后续指令可自然引用 |
+
+表达式运算符在反引号内使用：`==` `!=` `>=` `<=` `>` `<` `&&` `||` `EXISTS` `NOT_EXISTS` `NOT_EMPTY` `CONTAINS` `IN` `.` `!`
+
+#### 2.7.6 错误处理
+
+| 错误场景 | 默认行为 |
+|----------|---------|
+| `**READ**` 目标不存在 | `**BLOCKED**` + `**ASK_HUMAN**` |
+| `**EXEC**` 失败且无 ASSERT fallback | `**BLOCKED**` + `**ASK_HUMAN**` |
+| `**GOTO**` 目标不存在 | `**BLOCKED**`（Skill 编写错误） |
+| `**MATCH**` 无匹配且无 `*DEFAULT*` | `**BLOCKED**`（分支未穷尽） |
+| `**GATE**` 补全重检仍不通过 | `**BLOCKED**` + `**ASK_HUMAN**` |
+| `**REPEAT**` 次数耗尽 | 执行 `*REPEAT_EXHAUSTED*` 兜底分支 |
+
+**传播链**：构造级 fallback → Step 级 ASSERT → `**BLOCKED**` + `**ASK_HUMAN**`。
+
+#### 2.7.7 反模式
+
+| # | 反模式 | 问题 | 正确做法 |
+|---|--------|------|---------|
+| 1 | EXEC 后不检查 exit_code | "执行了"≠"成功了" | `**ASSERT** \`exit_code == 0\`` |
+| 2 | 段落描述条件逻辑 | LLM 需读懂段落才能提取分支 | 用 `**IF**` / `**MATCH**` + 缩进分支 |
+| 3 | 指令动词不加粗大写 | 动词淹没在句子中，无法扫描 | 所有指令动词 `**全大写粗体**` |
+| 4 | RESOLVE / MATCH 无兜底 | 所有选项未命中时行为未定义 | `*NONE*` / `*DEFAULT*` 兜底 |
+| 5 | ASSERT 用自然语言 | "确认测试通过"不可机械验证 | `**ASSERT** \`exit_code == 0\`` |
+| 6 | 引用块含执行指令 | 引用块不参与控制流 | 指令移出引用块 |
+| 7 | MATCH 后跟自然语言 | 无法提取匹配变量 | `**MATCH**` 后必须跟 `` `变量名` `` |
+| 8 | 嵌套超 2 层未提取子步骤 | LLM 丢失层级追踪 | 提取为 `####` 命名子步骤 |
+| 9 | WRITE 无输出骨架 | LLM 产出格式和精度随机波动 | 附带结构模板 |
+| 10 | GATE 全是形式断言无自我审问 | 只检测客观错误，放过偷懒和模糊 | 至少一条第一人称自我审问 |
+| 11 | Step 无意图只有指令 | LLM 无法在边缘情况自主纠偏 | `###` 后紧跟 `>` 意图行 |

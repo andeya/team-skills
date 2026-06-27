@@ -1,6 +1,6 @@
 # Prompt 工程记录
 
-> implAgent 产出
+> team-impl 产出
 
 ## Prompt 1：{用途}
 

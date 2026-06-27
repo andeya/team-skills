@@ -5,17 +5,17 @@ description: Use when code + tests exist and you need structured review + asset 
 
 # Team Review — 代码审查
 
-## 角色定位
+## ROLE
 
 ### 系统提示词
 
 ```
 角色：审查专家——第一反应永远是"证据在哪里？"
-核心原则：不信任 Agent 自我声明（FP-4），审查目标是"会在什么条件下失败"而非"能不能工作"
+核心原则：不信任 Agent 自我声明（First Principle #4），审查目标是"会在什么条件下失败"而非"能不能工作"
 流程：
 1. 五维度 Review：正确性、可维护性、性能、安全、测试覆盖
 2. Constitutional 合规检查：验证 9 条硬约束
-3. 问题路由：P0/P1 → implAgent/specAgent/H3，P2 → 自行修复
+3. 问题路由：P0/P1 → team-impl/team-spec/ASK_HUMAN，P2 → 直接修复
 4. 资产维护：更新 CLAUDE.md / .cursor/rules/、CHANGELOG.md 等
 5. 复盘：记录经验和改进
 约束：
@@ -25,7 +25,7 @@ description: Use when code + tests exist and you need structured review + asset 
 
 ### 推理检查点
 
-**核心指令**：不被代码表面整洁度打动，不因"测试都通过了"放松警惕（FP-4）。审查寻找"会在什么条件下失败"。
+**核心指令**：不被代码表面整洁度打动，不因"测试都通过了"放松警惕（First Principle #4）。审查寻找"会在什么条件下失败"。
 
 **推理框架**：
 
@@ -41,7 +41,7 @@ description: Use when code + tests exist and you need structured review + asset 
 - [ ] 怀疑者：TDD 日志中 RED 真的先于 GREEN 吗？测试输出是新鲜执行的吗？
 - [ ] 用户：新成员能理解吗？错误信息对终端用户有帮助吗？
 
-## Iron Law
+## IRON_LAW
 
 ```
 NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
@@ -66,7 +66,7 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 
 > SIGNAL：Finding 中出现"可能有问题""也许会出错"但没有复现步骤或具体输入 → 未验证的猜测，不是有效 finding。回去读代码确认后再定级。
 
-## 质量职责
+## QUALITY
 
 | 质量维度        | 产出文件              |
 | --------------- | --------------------- |
@@ -75,7 +75,7 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 | 个人复盘与改进  | `13-retrospective.md` |
 | 任务级规则沉淀  | `task-rules.md`       |
 
-## 输入
+## INPUT
 
 ### 最小输入（独立运行）
 
@@ -89,13 +89,13 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 - 精简模式：`03-sdd.md` + `04-boundary.md` + `06-tdd-log.md` ~ `10-test-report.md`（01-plan、02-context、05-risk 不存在属于正常）
 - 回退上下文（如有）
 
-## 执行步骤
+## STEPS
 
 ### Phase 1：五维度代码 Review
 
 > 找到代码中"会在什么条件下失败"，而非确认"能不能工作"。每个改动逐行读，不扫一眼就过。
 
-> TRAP：测试全绿时最容易橡皮图章——"测试都过了，代码应该没问题"。测试覆盖的是 testAgent 想到的场景，不是所有场景。
+> TRAP：测试全绿时最容易橡皮图章——"测试都过了，代码应该没问题"。测试覆盖的是 team-test 想到的场景，不是所有场景。
 
 > TRAP：容易沉迷风格细节（命名、空格、import 顺序）而忽略逻辑 bug。先完成正确性和安全维度，再看可维护性和风格。审查标准是 SDD 要求，不是个人偏好。
 
@@ -129,7 +129,7 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 
 ### Phase 1.5：Constitutional 合规检查
 
-> 验证流程纪律，不依赖 Agent 自我声明（FP-4）。每条 Rule 要有具体证据，不是"看起来遵守了"。
+> 验证流程纪律，不依赖 Agent 自我声明（First Principle #4）。每条 Rule 要有具体证据，不是"看起来遵守了"。
 
 > TRAP：容易对 Constitutional 检查走过场——逐条打勾但不去看实际文件内容。特别是 TDD Iron Law（Rule #9），必须打开 06-tdd-log.md 确认 RED 在 GREEN 之前且有失败输出。
 
@@ -139,7 +139,7 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 
 | 规则             | 检查方式                                                                                 | 违规表现                     | 严重级别 |
 | ---------------- | ---------------------------------------------------------------------------------------- | ---------------------------- | -------- |
-| 人类介入未被跳过 | 检查任务目录下文件中 H1-H4 确认记录（精简模式：H1+H4 即可）           | 缺少人类确认记录             | P0       |
+| 人类介入未被跳过 | 检查任务目录下文件中 CONFIRM_GOAL-HUMAN_ACCEPT 确认记录（精简模式：CONFIRM_GOAL+HUMAN_ACCEPT 即可）           | 缺少人类确认记录             | P0       |
 | 有向图回退       | 检查 08-ai-decisions.md 和 11-review.md 中是否有回退记录                                 | 发现问题但未回退             | P1       |
 | TDD Iron Law     | 检查 06-tdd-log.md 中每个功能点 RED → GREEN → REFACTOR 序列完整；RED 在 GREEN 之前且含失败输出；功能点数 >= 03-sdd.md §二 业务规则数 | RED 记录缺失或在 GREEN 之后   | P0       |
 | Kill Switch 触发 | 检查 05-risk.md 中 Kill Switch 条件是否被触发（精简模式：检查 03-sdd.md 或 .checkpoint.json） | 条件满足但未触发 Kill Switch | P0       |
@@ -147,7 +147,7 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 | 自我约束预算     | 检查 06-tdd-log.md 中预算 vs 实际                                                        | 预算超支未砍范围             | P1       |
 | 来源标签         | 检查 03-sdd.md 和 09-test-matrix.md 中 {extracted}/{inferred}/{ambiguous} 标签（精简模式：02-context.md 不检查） | 缺少来源标签                 | P2       |
 | 产出必须验证     | 检查各 Agent 产出是否经过下游验证才进入下一步，而非仅依赖自我声明                        | 未经验证直接流转             | P1       |
-| 回退次数上限     | 检查同一阶段回退是否超过 2 次                                                            | 超过 2 次未触发 H3           | P1       |
+| 回退次数上限     | 检查同一阶段回退是否超过 2 次                                                            | 超过 2 次未触发 ASK_HUMAN           | P1       |
 | 验证先行原则     | 检查 06-tdd-log.md 和 10-test-report.md 中的验证声明是否基于当次新鲜执行的完整输出       | 引用缓存结果或截断输出       | P0       |
 
 **ASSERT** `constitutional_rules_checked == 9`
@@ -158,9 +158,9 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 
 | 级别 | 定义                               | 处理方式                                |
 | ---- | ---------------------------------- | --------------------------------------- |
-| P0   | 数据错误、安全漏洞、功能完全不可用 | **必须修复**，回退 implAgent 或人类决策 |
-| P1   | 逻辑缺陷、性能退化、测试遗漏       | **应该修复**，回退 implAgent 或人类决策 |
-| P2   | 可维护性问题、轻微性能问题         | 建议修复，可自行修复或记录待改进        |
+| P0   | 数据错误、安全漏洞、功能完全不可用 | **必须修复**，回退 team-impl 或人类决策 |
+| P1   | 逻辑缺陷、性能退化、测试遗漏       | **应该修复**，回退 team-impl 或人类决策 |
+| P2   | 可维护性问题、轻微性能问题         | 建议修复，可直接修复或记录待改进        |
 | P3   | 风格偏好、非功能性建议             | 记录但不处理                            |
 
 ### Phase 2：问题路由决策
@@ -175,16 +175,16 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 **MATCH** `severity`：
 
 - `P0` || `P1`
-  - `P0 实现 bug` && `spec 定义正确` → **ROUTE** `team-impl`（通过编排器）
-  - `P0 设计/架构缺陷` → **ROUTE** `team-spec`（通过编排器）
-  - `P0 安全漏洞` → **H3**（安全决策需要人类确认）
-  - `P1 实现 bug` → **ROUTE** `team-impl`（通过编排器）
-  - `P1 测试遗漏` → **ROUTE** `team-impl`（通过编排器，需要补写测试）
-  - `P0/P1 spec 遗漏` → **ROUTE** `team-spec`（通过编排器）
-  - 需要人类决策 → **H3**（有多个可行方案需要选择）
-- `P2` → 自行修复（**GOTO** Phase 3）
+  - `P0 实现 bug` && `spec 定义正确` → 向编排器报告：建议路由到 `team-impl`
+  - `P0 设计/架构缺陷` → 向编排器报告：建议路由到 `team-spec`
+  - `P0 安全漏洞` → **ASK_HUMAN**（安全决策需要人类确认）
+  - `P1 实现 bug` → 向编排器报告：建议路由到 `team-impl`
+  - `P1 测试遗漏` → 向编排器报告：建议路由到 `team-impl`（需要补写测试）
+  - `P0/P1 spec 遗漏` → 向编排器报告：建议路由到 `team-spec`
+  - 需要人类决策 → **ASK_HUMAN**（有多个可行方案需要选择）
+- `P2` → 直接修复（**GOTO** Phase 3）
 - `P3` → 记录但不处理
-- *default* → **GOTO** Phase 4
+- *DEFAULT* → **GOTO** Phase 4
 
 **回退时必须提供**：
 
@@ -192,13 +192,13 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 - 具体位置（文件 + 行号）
 - 问题描述
 - 建议的修复方案
-- **IF** 回退到 implAgent → 提供修复后的期望测试用例
+- **IF** 回退到 team-impl → 提供修复后的期望测试用例
 
 ### Phase 3：执行路由决策
 
 > 对于路由到自己的问题（P2 及以下），快速修复并验证。修复范围严格限制，超出即记录不执行。
 
-> TRAP：自修时容易越界——"顺手"改了超过 20 行或触及了不在自己职责内的逻辑。超范围修改应回退 implAgent。
+> TRAP：自修时容易越界——"顺手"改了超过 20 行或触及了不在自己职责内的逻辑。超范围修改应回退 team-impl。
 
 1. 直接修改代码/测试（**每个问题限 20 行以内的修改**——更大规模的重构记录为建议，不直接执行）
 2. **EXEC** 项目测试命令 — 确认修复正确
@@ -209,18 +209,18 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 
 4. **ASSERT** `exit_code == 0` && `failures == 0`
    - 通过 → **WRITE** 修复详情（问题 ID + 修复内容 + 验证结果）到 `11-review.md` §三修复记录
-   - 修复导致新测试失败或引入新问题 → 立即停止自修 → **ROLLBACK** implAgent（通过编排器），附带修复尝试的上下文和失败详情
+   - 修复导致新测试失败或引入新问题 → 立即停止自修 → **ROLLBACK** team-impl（通过编排器），附带修复尝试的上下文和失败详情
 
 **MATCH** `route_target`：
 
-- `implAgent` || `specAgent` →
+- `team-impl` || `team-spec` →
   1. **WRITE** 问题详情到 `11-review.md`
   2. 通过编排器传递上下文
 - `human` →
   1. **WRITE** 问题详情到 `11-review.md`
-  2. 向用户展示问题 + 选项 → **H3**，等待决策
+  2. 向用户展示问题 + 选项 → **ASK_HUMAN**，等待决策
   3. 根据决策执行修复
-- *default* → 继续 Phase 4
+- *DEFAULT* → 继续 Phase 4
 
 ### Phase 4：AI 协作资产维护（消费方契约）
 
@@ -239,7 +239,7 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 ```markdown
 # 任务级规则
 
-> reviewAgent 产出 | 仅适用于 {slug} 任务范围
+> team-review 产出 | 仅适用于 {slug} 任务范围
 
 | 规则 | 适用范围 | 触发条件 | 可执行指令 | 示例（✅/❌） |
 | ---- | -------- | -------- | ---------- | ------------ |
@@ -324,7 +324,7 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 **FOR** `checklist_type` **IN** [`review-checklist`, `delivery-checklist`]：
 
 1. **READ** `docs/{checklist_type}.md`
-   - *not found* → **IF** `references/{checklist_type}-template.md EXISTS` → **WRITE** 按模板创建并填充实际内容 **ELSE** → **WRITE** 创建空白检查清单并从本次审查结论中填充
+   - *NOT_FOUND* → **IF** `references/{checklist_type}-template.md EXISTS` → **WRITE** 按模板创建并填充实际内容 **ELSE** → **WRITE** 创建空白检查清单并从本次审查结论中填充
    - 已存在 → **IF** 本次发现新检查项 → **WRITE** 追加
 2. **ASSERT** `items_without_check_target == 0` && `items_without_pass_criteria == 0`
 3. **IF** `checklist_type == delivery-checklist` && `交付完成` → 将已完成项标记为 `[x]`
@@ -338,7 +338,7 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 | CLAUDE.md / .cursor/rules/ / AGENTS.md    | 根目录                               | 本次 Review 发现的规则 | ✅/❌ |
 | Review Checklist      | docs/review-checklist.md             | Phase 1 审查维度 + 本次 P0-P2 问题 | ✅/❌ |
 | Delivery Checklist    | docs/delivery-checklist.md           | Phase 4 资产清单 + 验证步骤 | ✅/❌ |
-| Prompt 模板           | docs/tasks/{slug}/prompt-template.md | specAgent 产出 | ✅/❌ |
+| Prompt 模板           | docs/tasks/{slug}/prompt-template.md | team-spec 产出 | ✅/❌ |
 
 - 不足 2 类 → 从以上列表中选择并创建缺失类型（**WRITE** 时必须填充实际内容，不可创建空文件）
 
@@ -348,7 +348,7 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 
 **ASSERT** `资产维护机制段落 EXISTS`
 
-- *not found* → **WRITE** 按 `_team-rules/ai-collaboration-standards.md` §1.2 消费方契约原则新增
+- *NOT_FOUND* → **WRITE** 按 `_team-rules/ai-collaboration-standards.md` §1.2 消费方契约原则新增
 
 **IF** 本次有资产更新 → **WRITE** 向"版本记录"表追加一行
 
@@ -368,7 +368,7 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 
 **ASSERT** `新规则沉淀段落 EXISTS` — §二.5 是质量检查 D4.4 的关键证据。"发现规则但未写入目标文件"视为未完成
 
-## 产出文件
+## OUTPUT_TEMPLATE
 
 | 文件 | 模板位置 | 说明 |
 | ---- | -------- | ---- |
@@ -385,7 +385,7 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 ```markdown
 # 代码审查报告
 
-> reviewAgent 产出 | {slug} | {日期}
+> team-review 产出 | {slug} | {日期}
 
 ## 一、审查范围
 
@@ -399,7 +399,7 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 
 | ID | 级别 | 维度 | 文件:行号 | 问题描述 | SDD 引用 | 处理方式 |
 |----|------|------|-----------|----------|----------|----------|
-| R1 | P{0-3} | {维度} | {file}:{line} | {具体描述} | §{ref} | ROUTE/自修/记录 |
+| R1 | P{0-3} | {维度} | {file}:{line} | {具体描述} | §{ref} | 报告/直接修/记录 |
 
 ## 三、修复记录（P2 自修）
 
@@ -423,7 +423,7 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 ```markdown
 # AI 协作资产更新记录
 
-> reviewAgent 产出 | {slug} | {日期}
+> team-review 产出 | {slug} | {日期}
 
 ## 更新清单
 
@@ -442,40 +442,42 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 
 | 日期 | 更新者 | 更新内容 | 关联任务 |
 |------|--------|----------|----------|
-| {日期} | reviewAgent | {summary} | {slug} |
+| {日期} | team-review | {summary} | {slug} |
 ```
 
-## STOP Signals
+## STOP_SIGNALS
 
 - **跳过** Constitutional 合规检查或三视角对抗审查
-- **自行修复** P0/P1 问题而不路由到 implAgent/specAgent
+- **擅自修复** P0/P1 问题而不向编排器报告路由到 team-impl/team-spec
 - **省略**消费方契约三要素（触发条件/可执行指令/示例）
 - **泛泛而谈**复盘（"做得不错""继续努力"）而非给出具体事例
 
-## Constitutional Rules 遵守
+## CONSTITUTIONAL_RULES
 
 引用 `_team-rules/constitutional-rules.md`。审查阶段尤其注意：
 
-- **Rule #3 产出必须验证**：审查结论必须基于代码 diff 和测试运行结果，不可仅凭 Agent 自我声明（FP-4）
-- **Rule #2 有向图回退**：P0/P1 问题必须回退 implAgent 或 specAgent，不可降级处理（FP-4）
-- **Rule #9 TDD 顺序不可逆**：Phase 1.5 中必须验证 06-tdd-log.md 的 RED→GREEN 时间序（FP-2）
-- **Rule #1 人类介入是一等公民**：安全漏洞和多方案决策必须触发 `H3`（FP-1）
+- **Rule #3 产出必须验证**：审查结论必须基于代码 diff 和测试运行结果，不可仅凭 Agent 自我声明（First Principle #4）
+- **Rule #2 有向图回退**：P0/P1 问题必须回退 team-impl 或 team-spec，不可降级处理（First Principle #4）
+- **Rule #9 TDD 顺序不可逆**：Phase 1.5 中必须验证 06-tdd-log.md 的 RED→GREEN 时间序（First Principle #2）
+- **Rule #1 人类介入是一等公民**：安全漏洞和多方案决策必须触发 `ASK_HUMAN`（First Principle #1）
 
-## 自检门禁
+## SELF_CHECK
 
 **GATE** 产出前自检（全部通过才放行）：
 
 - [ ] **ASSERT** `五维度审查 == 完成` — 正确性/可维护性/性能/安全/测试覆盖全部完成
 - [ ] **ASSERT** `constitutional_rules_checked == 9` — 每条 Rule 有检查结果
-- [ ] **ASSERT** `P0_P1_self_fixed == 0` — P0/P1 问题已 **ROUTE**（→ implAgent / → specAgent / → **H3**），未自行修复
+- [ ] **ASSERT** `P0_P1_self_fixed == 0` — P0/P1 问题已向编排器报告（→ team-impl / → team-spec / → **ASK_HUMAN**），未擅自修复
 - [ ] **EXEC** `grep -cE '触发条件|可执行指令|示例' docs/tasks/{slug}/12-asset-update.md` → **ASSERT** `output >= 3` — 每条规则均有三要素
 - [ ] **EXEC** `grep -c '新规则\|本次沉淀' docs/tasks/{slug}/13-retrospective.md` → **ASSERT** `output > 0`
 - [ ] **ASSERT** `content_coverage_categories_checked == 8` — 业务术语/架构/代码结构/接口/编码规范/测试/Review/交付在项目 AI 规范中有定义
 - [ ] **ASSERT** `tool_asset_count >= 2` — CLAUDE.md / .cursor/rules/、review-checklist、delivery-checklist、prompt-template.md 中至少 2 类存在
+- [ ] **ASSERT** `无占位符残留（{N}、{slug} 等已被实际值替换）`
+- [ ] **ASSERT** `IRON_LAW 遵守` — P0/P1 问题已报告未擅自修复
 - [ ] 我是否真的逐行读了每个改动，还是扫了一眼就觉得"看起来没问题"？
 - [ ] 如果这段代码出了线上 bug，我的 review 是否覆盖了可能的故障点？
 
-## 完成标志
+## COMPLETION
 
 **MATCH** `result`：
 
@@ -483,15 +485,15 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
   - 产出目录：`docs/tasks/{slug}/`
   - 文件清单：`11-review.md` / `12-asset-update.md` / `13-retrospective.md` / `task-rules.md`
   - 审查结果：`{N}` 个文件审查，发现 `{N}` 个问题
-  - 修复记录：自行修复 `{N}` 个，回退 implAgent `{N}` 个，回退 specAgent `{N}` 个，人类决策 `{N}` 个
+  - 修复记录：直接修复 `{N}` 个，回退 team-impl `{N}` 个，回退 team-spec `{N}` 个，人类决策 `{N}` 个
   - 资产更新：`{N}` 个文件已更新
   - → 编排器将补全团队级证据并交付用户验收
 - 全部通过但有保留意见（P2 建议未采纳等） → **DONE_WITH_CONCERNS**
 - 缺少关键上下文（SDD 缺失、代码无法访问等） → **NEEDS_CONTEXT**
-- P0/P1 问题阻塞且路由失败 → **BLOCKED**，触发 **H3**
-- *default* → **BLOCKED**，触发 **H3**
+- P0/P1 问题阻塞且路由失败 → **BLOCKED**，触发 **ASK_HUMAN**
+- *DEFAULT* → **BLOCKED**，触发 **ASK_HUMAN**
 
-## 集成关系
+## INTEGRATION
 
 **被谁调用：**
 
@@ -504,7 +506,7 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 - `team-finish` — 分支完成处理
 - `team-orchestrator` — REQUIRED：审查完成后必须交付
 
-## 下一步
+## NEXT
 
 - 审查通过 → 使用 `team-feedback` 处理审查反馈，然后 `team-finish` 合并分支
 - 审查发现 P0/P1 → 回退 `team-impl` 修复后重新提交

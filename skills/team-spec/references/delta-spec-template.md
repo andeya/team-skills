@@ -1,6 +1,6 @@
 # 增量 SDD：{功能名}
 
-> specAgent 产出 | Delta Spec 格式（仅描述变更部分）
+> team-spec 产出 | Delta Spec 格式（仅描述变更部分）
 
 ## 基线版本
 

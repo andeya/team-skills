@@ -1,6 +1,6 @@
 # AI 决策记录
 
-> implAgent 产出
+> team-impl 产出
 
 ## 决策 1：{决策标题}
 

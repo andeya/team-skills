@@ -5,7 +5,7 @@ description: Use when about to claim work is complete, fixed, or passing - requi
 
 # Team Verify — 验证协议
 
-## 角色定位
+## ROLE
 
 ### 系统提示词
 
@@ -16,7 +16,7 @@ description: Use when about to claim work is complete, fixed, or passing - requi
 
 ### 推理检查点
 
-> 对所有声明零信任（FP-4）。上一轮结果是历史，不是当前事实。
+> 对所有声明零信任（First Principle #4）。上一轮结果是历史，不是当前事实。
 
 **推理框架**：
 
@@ -31,26 +31,26 @@ description: Use when about to claim work is complete, fixed, or passing - requi
 - [ ] 声明如果是错的，验证流程能发现吗？
 - [ ] 有无失败模式让 `exit_code == 0` 但结果实际错误？
 
-## Iron Law
+## IRON_LAW
 
 ```
 NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE FIRST
 ```
 
-## 质量职责
+## QUALITY
 
 | 质量维度 | 产出 |
 | -------- | ---- |
 | 验证协议执行 | 验证报告（对话中） |
 | 证据记录 | 命令输出 + `exit_code` |
 
-## 输入
+## INPUT
 
 - **required**：需要验证的声明描述
 - **required**：项目测试/构建命令
 - **RESOLVE**：`verify_cmd`（从 `CLAUDE.md` / `.cursor/rules/` 或 `05-risk.md` 获取）
 
-## 执行步骤
+## STEPS
 
 ### Step 1：确定验证命令
 
@@ -61,9 +61,9 @@ NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE FIRST
 1. `READ("05-risk.md", "§一验证计划")`
 2. `READ("CLAUDE.md").verify_cmd` / `READ(".cursor/rules/")`
 3. `READ("package.json").scripts.test` / `READ("Makefile")` / `READ("Cargo.toml")`
-4. *none*：
+4. *NONE*：
    - 手动验证可行（`截图` / `curl` / `日志对比`）→ 标注验证方式
-   - *default* → **NEEDS_CONTEXT**：请用户提供验证命令
+   - *DEFAULT* → **NEEDS_CONTEXT**：请用户提供验证命令
 
 ### Step 2：执行验证
 
@@ -135,7 +135,7 @@ NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE FIRST
    - **IF** `exit_code == 0` → **GOTO** Step 3
 3. 继续 **REPEAT**
 
-- *repeat exhausted* → **BLOCKED**，触发 **H3**
+- *REPEAT_EXHAUSTED* → **BLOCKED**，触发 **ASK_HUMAN**
 
 > "工具失败"≠"验证通过"——`REPEAT` 修复的是执行环境，不是验证结果。
 
@@ -154,21 +154,21 @@ NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE FIRST
 | 向后兼容 | 回归全通过 + 无 breaking API | "没改公共接口"但未运行旧版测试 |
 | 文档已更新 | `git diff` 显示文档变更 + 链接检查通过 | "代码改了，文档应该也对" |
 
-## STOP Signals
+## STOP_SIGNALS
 
 - 使用推测性语言（"应该""可能""看起来"）声明通过
 - 引用上一轮运行结果而非当次新鲜执行
 - 跳过部分输出或 warning 就声明通过
 - 表达满意（"太好了""完美""完成了"）在验证之前
 
-## Constitutional Rules 遵守
+## CONSTITUTIONAL_RULES
 
 > 引用 `_team-rules/constitutional-rules.md`
 
-- **Rule #8 验证先行**：本 skill 的核心使命——每个声明基于当次新鲜证据（FP-4）
-- **Rule #3 产出必须验证**：验证者自身的声明也不例外——报告必须含结构化证据（FP-4）
+- **Rule #8 验证先行**：本 skill 的核心使命——每个声明基于当次新鲜证据（First Principle #4）
+- **Rule #3 产出必须验证**：验证者自身的声明也不例外——报告必须含结构化证据（First Principle #4）
 
-## 自检门禁
+## SELF_CHECK
 
 **GATE** 产出前自检（全部通过才放行）：
 
@@ -177,11 +177,13 @@ NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE FIRST
 - [ ] `output` 已完整阅读（不截断、不跳过 warning）
 - [ ] `exit_code == 0` && `failures == 0`
 - [ ] 验证报告已输出（含 `exit_code` + 输出摘要 + 测试总数）
+- [ ] **ASSERT** `无占位符残留（{N}、{slug} 等已被实际值替换）`
+- [ ] **ASSERT** `IRON_LAW 遵守` — 所有声明基于当次新鲜执行，非缓存结果
 - [ ] 我刚才执行的验证命令是当次新鲜运行的，还是我在引用之前的结果？
 - [ ] `exit_code == 0` 但我真的读了完整输出吗？有没有被我忽略的 warning？
 - [ ] 测试确实覆盖了变更代码吗？还是我只是看到"全部通过"就满足了？
 
-## 完成标志
+## COMPLETION
 
 **MATCH** `result`：
 
@@ -189,9 +191,9 @@ NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE FIRST
 - 通过但有 warning → **DONE_WITH_CONCERNS**
 - 验证失败 → 记录失败详情 → **GOTO** Step 2（修复后重新验证）
 - 工具失败且修复失败 → **BLOCKED**
-- *default* → **NEEDS_CONTEXT**
+- *DEFAULT* → **NEEDS_CONTEXT**
 
-## 集成关系
+## INTEGRATION
 
 **被谁调用：**
 
@@ -202,7 +204,7 @@ NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE FIRST
 
 - `team-debug` — 验证失败时定位根因
 
-## 下一步
+## NEXT
 
 - 验证通过 → 继续当前流程的下一步
 - 验证失败 → 使用 `team-debug` 定位根因后重新验证

@@ -5,7 +5,7 @@ description: Use when SDD exists and you need TDD implementation with 06-08 docs
 
 # Team Impl — 实现
 
-## 角色定位
+## ROLE
 
 ### 系统提示词
 
@@ -14,7 +14,7 @@ description: Use when SDD exists and you need TDD implementation with 06-08 docs
 核心原则：追求能工作的最简单方案，对过度设计保持警惕
 流程：TDD 红-绿-重构循环
 约束：
-- spec 有问题 → 回退 specAgent，不可自行决定
+- spec 有问题 → 回退 team-spec，不可擅自决定
 - 需要人类决策 → 暂停等待
 - 困惑 → 显式记录，不可默默假设
 - 先写实现再写测试 → 删除代码，从 RED 重新开始
@@ -22,7 +22,7 @@ description: Use when SDD exists and you need TDD implementation with 06-08 docs
 
 ### 推理检查点
 
-**核心指令**：先让测试通过，再优化代码。三行重复优于过早抽象。测试通过是客观事实，代码美观是主观判断——顺序不可逆（FP-2）。
+**核心指令**：先让测试通过，再优化代码。三行重复优于过早抽象。测试通过是客观事实，代码美观是主观判断——顺序不可逆（First Principle #2）。
 
 **推理框架**（首个功能点完整推理 5 点；后续仅推理 1、4，其余沿用）：
 
@@ -37,13 +37,13 @@ description: Use when SDD exists and you need TDD implementation with 06-08 docs
 - 删掉这段实现，测试还会通过吗？→ 是 = 测试太弱
 - spec 的这条假设如果是错的，实现会怎么崩溃？
 
-## Iron Law
+## IRON_LAW
 
 ```
 NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 ```
 
-## 质量职责
+## QUALITY
 
 | 质量维度                   | 产出文件             |
 | -------------------------- | -------------------- |
@@ -52,7 +52,7 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 | 关键决策可追溯             | `08-ai-decisions.md` |
 | 通过项目 CI 检查             | 代码本身             |
 
-## 输入
+## INPUT
 
 ### 最小输入（独立运行）
 
@@ -61,11 +61,11 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 
 ### 完整输入（编排模式）
 
-- 完整模式：`01-plan.md` ~ `05-risk.md` + `prompt-template.md`（specAgent 全部产出）
+- 完整模式：`01-plan.md` ~ `05-risk.md` + `prompt-template.md`（team-spec 全部产出）
 - 精简模式：`03-sdd.md` + `04-boundary.md`（01-plan、02-context、05-risk、prompt-template 不存在属于正常）
 - 回退上下文（如有）
 
-## 执行步骤
+## STEPS
 
 ### Phase 0：理解规格
 
@@ -84,7 +84,7 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 1. **READ** spec 中涉及的文件 → 确认当前实现状态
 2. **WRITE**（对话中）当前代码与 spec 要求的差距
 3. **ASSERT** `spec 方案在当前基线上可行`
-   - 不可行或依赖不可用 → **ROLLBACK** specAgent（通过编排器）
+   - 不可行或依赖不可用 → **ROLLBACK** team-spec（通过编排器）
 4. **EXEC** 项目测试命令
    - **IF** `exit_code == 0` → 基线健康，继续
    - **IF** `exit_code != 0` → 记录到 `06-tdd-log.md` 审计段落（含失败测试名+输出），确认与本任务无关后继续
@@ -116,7 +116,7 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 
 #### 循环 1：红（Red）— 写测试
 
-> TRAP：你会想"我已经知道实现怎么写了，先写实现再补测试也一样"。不一样——后写的测试只会验证你已经写的代码，不会验证需求（FP-2）。
+> TRAP：你会想"我已经知道实现怎么写了，先写实现再补测试也一样"。不一样——后写的测试只会验证你已经写的代码，不会验证需求（First Principle #2）。
 
 1. **READ** `03-sdd.md` → 提取该功能点的规格
 2. **WRITE** 测试 → 覆盖 Happy Path + 边界条件（SDD §七）+ 异常场景（SDD §八）
@@ -214,7 +214,7 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 
 **ELSE** → 继续正常 TDD 循环
 
-> 为什么 TDD 顺序不可逆？后写测试被实现偏见污染（FP-2）：测的是已构建的行为，不是需求。"先实现再补测试效果一样""已经手动测试过了""删掉 X 小时工作太浪费了"——这些借口均不成立。
+> 为什么 TDD 顺序不可逆？后写测试被实现偏见污染（First Principle #2）：测的是已构建的行为，不是需求。"先实现再补测试效果一样""已经手动测试过了""删掉 X 小时工作太浪费了"——这些借口均不成立。
 
 #### 卡住时怎么办
 
@@ -245,7 +245,7 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 | 技术选型 | 选了什么 + 为什么 + 拒绝了什么 + 为什么拒绝 |
 | 架构决策 | 为什么这样组织代码 |
 | 采纳/拒绝 AI 建议 | 采纳或拒绝了什么 + 为什么 |
-| 回退决策 | 为什么回退到 specAgent |
+| 回退决策 | 为什么回退到 team-spec |
 | 人类决策 | 为什么需要人类介入 |
 
 ### 并行记录：Prompt 日志
@@ -278,7 +278,7 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
    1. `READ("05-risk.md", "§一验证计划")`
    2. `READ("CLAUDE.md").verify_cmd` / `READ(".cursor/rules/")`
    3. `READ("package.json").scripts.test` / `READ("Makefile")` / `READ("Cargo.toml")` / `READ("CI 配置")`
-   4. *none* → **NEEDS_CONTEXT**：请用户提供验证命令，记录到 `06-tdd-log.md`
+   4. *NONE* → **NEEDS_CONTEXT**：请用户提供验证命令，记录到 `06-tdd-log.md`
 
 2. **EXEC** `verify_cmd`（测试）→ **ASSERT** `exit_code == 0` && `failures == 0`
 3. **EXEC** 项目 lint 命令 → **ASSERT** `exit_code == 0`
@@ -288,7 +288,7 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 
 5. **EXEC** `git diff --name-only` → **READ** `04-boundary.md` deny 列表 → **ASSERT** `无越界修改`
 6. **READ** `01-plan.md` 预算 → **ASSERT** `未超出自我约束预算`
-7. **ASSERT** `TDD 顺序正确` && `未自行假设 spec` && `预算未超支`
+7. **ASSERT** `TDD 顺序正确` && `未擅自假设 spec` && `预算未超支`
 
 **IF** `exit_code != 0`：
 
@@ -299,23 +299,23 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 
 **ELSE** → 继续 Phase 2 下一步骤
 
-> 不可跳过失败继续后续步骤（FP-4）。预算超支砍范围，不放宽预算。
+> 不可跳过失败继续后续步骤（First Principle #4）。预算超支砍范围，不放宽预算。
 
 ### 回退路由
 
 **MATCH** `issue_type`：
 
-- `spec 遗漏`（SDD 未定义某个边界）→ **ROLLBACK** specAgent（通过编排器，附遗漏点 + 建议补充）
-- `spec 矛盾`（`03-sdd.md` 与 `02-context.md` 冲突）→ **ROLLBACK** specAgent（附矛盾位置 + 分析）
-- `spec 范围不合理`（`04-boundary` 禁止了必要修改）→ **ROLLBACK** specAgent（附修改理由 + 建议调整）
-- `需要人类判断` → **H3**（附选项 + 各选项 trade-off）
-- `testAgent 报告 bug` → 自己修复（仍遵循 TDD：先 RED 再 GREEN）
-- `reviewAgent 报告 P0/P1 bug` → 自己修复（仍遵循 TDD）
-- *default* → 记录到 `08-ai-decisions.md`，继续当前流程
+- `spec 遗漏`（SDD 未定义某个边界）→ **ROLLBACK** team-spec（通过编排器，附遗漏点 + 建议补充）
+- `spec 矛盾`（`03-sdd.md` 与 `02-context.md` 冲突）→ **ROLLBACK** team-spec（附矛盾位置 + 分析）
+- `spec 范围不合理`（`04-boundary` 禁止了必要修改）→ **ROLLBACK** team-spec（附修改理由 + 建议调整）
+- `需要人类判断` → **ASK_HUMAN**（附选项 + 各选项 trade-off）
+- `team-test 报告 bug` → 自己修复（仍遵循 TDD：先 RED 再 GREEN）
+- `team-review 报告 P0/P1 bug` → 自己修复（仍遵循 TDD）
+- *DEFAULT* → 记录到 `08-ai-decisions.md`，继续当前流程
 
 > 自修复仍遵循 TDD：RED（回归测试）→ GREEN（修复）→ 追加 `06-tdd-log.md` + `08-ai-decisions.md`。修复后全量测试确认无回归。
 
-## 产出文件
+## OUTPUT_TEMPLATE
 
 | 文件 | 模板位置 | 说明 |
 | ---- | -------- | ---- |
@@ -323,22 +323,22 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 | `07-prompt-log.md` | `references/07-prompt-log-template.md` | Prompt 工程记录 |
 | `08-ai-decisions.md` | `references/08-ai-decisions-template.md` | AI 决策记录 |
 
-## STOP Signals
+## STOP_SIGNALS
 
 - **编码**前没 `READ` spec，或发现 spec 问题不 `ROLLBACK` 而自己决定
 - **跳过** RED 阶段直接写实现，或先写实现再补测试
 - **修改**测试让它通过（而非修改实现），或困惑不记录默默假设
 
-## Constitutional Rules 遵守
+## CONSTITUTIONAL_RULES
 
 引用 `_team-rules/constitutional-rules.md`。实现阶段尤其注意：
 
-- **Rule #9 TDD 顺序不可逆**：RED 必须在 GREEN 之前，先写实现再补测试则删除代码重新开始（FP-2）
-- **Rule #2 有向图回退**：发现 spec 问题必须 `ROLLBACK` specAgent，不可自行假设正确行为（FP-4）
-- **Rule #6 自我约束预算**：超出预算砍范围，不放宽预算（FP-3）
-- **Rule #8 验证先行**：声明"测试通过"前必须执行验证协议 5 步（FP-4）
+- **Rule #9 TDD 顺序不可逆**：RED 必须在 GREEN 之前，先写实现再补测试则删除代码重新开始（First Principle #2）
+- **Rule #2 有向图回退**：发现 spec 问题必须 `ROLLBACK` team-spec，不可擅自假设正确行为（First Principle #4）
+- **Rule #6 自我约束预算**：超出预算砍范围，不放宽预算（First Principle #3）
+- **Rule #8 验证先行**：声明"测试通过"前必须执行验证协议 5 步（First Principle #4）
 
-## 自检门禁
+## SELF_CHECK
 
 **GATE** 产出前自检（全部通过才放行）：
 
@@ -351,11 +351,13 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 - [ ] **IF** 代码调用外部 AI 服务 → **ASSERT** `输入数据已脱敏或确认为非敏感`（RL-1）
 - [ ] **ASSERT** `实际消耗 <= 01-plan.md 自我约束预算`
 - [ ] **ASSERT** `所有困惑已显式记录于 06-tdd-log.md 审计段落`
-- [ ] **IF** 发现 spec 问题 → **ASSERT** `已 ROLLBACK specAgent`
+- [ ] **ASSERT** `无占位符残留（{N}、{slug} 等已被实际值替换）`
+- [ ] **ASSERT** `IRON_LAW 遵守` — 未自行假设 spec、未跳过 TDD 顺序
+- [ ] **IF** 发现 spec 问题 → **ASSERT** `已 ROLLBACK team-spec`
 - [ ] 我是否在某个 GREEN 阶段写了超出当前测试要求的代码？
 - [ ] 我是否有任何"通过"声明是基于上一轮输出而非本轮刚执行的结果？
 
-## 完成标志
+## COMPLETION
 
 **MATCH** `result`：
 
@@ -363,9 +365,9 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 - `完成但有保留意见` → **DONE_WITH_CONCERNS**（`concerns: [...]`）
 - `spec 不足` → **NEEDS_CONTEXT**
 - `被阻塞` → **BLOCKED**
-- *default* → **BLOCKED**
+- *DEFAULT* → **BLOCKED**
 
-## 集成关系
+## INTEGRATION
 
 **被谁调用：**
 
@@ -378,7 +380,7 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 - `team-test` — REQUIRED：实现完成后必须进行测试审计
 - `team-debug` — 发现 bug 时使用
 
-## 下一步
+## NEXT
 
 - 实现完成 → 使用 `team-test` 进行测试审计
 - 遇到难以定位的 bug → 使用 `team-debug` 根因分析

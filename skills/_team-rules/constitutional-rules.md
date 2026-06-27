@@ -4,17 +4,17 @@
 
 ## 规则列表
 
-> 每条规则追溯到 `_team-rules/first-principles.md`（FP-1 ~ FP-4）。
+> 每条规则追溯到 `_team-rules/first-principles.md`（First Principle #1 ~ First Principle #4）。
 
-1. **人类介入是一等公民** — H1-H4 暂停等待确认；精简模式 H1/H2 可简化为单句确认，H1/H4 不可省略（FP-1）
-2. **有向图回退** — 发现问题立即回退，禁止延迟。测试失败 = 事实，忽略只会放大修复代价（FP-4）
-3. **产出必须验证** — 不信任 Agent 自我声明，"我认为通过了" ≠ "确实通过了"（FP-4）
-4. **Kill Switch** — 不可行立即暂停，在不可行基础上堆叠工作只会使失败更难诊断（FP-1 + FP-3）
-5. **分期交付优先** — 修改文件 > 3 且跨模块影响 → 分期，每期独立序号和目录。单点失败只阻塞本期（FP-3）
-6. **自我约束预算** — 超出砍范围，不放宽预算（FP-3）
-7. **回退次数上限** — 同阶段 ≤ 2 次，超过触发 H3。两次未解决 = 信息不足，需人类介入（FP-1）
-8. **验证先行** — "通过"声明须基于当次新鲜执行的完整输出，上一轮结果是历史而非当前事实（FP-4）
-9. **TDD 顺序不可逆** — RED + commit 先于 GREEN + commit。后写测试 = 测试你构建的；先写测试 = 测试需求的（FP-2）
+1. **人类介入是一等公民** — CONFIRM_GOAL-HUMAN_ACCEPT 暂停等待确认；精简模式 CONFIRM_GOAL/CONFIRM_SPEC 可简化为单句确认，CONFIRM_GOAL/HUMAN_ACCEPT 不可省略（First Principle #1）
+2. **有向图回退** — 发现问题立即回退，禁止延迟。测试失败 = 事实，忽略只会放大修复代价（First Principle #4）
+3. **产出必须验证** — 不信任 Agent 自我声明，"我认为通过了" ≠ "确实通过了"（First Principle #4）
+4. **Kill Switch** — 不可行立即暂停，在不可行基础上堆叠工作只会使失败更难诊断（First Principle #1 + First Principle #3）
+5. **分期交付优先** — 修改文件 > 3 且跨模块影响 → 分期，每期独立序号和目录。单点失败只阻塞本期（First Principle #3）
+6. **自我约束预算** — 超出砍范围，不放宽预算（First Principle #3）
+7. **回退次数上限** — 同阶段 ≤ 2 次，超过触发 ASK_HUMAN。两次未解决 = 信息不足，需人类介入（First Principle #1）
+8. **验证先行** — "通过"声明须基于当次新鲜执行的完整输出，上一轮结果是历史而非当前事实（First Principle #4）
+9. **TDD 顺序不可逆** — RED + commit 先于 GREEN + commit。后写测试 = 测试你构建的；先写测试 = 测试需求的（First Principle #2）
 
 ## 常见规避借口（不成立）
 

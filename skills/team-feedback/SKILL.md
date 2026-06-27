@@ -5,7 +5,7 @@ description: Use when receiving code review feedback, before implementing sugges
 
 # Team Feedback — 审查反馈应对
 
-## 角色定位
+## ROLE
 
 ### 系统提示词
 
@@ -17,7 +17,7 @@ description: Use when receiving code review feedback, before implementing sugges
 2. 对照代码库验证技术正确性
 3. 技术性回应或基于推理的推回
 4. 逐项实施，每项单独测试
-5. 反馈揭示 spec 遗漏 → 路由 team-spec；架构问题 → 触发 H3
+5. 反馈揭示 spec 遗漏 → 路由 team-spec；架构问题 → 触发 ASK_HUMAN
 约束：
 - 禁止"你说得太对了""好主意"等无技术内容回应
 - 每项修改须单独测试验证
@@ -40,13 +40,13 @@ description: Use when receiving code review feedback, before implementing sugges
 - [ ] 无条件接受此反馈会否引入新问题？
 - [ ] 推回理由是技术性的还是因为改动成本高？
 
-## Iron Law
+## IRON_LAW
 
 ```
 NO IMPLEMENTATION WITHOUT TECHNICAL VERIFICATION FIRST
 ```
 
-## 质量职责
+## QUALITY
 
 | 质量维度 | 产出文件 |
 | -------- | -------- |
@@ -54,13 +54,13 @@ NO IMPLEMENTATION WITHOUT TECHNICAL VERIFICATION FIRST
 | 技术验证记录 | 验证结果（对话中） |
 | 修改实施记录 | 代码 diff + 测试结果 |
 
-## 输入
+## INPUT
 
 - **required**：代码审查反馈内容
 - **required**：项目测试/构建命令
 - **RESOLVE**：`verify_cmd`（从 `CLAUDE.md` / `.cursor/rules/` 或 `05-risk.md` 获取）
 
-## 执行步骤
+## STEPS
 
 ### Phase 1：理解反馈
 
@@ -98,8 +98,8 @@ NO IMPLEMENTATION WITHOUT TECHNICAL VERIFICATION FIRST
    - exported / public API 且有外部消费方可能 → 保留，即使当前项目未直接调用
    - internal 且无引用 → 建议删除，向审查者回应："该功能当前未被调用，建议删除（YAGNI）"
    - 有引用 → 按建议实现
-   - *not found* 且无法确定 → 标注 `{ambiguous}` → **NEEDS_CONTEXT**：询问用户
-   - *default* → 标记待实施，在 Phase 4 中额外注意验证
+   - *NOT_FOUND* 且无法确定 → 标注 `{ambiguous}` → **NEEDS_CONTEXT**：询问用户
+   - *DEFAULT* → 标记待实施，在 Phase 4 中额外注意验证
 
 ### Phase 3：外部反馈处理
 
@@ -121,14 +121,14 @@ NO IMPLEMENTATION WITHOUT TECHNICAL VERIFICATION FIRST
    - 技术正确 + 无冲突 → 标记待实施（**GOTO** Phase 4）
    - 技术上不正确 → 用技术理由推回（参考「推回指南」）
    - 无法验证 → **NEEDS_CONTEXT**：明确回应"我需要 `{具体信息}` 才能验证这条建议"
-   - 与已有决策冲突 → **H3**：暂停，展示冲突点，等待用户决策
-   - 反馈揭示 spec 遗漏 → **ROUTE** `team-spec`
-   - 反馈揭示架构问题 → **H3**
-   - *default* → 记录情况 → **NEEDS_CONTEXT**
+   - 与已有决策冲突 → **ASK_HUMAN**：暂停，展示冲突点，等待用户决策
+   - 反馈揭示 spec 遗漏 → 向编排器报告：建议路由到 `team-spec`
+   - 反馈揭示架构问题 → **ASK_HUMAN**
+   - *DEFAULT* → 记录情况 → **NEEDS_CONTEXT**
 
 ### Phase 4：实施
 
-> 逐项实施、逐项测试。批量实施后再测试 = 出问题时无法定位是哪项修改引入的（FP-2）。全部单项通过后再跑全量测试确认无交叉回归。
+> 逐项实施、逐项测试。批量实施后再测试 = 出问题时无法定位是哪项修改引入的（First Principle #2）。全部单项通过后再跑全量测试确认无交叉回归。
 
 > TRAP：你会倾向于修改实现去匹配反馈，而不检查反馈是否与 SDD 一致。
 > 实施前先确认：这项修改是让代码更接近 SDD，还是偏离 SDD？偏离 → 先路由 team-spec。
@@ -138,7 +138,7 @@ NO IMPLEMENTATION WITHOUT TECHNICAL VERIFICATION FIRST
 1. `READ("05-risk.md", "§一验证计划")`
 2. `READ("CLAUDE.md").verify_cmd` / `READ(".cursor/rules/")`
 3. `READ("package.json").scripts.test` / `READ("Makefile")` / `READ("Cargo.toml")`
-4. *none* → **NEEDS_CONTEXT**：请用户提供验证命令
+4. *NONE* → **NEEDS_CONTEXT**：请用户提供验证命令
 
 实施顺序：
 
@@ -209,22 +209,22 @@ NO IMPLEMENTATION WITHOUT TECHNICAL VERIFICATION FIRST
 > BAD：审查者说"这段代码可读性差"。
 > `立即重写整段代码 → 在不确定具体问题时过度反应，可能引入新问题。`
 
-## STOP Signals
+## STOP_SIGNALS
 
 - **实施**反馈建议前没有验证技术正确性
 - **回应**"你说得太对了""好主意"等表演性同意
 - **批量**实施多项反馈而不逐项测试
 - **忽略**外部反馈与代码库现实的冲突而不推回
 
-## Constitutional Rules 遵守
+## CONSTITUTIONAL_RULES
 
 引用 `_team-rules/constitutional-rules.md`。反馈处理阶段尤其注意：
 
-- **Rule #9 TDD 顺序不可逆**：每项修改必须单独测试，不可批量实施后再测试（FP-2）
-- **Rule #2 有向图回退**：反馈揭示 spec 遗漏 → 回退 specAgent，不可自行决定（FP-4）
-- **Rule #1 人类介入是一等公民**：反馈揭示架构问题 → 触发 `H3`（FP-1）
+- **Rule #9 TDD 顺序不可逆**：每项修改必须单独测试，不可批量实施后再测试（First Principle #2）
+- **Rule #2 有向图回退**：反馈揭示 spec 遗漏 → 回退 team-spec，不可擅自决定（First Principle #4）
+- **Rule #1 人类介入是一等公民**：反馈揭示架构问题 → 触发 `ASK_HUMAN`（First Principle #1）
 
-## 自检门禁
+## SELF_CHECK
 
 **GATE** 产出前自检（全部通过才放行）：
 
@@ -232,13 +232,15 @@ NO IMPLEMENTATION WITHOUT TECHNICAL VERIFICATION FIRST
 - [ ] **ASSERT** `不明确项 == 0`
 - [ ] **ASSERT** `每项修改.单独测试 == passed`
 - [ ] **ASSERT** `全量测试.exit_code == 0`
-- [ ] **IF** 反馈揭示 spec 遗漏 → 已 **ROUTE** `team-spec`
-- [ ] **IF** 反馈揭示架构问题 → 已触发 **H3**
+- [ ] **ASSERT** `无占位符残留（{N}、{slug} 等已被实际值替换）`
+- [ ] **ASSERT** `IRON_LAW 遵守` — 每项修改单独测试，未批量实施
+- [ ] **IF** 反馈揭示 spec 遗漏 → 已向编排器报告路由到 `team-spec`
+- [ ] **IF** 反馈揭示架构问题 → 已触发 **ASK_HUMAN**
 - [ ] 我是否因为反馈来自权威人士就未经验证地接受了？
 - [ ] 我拒绝的反馈真的不合理，还是我在为自己的实现辩护？
 - [ ] 我是否把风格偏好类反馈当成了 P0 优先处理，而忽略了实质性 bug？
 
-## 完成标志
+## COMPLETION
 
 **WRITE**（对话中）反馈处理摘要：
 
@@ -256,10 +258,10 @@ NO IMPLEMENTATION WITHOUT TECHNICAL VERIFICATION FIRST
 - 全部实施且测试通过 → **DONE**（`反馈项: {N}`, `已实施: {N}`, `已推回: {N}`）
 - 已实施但有保留意见 → **DONE_WITH_CONCERNS**（`concerns: [...]`）
 - 缺少关键信息无法验证 → **NEEDS_CONTEXT**（`missing: [...]`）
-- 被阻塞 → **BLOCKED** → **H3**
-- *default* → **NEEDS_CONTEXT**
+- 被阻塞 → **BLOCKED** → **ASK_HUMAN**
+- *DEFAULT* → **NEEDS_CONTEXT**
 
-## 集成关系
+## INTEGRATION
 
 **被谁调用：**
 
@@ -272,7 +274,7 @@ NO IMPLEMENTATION WITHOUT TECHNICAL VERIFICATION FIRST
 - `team-spec` — 反馈揭示 spec 遗漏时
 - `team-finish` — 分支完成处理
 
-## 下一步
+## NEXT
 
 - 反馈含实现修复项 → 使用 `team-impl` 按反馈修复
 - 反馈揭示 spec 遗漏 → 使用 `team-spec` 补全规格

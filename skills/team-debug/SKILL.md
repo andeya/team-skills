@@ -5,7 +5,7 @@ description: Use when encountering any bug, test failure, or unexpected behavior
 
 # Team Debug — 系统调试
 
-## 角色定位
+## ROLE
 
 ### 系统提示词
 
@@ -16,7 +16,7 @@ description: Use when encountering any bug, test failure, or unexpected behavior
 
 ### 推理检查点
 
-> 每次修复必须能解释"为什么之前坏了"。"应该能修好"是无效声明（FP-4）。95% 的"找不到根因"是调查不充分。
+> 每次修复必须能解释"为什么之前坏了"。"应该能修好"是无效声明（First Principle #4）。95% 的"找不到根因"是调查不充分。
 
 **推理框架**：
 
@@ -31,13 +31,13 @@ description: Use when encountering any bug, test failure, or unexpected behavior
 - [ ] 假设若错误，还有什么证据能解释所有已知症状？
 - [ ] 当前修复是在修根因还是症状？根因仍在时修复能撑多久？
 
-## Iron Law
+## IRON_LAW
 
 ```
 NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST
 ```
 
-## 质量职责
+## QUALITY
 
 | 质量维度 | 产出文件 |
 | -------- | -------- |
@@ -45,7 +45,7 @@ NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST
 | 假设验证记录 | 调试日志（对话中） |
 | 修复验证 | 测试通过确认 |
 
-## 输入
+## INPUT
 
 | 来源 | 必需 | 说明 |
 |------|------|------|
@@ -54,7 +54,7 @@ NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST
 | `06-tdd-log.md` | 可选 | 如在 TDD 流程中出现 bug，提供历史上下文 |
 | `05-risk.md` | 可选 | 验证命令和已知风险点 |
 
-## 执行步骤
+## STEPS
 
 ### Phase 1：根因调查
 
@@ -65,7 +65,7 @@ NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST
 1. **READ** 完整错误信息 — 不跳过 stack trace、行号、错误码
 2. **EXEC** 稳定复现 — 确认触发条件和频率
    - **IF** `bug 成功复现`（测试失败 / 异常症状重现）→ 记录复现命令和输出，继续
-   - **IF** `bug 无法复现` → 调整触发条件（输入值、并发、环境变量）后重试；3 次仍无法复现 → **WRITE**（对话中）已尝试的条件 → **H3**
+   - **IF** `bug 无法复现` → 调整触发条件（输入值、并发、环境变量）后重试；3 次仍无法复现 → **WRITE**（对话中）已尝试的条件 → **ASK_HUMAN**
 3. **READ** `git diff` + 最近 commits + 依赖变更 — 检查最近变更
 4. **IF** 多组件系统 → 在每层边界添加诊断埋点，定位故障层
 
@@ -102,7 +102,7 @@ NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST
 4. **MATCH** `verify_result`：
    - 假设成立 → **GOTO** Phase 4
    - 假设不成立 → 新假设 → **GOTO** Phase 3
-   - *default*（证据不足以判断）→ 补充诊断埋点 → **GOTO** Phase 1
+   - *DEFAULT*（证据不足以判断）→ 补充诊断埋点 → **GOTO** Phase 1
 
 ### Phase 4：修复实现
 
@@ -123,7 +123,7 @@ NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST
 4. **IF** 编排模式（任务目录存在）→ **WRITE** 修复循环到 `06-tdd-log.md` + 决策到 `08-ai-decisions.md`
 5. 修复成功 → 退出 `REPEAT`，进入自检门禁
 
-- *repeat exhausted* → **BLOCKED**，触发 **H3**，提交以下信息：
+- *REPEAT_EXHAUSTED* → **BLOCKED**，触发 **ASK_HUMAN**，提交以下信息：
   - 已尝试的 3 种修复方案 + 每种的失败原因
   - 怀疑的架构问题
   - 建议的下一步方向
@@ -147,7 +147,7 @@ NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST
 
 - 门槛通过 → **WRITE**（对话中）已调查内容和排除的假设 → 实施防护措施（重试、超时、错误处理）→ **DONE_WITH_CONCERNS**
 - 门槛未通过 → **GOTO** Phase 1
-- *default* → **BLOCKED**
+- *DEFAULT* → **BLOCKED**
 
 ## 用户信号识别
 
@@ -166,35 +166,61 @@ NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST
 > SIGNAL：`"Flaky test"` → 通常是真实的竞态条件，不是随机性。先找共享可变状态，再查时序依赖。
 > SIGNAL：`修复通过但其他测试失败` → 修复停留在症状层面。根因仍在，换了个地方表现。回到 Phase 1。
 
-## STOP Signals
+## STOP_SIGNALS
 
 - **跳过**根因调查直接写修复代码
 - **同时**修改多个变量，无法隔离有效改动
-- **继续**尝试 3 次修复失败后仍不触发 `H3`
+- **继续**尝试 3 次修复失败后仍不触发 `ASK_HUMAN`
 - **绕过**调查流程（"先快速修一下，后面再查根因"）
 
-## Constitutional Rules 遵守
+## OUTPUT_TEMPLATE
+
+**WRITE** `docs/tasks/{slug}/debug-report.md`：
+
+```markdown
+## §一 症状描述
+{可复现的失败现象}
+
+## §二 根因分析
+- 根因：{具体根因}
+- 证据：{支持根因的证据链}
+- 排除的假设：{已排除的其他可能原因}
+
+## §三 修复记录
+| 变量 | 修改前 | 修改后 | 验证结果 |
+|------|--------|--------|---------|
+| {file}:{line} | {old} | {new} | ✅/❌ |
+
+## §四 回归测试
+- 失败测试：{test_desc}（RED）
+- 修复后：{test_desc}（GREEN）
+- 全量测试：{pass_count}/{total_count} 通过
+```
+
+## CONSTITUTIONAL_RULES
 
 引用 `_team-rules/constitutional-rules.md`。调试阶段尤其注意：
 
-- **Rule #9 TDD 顺序不可逆**：修复 bug 必须先写失败的回归测试再写修复代码（FP-2）
-- **Rule #3 产出必须验证**：修复完成后必须执行 `_team-rules/verification-protocol.md` 的 5 个步骤（FP-4）
-- **Rule #7 回退次数上限**：3 次修复失败必须触发 `H3`，不可无限重试（FP-1）
-- **Rule #2 有向图回退**：调试发现根源在 spec 歧义/遗漏 → `ROLLBACK` specAgent（FP-4）
+- **Rule #9 TDD 顺序不可逆**：修复 bug 必须先写失败的回归测试再写修复代码（First Principle #2）
+- **Rule #3 产出必须验证**：修复完成后必须执行 `_team-rules/verification-protocol.md` 的 5 个步骤（First Principle #4）
+- **Rule #7 回退次数上限**：3 次修复失败必须触发 `ASK_HUMAN`，不可无限重试（First Principle #1）
+- **Rule #2 有向图回退**：调试发现根源在 spec 歧义/遗漏 → `ROLLBACK` team-spec（First Principle #4）
 
-## 自检门禁
+## SELF_CHECK
 
 **GATE** 产出前自检（全部通过才放行）：
 
 - [ ] **ASSERT** `根因描述` NOT_EMPTY（不是"可能是 X"而是"根因是 `{X}`"）
 - [ ] **ASSERT** `失败测试 EXISTS` — 修复前已 **WRITE** 失败测试
 - [ ] **ASSERT** `exit_code == 0` — 修复后 **EXEC** 验证通过
-- [ ] **ASSERT** `修复失败次数 < 3` || `H3 已触发`
+- [ ] **ASSERT** `修复失败次数 < 3` || `ASK_HUMAN 已触发`
 - [ ] **ASSERT** `同时修改变量数 <= 1`
+- [ ] **ASSERT** `无占位符残留（{N}、{slug} 等已被实际值替换）`
+- [ ] **ASSERT** `IRON_LAW 遵守` — 根因已确定后才修复，未跳过调查
 - [ ] 我的假设如果错了，还有什么能解释所有已知症状？
 - [ ] 我是在修根因还是在修症状？根因仍在时这个修复能撑多久？
 
-## 完成标志
+## COMPLETION
 
 **MATCH** `result`：
 
@@ -202,9 +228,9 @@ NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST
 - 根因未确定但已实施防护措施 → **DONE_WITH_CONCERNS**
 - 需要更多上下文信息 → **NEEDS_CONTEXT**
 - 3 次修复失败 → **BLOCKED**
-- *default* → **NEEDS_CONTEXT**
+- *DEFAULT* → **NEEDS_CONTEXT**
 
-## 集成关系
+## INTEGRATION
 
 **被谁调用：**
 
@@ -216,7 +242,7 @@ NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST
 - `team-verify` — 推荐：修复后验证确认
 - `team-test` — 确认无回归
 
-## 下一步
+## NEXT
 
 - 修复完成 → 使用 `team-verify` 确认修复有效且无回归
 - 修复涉及较大改动 → 使用 `team-test` 补充测试覆盖

@@ -7,7 +7,7 @@ description: Use when starting any conversation with Team Skills - establishes h
 
 > If you were dispatched as a subagent to execute a specific task, skip this skill.
 
-## 角色定位
+## ROLE
 
 ### 系统提示词
 
@@ -32,20 +32,20 @@ description: Use when starting any conversation with Team Skills - establishes h
 - 按推荐启动 Skill 后用户会否在第一步就卡住？
 - 用户需要单个 Skill 还是完整流水线？
 
-## Iron Law
+## IRON_LAW
 
 ```
 NO SKILL RECOMMENDATION WITHOUT SCENE ANALYSIS FIRST
 ```
 
-## 质量职责
+## QUALITY
 
 | 质量维度 | 产出文件 |
 | -------- | -------- |
 | 场景分析 | 推荐 Skill（对话中） |
 | 推荐理由 | 推荐说明（对话中） |
 
-## 输入
+## INPUT
 
 - 用户的场景描述或需求（对话中）
 - 当前项目的 `CLAUDE.md` / `.cursor/rules/`（确认可用的 Skill 集合）
@@ -67,7 +67,7 @@ NO SKILL RECOMMENDATION WITHOUT SCENE ANALYSIS FIRST
 | AI 使用涉及安全合规 | team-security |
 | 需完整交付流水线 | team-orchestrator |
 
-## 执行步骤
+## STEPS
 
 ### Step 1：分析用户场景
 
@@ -98,7 +98,7 @@ NO SKILL RECOMMENDATION WITHOUT SCENE ANALYSIS FIRST
 10. 评估 AI 协作成熟度 → `team-score`
 11. AI 使用涉及敏感数据 / 外部 AI 服务 / 自动化 Agent → `team-security`
 12. 需完整流水线（明确说"从头到尾"或"完整开发"） → `team-orchestrator`
-13. *none* → **NEEDS_CONTEXT**：请用户描述当前阶段和目标
+13. *NONE* → **NEEDS_CONTEXT**：请用户描述当前阶段和目标
 
 ### Step 2：推荐并说明理由
 
@@ -130,20 +130,20 @@ NO SKILL RECOMMENDATION WITHOUT SCENE ANALYSIS FIRST
 
 **Invoke relevant skills BEFORE any response or action.** 首个匹配即停——找到最匹配的 skill 后立即推荐，不遍历全部。
 
-## STOP Signals
+## STOP_SIGNALS
 
 - **跳过**场景分析直接推荐 Skill
 - **推荐**实现类 Skill 给场景模糊的用户（应推荐 team-brainstorm）
 - **凭记忆**推荐而不读取当前版本的选择矩阵
 
-## Constitutional Rules 遵守
+## CONSTITUTIONAL_RULES
 
 引用 `_team-rules/constitutional-rules.md`。分诊阶段尤其注意：
 
-- **Rule #1 人类介入是一等公民**：推荐后等待用户确认再启动 skill，不可自动跳转（FP-1）
-- **Rule #4 Kill Switch**：用户需求明显不可行时应告知而非推荐 skill 继续（FP-1 + FP-3）
+- **Rule #1 人类介入是一等公民**：推荐后等待用户确认再启动 skill，不可自动跳转（First Principle #1）
+- **Rule #4 Kill Switch**：用户需求明显不可行时应告知而非推荐 skill 继续（First Principle #1 + First Principle #3）
 
-## 自检门禁
+## SELF_CHECK
 
 **GATE** 产出前自检（全部通过才放行）：
 
@@ -151,10 +151,12 @@ NO SKILL RECOMMENDATION WITHOUT SCENE ANALYSIS FIRST
 - [ ] `target_skill` 已 **RESOLVE** 且推荐理由与场景匹配
 - [ ] **IF** 场景模糊 → 已推荐 `team-brainstorm`
 - [ ] **IF** 用户需要完整流水线 → 已推荐 `team-orchestrator`
-- [ ] 我推荐的 Skill 组合是否是完成这个任务的最简路径？
+- [ ] - [ ] **ASSERT** `无占位符残留（{N}、{slug} 等已被实际值替换）`
+- [ ] **ASSERT** `IRON_LAW 遵守` — 推荐基于场景匹配，非个人偏好
+我推荐的 Skill 组合是否是完成这个任务的最简路径？
 - [ ] 我是否因为熟悉某个 Skill 而忽略了更合适的选择？
 
-## 完成标志
+## COMPLETION
 
 **MATCH** `result`：
 
@@ -162,9 +164,9 @@ NO SKILL RECOMMENDATION WITHOUT SCENE ANALYSIS FIRST
 - 多个 Skill 可能适用 → **DONE_WITH_CONCERNS**
 - 场景无法判断 → **NEEDS_CONTEXT**
 - 用户需求明显不可行 → **BLOCKED**
-- *default* → **NEEDS_CONTEXT**
+- *DEFAULT* → **NEEDS_CONTEXT**
 
-## 集成关系
+## INTEGRATION
 
 **被谁调用：**
 
@@ -176,6 +178,6 @@ NO SKILL RECOMMENDATION WITHOUT SCENE ANALYSIS FIRST
 - `team-orchestrator` — 需要完整流水线时使用
 - `team-security` — AI 使用涉及安全合规时使用
 
-## 下一步
+## NEXT
 
 - 根据推荐结果，调用对应的 Skill 开始工作

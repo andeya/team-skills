@@ -1,6 +1,6 @@
 # 个人复盘
 
-> reviewAgent 产出
+> team-review 产出
 
 ## 一、本次任务回顾
 

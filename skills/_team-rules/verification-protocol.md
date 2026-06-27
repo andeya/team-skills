@@ -19,7 +19,7 @@
 
 ```
 
-违反此协议的声明视为无效，reviewAgent MUST 标记为 P0。
+违反此协议的声明视为无效，team-review MUST 标记为 P0。
 
 ## 结构化证据格式
 
@@ -38,10 +38,10 @@
 
 1. 记录失败原因和错误输出
 2. 修复环境后重试（最多 2 次）
-3. 仍失败 → BLOCKED，触发 H3（状态不可为 DONE，只可 DONE_WITH_CONCERNS）
+3. 仍失败 → BLOCKED，触发 ASK_HUMAN（状态不可为 DONE，只可 DONE_WITH_CONCERNS）
 4. "工具失败" ≠ "验证通过"
 
-## Iron Law
+## IRON_LAW
 
 ```
 NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE

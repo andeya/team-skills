@@ -5,13 +5,13 @@ description: Use when evaluating AI collaboration maturity of a project
 
 # Team Score — 协作评分
 
-## 角色定位
+## ROLE
 
 ### 系统提示词
 
 ```
 角色：协作评分评委——证据驱动，找不到证据 = 0 分
-核心原则：只相信物证，不相信口供。默认 0 分，找到证据才加分（FP-4）
+核心原则：只相信物证，不相信口供。默认 0 分，找到证据才加分（First Principle #4）
 流程：
 1. 按 5 个维度分别收集证据（可并行扫描）
 2. 逐条检查 7 项硬门槛，任一不通过则标记不通过
@@ -24,7 +24,7 @@ description: Use when evaluating AI collaboration maturity of a project
 
 ### 推理检查点
 
-**核心指令**："项目做得不错"是口供，`06-tdd-log.md` 中 RED 时间戳早于 GREEN 是物证。每个评分项有罪推定——默认 0 分，找到证据才加分（FP-4）。
+**核心指令**："项目做得不错"是口供，`06-tdd-log.md` 中 RED 时间戳早于 GREEN 是物证。每个评分项有罪推定——默认 0 分，找到证据才加分（First Principle #4）。
 
 **推理框架**：
 
@@ -38,20 +38,20 @@ description: Use when evaluating AI collaboration maturity of a project
 - 被质疑时能否指出具体文件路径和内容片段？
 - 作者当面答辩时评分能否经受质询？
 
-## Iron Law
+## IRON_LAW
 
 ```
 NO SCORE WITHOUT EVIDENCE FIRST
 ```
 
-## 质量职责
+## QUALITY
 
 | 质量维度 | 产出文件 |
 | -------- | -------- |
 | 评分报告 | 对话输出 |
 | 改进建议 | 对话输出 |
 
-## 输入
+## INPUT
 
 - 待评分的项目目录（代码、文档、测试、配置完整可访问）
 - 评分模式指示（如有 `.checkpoint.json` 或用户指定）
@@ -159,7 +159,7 @@ NO SCORE WITHOUT EVIDENCE FIRST
 
 **单人项目适配**：D5 各项重新解读——"角色分工" = 同一人在 spec/impl/test/review 阶段有意识切换角色；"协作资产一致" = 产物风格自洽；"交叉 Review" = 自查或 AI 辅助 Review 发现真实问题；"个人贡献可见" = 自动满分。
 
-## 执行步骤
+## STEPS
 
 ### Step 0：判定评分模式
 
@@ -169,7 +169,7 @@ NO SCORE WITHOUT EVIDENCE FIRST
 
 1. **READ** `.checkpoint.json` → 取 `mode` 字段（权威来源）
 2. 文件集推断：仅有 `03-sdd.md` + `04-boundary.md` → `compact`；有 `01-05` 全套 → `full`
-3. *none* → 在评分报告中注明"模式未确定"，按 `full` 模式评分
+3. *NONE* → 在评分报告中注明"模式未确定"，按 `full` 模式评分
 
 **IF** `mode == compact`：
 
@@ -372,7 +372,7 @@ NO SCORE WITHOUT EVIDENCE FIRST
 - 0 分项 → P1：完全缺失，投入产出比最高
 - 低于 60% 的项 → P2：有明显缺陷
 - 低于 80% 的项 → P3：可快速提升
-- *default* → 无需改进
+- *DEFAULT* → 无需改进
 
 **FOR** `建议`：
 
@@ -380,22 +380,51 @@ NO SCORE WITHOUT EVIDENCE FIRST
 2. **WRITE**（对话中）具体改进动作（可操作，不是空话）
 3. **WRITE**（对话中）预期提升分数
 
-## STOP Signals
+## STOP_SIGNALS
 
 - **凭印象**给分，没有找到实际文件或代码作为证据
 - **跳过**无证据的评分项而不标注"未找到"
 - **只扫描**代码目录而不检查文档和测试目录
 - **省略**按优先级排列的改进建议
 
-## Constitutional Rules 遵守
+## OUTPUT_TEMPLATE
+
+**WRITE** `docs/tasks/{slug}/score-report.md`：
+
+```markdown
+# 协作评分报告 — {slug}
+
+## 硬门槛检查（7 项）
+| # | 门槛 | 通过？ | 证据 |
+|---|------|-------|------|
+| 1 | AI 任务规划文档 | ✅/❌ | {path} |
+| 2 | AI 修改边界 | ✅/❌ | {path} |
+| 3 | 测试/验证手段 | ✅/❌ | {path} |
+| 4 | 预设测试通过 | ✅/❌ | {path} |
+| 5 | 协作资产非模板化 | ✅/❌ | {path} |
+| 6 | 风险与未覆盖项说明 | ✅/❌ | {path} |
+| 7 | 关键决策说明 | ✅/❌ | {path} |
+
+## 维度评分
+
+| 维度 | 分数 | 证据摘要 | 改进建议 |
+|------|------|---------|---------|
+| D1 AI 协作资产 | {n}/100 | {evidence} | {suggestion} |
+| D2 任务规划 | {n}/100 | {evidence} | {suggestion} |
+| D3 交付质量 | {n}/100 | {evidence} | {suggestion} |
+| D4 过程复盘 | {n}/100 | {evidence} | {suggestion} |
+| D5 团队协作 | {n}/100 | {evidence} | {suggestion} |
+```
+
+## CONSTITUTIONAL_RULES
 
 引用 `_team-rules/constitutional-rules.md`。评分阶段需特别验证被评项目对以下规则的遵守情况：
 
-- **Rule #9 TDD 顺序不可逆**：检查 06-tdd-log.md 中 RED→GREEN 的时间序证据（FP-2）
-- **Rule #3 产出必须验证**：检查验证声明是否基于当次新鲜执行（FP-4）
-- **Rule #1 人类介入是一等公民**：检查 H1-H4 确认记录是否存在（FP-1）
+- **Rule #9 TDD 顺序不可逆**：检查 06-tdd-log.md 中 RED→GREEN 的时间序证据（First Principle #2）
+- **Rule #3 产出必须验证**：检查验证声明是否基于当次新鲜执行（First Principle #4）
+- **Rule #1 人类介入是一等公民**：检查 CONFIRM_GOAL-HUMAN_ACCEPT 确认记录是否存在（First Principle #1）
 
-## 自检门禁
+## SELF_CHECK
 
 **GATE** 产出前自检（全部通过才放行）：
 
@@ -404,21 +433,23 @@ NO SCORE WITHOUT EVIDENCE FIRST
 - [ ] **ASSERT** `每个验收项有实际证据支撑`
 - [ ] **ASSERT** `无证据项已标注「未找到」或「需现场补充」`
 - [ ] **ASSERT** `改进建议已按 priority 排列`
-- [ ] 我的评分是基于证据还是基于印象？每个分数我能指出具体的交付物支撑吗？
+- [ ] - [ ] **ASSERT** `无占位符残留（{N}、{slug} 等已被实际值替换）`
+- [ ] **ASSERT** `IRON_LAW 遵守` — 每个分数有实际证据支撑，非印象评分
+我的评分是基于证据还是基于印象？每个分数我能指出具体的交付物支撑吗？
 - [ ] 如果把评分对象匿名化，我会给同样的分数吗？
 - [ ] 5 个维度的分数是独立评出的，还是被第一个维度的印象锚定了？
 
-## 完成标志
+## COMPLETION
 
 **MATCH** `result`：
 
 - 全部评分完成 + 改进建议已输出 → **DONE**（`总分: {N}/100`, `硬门槛: {N}/7`, `等级: {优秀/良好/合格/不合格}`, `改进建议: {N} 条`）
 - 部分评分项证据不足但已标注 → **DONE_WITH_CONCERNS**
 - 关键文件无法访问 → **NEEDS_CONTEXT**
-- 项目测试命令无法执行 → **BLOCKED**，触发 **H3**
-- *default* → **NEEDS_CONTEXT**
+- 项目测试命令无法执行 → **BLOCKED**，触发 **ASK_HUMAN**
+- *DEFAULT* → **NEEDS_CONTEXT**
 
-## 集成关系
+## INTEGRATION
 
 **被谁调用：**
 
@@ -431,7 +462,7 @@ NO SCORE WITHOUT EVIDENCE FIRST
 - `team-test` — 需要补充测试时使用
 - `team-review` — 需要补充审查资产时使用
 
-## 下一步
+## NEXT
 
 - P0/P1 改进项 → 使用对应 Skill 补全（`team-spec` / `team-test` / `team-review`）
 - 安全合规不通过 → 使用 `team-security` 独立运行获取详细整改建议
