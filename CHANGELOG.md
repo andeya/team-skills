@@ -7,6 +7,23 @@
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-06-27
+
+### 新增
+
+- `team-range` 开发者命令：逐文件遍历项目文件执行用户指定操作，修改后重检直到干净再处理下一个
+
+### 变更
+
+- CLAUDE.md §2.2 引用规范更新：新增 `**REF**` 关键词统一外部规则引用格式，新增内联引用反引号格式规范
+- README 对齐 CLAUDE.md 命名规范：Agent 类名 → Skill 名称、H1-H4 → 正式介入点名称（CONFIRM_GOAL/CONFIRM_SPEC/ASK_HUMAN/HUMAN_ACCEPT）、Mermaid 核心架构图节点标签同步更新
+- `team-refine` 打磨顺序调整
+
+### 修复
+
+- 29 个文件全量一致性修复：22 处 Skill 名称反引号统一、4 处角色命名统一（"Agent" → "Skill"）、5 处模板章节编号修正
+- README 事实修正：SDD 章节数 7→9、设计原则数 20→21、refine 维度数修正、开发者命令表补齐 `/team-range`
+
 ## [1.3.9] - 2026-06-27
 
 ### 新增
