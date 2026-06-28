@@ -15,6 +15,7 @@ Thumbs.db
 *.sublime-*
 .claude/*
 !.claude/commands
+!.claude/settings.json
 
 # Environment
 .env

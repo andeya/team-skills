@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node src/cli.js setup --force)",
+      "WebFetch(domain:365.kdocs.cn)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "EnterPlanMode",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo 'BLOCKED: team-skills 的 STEPS 就是完整的结构化工作流，不需要 EnterPlanMode。直接按 SKILL.md 的 Phase/Step 执行。' >&2; exit 2"
+          }
+        ]
+      }
+    ]
+  }
+}

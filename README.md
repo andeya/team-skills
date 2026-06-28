@@ -373,6 +373,34 @@ Team Skills 融合了业界多个 AI 协作框架的精华：
 
 ---
 
+### 推荐：禁用 EnterPlanMode（Claude Code）
+
+Team Skills 的每个 Skill 都定义了完整的结构化工作流（Phase/Step），不需要 Claude Code 的 `EnterPlanMode`。长对话中 LLM 可能自动切入 plan mode，绕过 Skill 流程（跳过 TDD、根因调查、有向图调度等纪律流程）。
+
+在项目的 `.claude/settings.json` 中添加 PreToolUse Hook 可彻底阻止：
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "EnterPlanMode",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo 'BLOCKED: team-skills STEPS 是完整工作流，不需要 EnterPlanMode。' >&2; exit 2"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+> `exit 2` 会阻止工具调用并将 stderr 消息反馈给 LLM。此 Hook 仅影响当前项目，不影响其他项目中 EnterPlanMode 的正常使用。
+
+---
+
 ## 🔧 本地开发
 
 ```bash
