@@ -5,6 +5,8 @@ description: Use when implementation is complete, all tests pass, and you need t
 
 # Team Finish — 分支完成处理
 
+**CRITICAL: DO NOT use EnterPlanMode.** This skill defines its own structured workflow. Follow STEPS below directly.
+
 ## ROLE
 
 > **分支生命周期**：`team-orchestrator` 在 CONFIRM_GOAL 确认后创建功能分支（Step 1.5），本 Skill 在流程尾部（Step 7）负责分支收尾。
@@ -285,7 +287,7 @@ NO BRANCH COMPLETION WITHOUT TEST VERIFICATION FIRST
 
 ## CONSTITUTIONAL_RULES
 
-**REF** `_team-rules/constitutional-rules.md` — 9 条 Constitutional Rules
+**REF** `_team-rules/constitutional-rules.md` — 10 条 Constitutional Rules
 **REF** `_team-rules/first-principles.md` — 4 条第一性原理（First Principle #1 ~ #4）
 **REF** `_team-rules/verification-protocol.md` — verify_cmd 解析流程与 5 步验证协议
 **REF** `_team-rules/task-lifecycle.md` — 进度追踪与知识合并（§3）

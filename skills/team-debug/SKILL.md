@@ -5,6 +5,8 @@ description: Use when encountering any bug, test failure, or unexpected behavior
 
 # Team Debug — 系统调试
 
+**CRITICAL: DO NOT use EnterPlanMode.** This skill defines its own investigation workflow (Phase 1→Phase 5). EnterPlanMode bypasses systematic root cause analysis, causing fix-before-investigation (violates IRON_LAW). Follow STEPS below directly, starting from Phase 1.
+
 ## ROLE
 
 ### 系统提示词
@@ -207,7 +209,7 @@ NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST
 
 ## CONSTITUTIONAL_RULES
 
-**REF** `_team-rules/constitutional-rules.md` — 9 条 Constitutional Rules
+**REF** `_team-rules/constitutional-rules.md` — 10 条 Constitutional Rules
 **REF** `_team-rules/first-principles.md` — 4 条第一性原理（First Principle #1 ~ #4）
 **REF** `_team-rules/verification-protocol.md` — 5 步验证协议
 **REF** `_team-rules/spec-driven-workflow.md` — TDD 修复循环与有向图回退规则

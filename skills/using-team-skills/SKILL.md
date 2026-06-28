@@ -138,7 +138,7 @@ NO SKILL RECOMMENDATION WITHOUT SCENE ANALYSIS FIRST
 
 ## CONSTITUTIONAL_RULES
 
-**REF** `_team-rules/constitutional-rules.md` — 9 条 Constitutional Rules
+**REF** `_team-rules/constitutional-rules.md` — 10 条 Constitutional Rules
 **REF** `_team-rules/first-principles.md` — 4 条第一性原理（First Principle #1 ~ #4）
 
 分诊阶段尤其注意：

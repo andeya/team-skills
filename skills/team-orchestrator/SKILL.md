@@ -5,6 +5,8 @@ description: Use when task needs full spec→impl→test→review pipeline with 
 
 # Team Orchestrator — 流程编排器
 
+**CRITICAL: DO NOT use EnterPlanMode.** This skill defines its own structured workflow (Step 1→Step 8). EnterPlanMode bypasses the directed graph, skips sub-skill dispatch (team-spec/team-impl/team-test/team-review), and skips human intervention points (CONFIRM_GOAL/HUMAN_ACCEPT). Follow STEPS below directly, starting from Step 1.
+
 ## ROLE
 
 ```mermaid
@@ -994,7 +996,7 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 
 ## CONSTITUTIONAL_RULES
 
-**REF** `_team-rules/constitutional-rules.md` — 9 条 Constitutional Rules
+**REF** `_team-rules/constitutional-rules.md` — 10 条 Constitutional Rules
 **REF** `_team-rules/first-principles.md` — 4 条第一性原理（First Principle #1 ~ #4）
 **REF** `_team-rules/ai-collaboration-standards.md` — AI 协作资产与 Prompt 工程规范
 **REF** `_team-rules/spec-driven-workflow.md` — 有向图回退规则与回退次数上限

@@ -5,6 +5,8 @@ description: Use when AI usage involves sensitive data, external services, or au
 
 # Team Security — AI 安全红线合规检查
 
+**CRITICAL: DO NOT use EnterPlanMode.** This skill defines its own structured workflow. Follow STEPS below directly.
+
 ## ROLE
 
 ### 系统提示词
@@ -535,7 +537,7 @@ NO AI OPERATIONS WITHOUT RED LINE CHECK FIRST
 
 ## CONSTITUTIONAL_RULES
 
-**REF** `_team-rules/constitutional-rules.md` — 9 条 Constitutional Rules
+**REF** `_team-rules/constitutional-rules.md` — 10 条 Constitutional Rules
 **REF** `_team-rules/first-principles.md` — 4 条第一性原理（First Principle #1 ~ #4）
 **REF** `_team-rules/verification-protocol.md` — 5 步验证协议
 

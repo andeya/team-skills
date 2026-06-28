@@ -10,7 +10,7 @@ team-skills/
 ├── skills/                    # 所有 Skill 定义
 │   ├── _team-rules/           # 共享规则文件（被所有 Skill 引用）
 │   │   ├── first-principles.md         # 4 条第一性原理（First Principle #1 ~ First Principle #4）
-│   │   ├── constitutional-rules.md     # 9 条 Constitutional Rules
+│   │   ├── constitutional-rules.md     # 10 条 Constitutional Rules
 │   │   ├── verification-protocol.md    # 5 步验证协议
 │   │   ├── four-state-protocol.md      # 四态完成状态
 │   │   ├── spec-driven-workflow.md     # Spec-Driven 开发原则 + TDD 工作流

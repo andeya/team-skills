@@ -5,6 +5,8 @@ description: Use when receiving code review feedback, before implementing sugges
 
 # Team Feedback — 审查反馈应对
 
+**CRITICAL: DO NOT use EnterPlanMode.** This skill defines its own structured workflow. Follow STEPS below directly.
+
 ## ROLE
 
 ### 系统提示词
@@ -221,7 +223,7 @@ NO IMPLEMENTATION WITHOUT TECHNICAL VERIFICATION FIRST
 
 ## CONSTITUTIONAL_RULES
 
-**REF** `_team-rules/constitutional-rules.md` — 9 条 Constitutional Rules
+**REF** `_team-rules/constitutional-rules.md` — 10 条 Constitutional Rules
 **REF** `_team-rules/first-principles.md` — 4 条第一性原理（First Principle #1 ~ #4）
 **REF** `_team-rules/spec-driven-workflow.md` — TDD 逐项验证与有向图回退规则
 **REF** `_team-rules/verification-protocol.md` — verify_cmd 解析流程与 5 步验证协议

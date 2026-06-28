@@ -5,6 +5,8 @@ description: Use when evaluating AI collaboration maturity of a project
 
 # Team Score — 协作评分
 
+**CRITICAL: DO NOT use EnterPlanMode.** This skill defines its own structured workflow. Follow STEPS below directly.
+
 ## ROLE
 
 ### 系统提示词
@@ -417,7 +419,7 @@ NO SCORE WITHOUT EVIDENCE FIRST
 
 ## CONSTITUTIONAL_RULES
 
-**REF** `_team-rules/constitutional-rules.md` — 9 条 Constitutional Rules
+**REF** `_team-rules/constitutional-rules.md` — 10 条 Constitutional Rules
 **REF** `_team-rules/first-principles.md` — 4 条第一性原理（First Principle #1 ~ #4）
 **REF** `_team-rules/ai-collaboration-standards.md` — AI 协作资产与 Prompt 工程规范
 **REF** `_team-rules/verification-protocol.md` — 5 步验证协议

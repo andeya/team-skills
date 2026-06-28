@@ -5,6 +5,8 @@ description: Use when about to claim work is complete, fixed, or passing - requi
 
 # Team Verify — 验证协议
 
+**CRITICAL: DO NOT use EnterPlanMode.** This skill defines its own structured workflow. Follow STEPS below directly.
+
 ## ROLE
 
 ### 系统提示词
@@ -164,7 +166,7 @@ NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE FIRST
 
 ## CONSTITUTIONAL_RULES
 
-**REF** `_team-rules/constitutional-rules.md` — 9 条 Constitutional Rules
+**REF** `_team-rules/constitutional-rules.md` — 10 条 Constitutional Rules
 **REF** `_team-rules/verification-protocol.md` — 5 步验证协议
 **REF** `_team-rules/first-principles.md` — 4 条第一性原理（First Principle #1 ~ #4）
 

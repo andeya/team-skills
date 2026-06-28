@@ -5,6 +5,8 @@ description: Use when SDD exists and you need TDD implementation with 06-08 docs
 
 # Team Impl — 实现
 
+**CRITICAL: DO NOT use EnterPlanMode.** This skill defines its own TDD workflow (RED→GREEN→REFACTOR). EnterPlanMode bypasses the TDD cycle, causing implementation-before-test (violates IRON_LAW). Follow STEPS below directly, starting from Phase 1.
+
 ## ROLE
 
 ### 系统提示词
@@ -352,7 +354,7 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 
 ## CONSTITUTIONAL_RULES
 
-**REF** `_team-rules/constitutional-rules.md` — 9 条 Constitutional Rules
+**REF** `_team-rules/constitutional-rules.md` — 10 条 Constitutional Rules
 **REF** `_team-rules/first-principles.md` — 4 条第一性原理（First Principle #1 ~ #4）
 **REF** `_team-rules/verification-protocol.md` — 5 步验证协议
 **REF** `_team-rules/spec-driven-workflow.md` — Spec-Driven 开发原则与 TDD 工作流

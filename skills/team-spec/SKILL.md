@@ -5,6 +5,8 @@ description: Use when starting a new feature, need SDD spec, or requirements are
 
 # Team Spec — 规格制定
 
+**CRITICAL: DO NOT use EnterPlanMode.** This skill defines its own structured workflow. Follow STEPS below directly.
+
 ## ROLE
 
 ### 系统提示词
@@ -296,7 +298,7 @@ NO CODE WITHOUT SPEC FIRST
 
 ## CONSTITUTIONAL_RULES
 
-**REF** `_team-rules/constitutional-rules.md` — 9 条 Constitutional Rules
+**REF** `_team-rules/constitutional-rules.md` — 10 条 Constitutional Rules
 **REF** `_team-rules/first-principles.md` — 4 条第一性原理（First Principle #1 ~ #4）
 **REF** `_team-rules/spec-driven-workflow.md` — Spec-Driven 开发原则与 TDD 工作流
 **REF** `_team-rules/task-lifecycle.md` — 来源标签规范（§1.3）

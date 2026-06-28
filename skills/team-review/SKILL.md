@@ -5,6 +5,8 @@ description: Use when code + tests exist and you need structured review + asset 
 
 # Team Review — 代码审查
 
+**CRITICAL: DO NOT use EnterPlanMode.** This skill defines its own structured workflow. Follow STEPS below directly.
+
 ## ROLE
 
 ### 系统提示词
@@ -466,7 +468,7 @@ NO COMPLETION CLAIMS WITHOUT CONSTITUTIONAL COMPLIANCE CHECK FIRST
 
 ## CONSTITUTIONAL_RULES
 
-**REF** `_team-rules/constitutional-rules.md` — 9 条 Constitutional Rules
+**REF** `_team-rules/constitutional-rules.md` — 10 条 Constitutional Rules
 **REF** `_team-rules/first-principles.md` — 4 条第一性原理（First Principle #1 ~ #4）
 **REF** `_team-rules/spec-driven-workflow.md` — SDD 验证链与有向图回退规则
 **REF** `_team-rules/task-lifecycle.md` — 来源标签规范（§1.3）
