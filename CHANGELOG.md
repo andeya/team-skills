@@ -7,6 +7,15 @@
 
 ## [Unreleased]
 
+## [1.5.3] - 2026-06-28
+
+### 修复
+
+- 全部 12 个 SKILL.md 在 frontmatter 后增加顶级 CRITICAL 约束，阻止 LLM 使用 EnterPlanMode 绕过 Skill 自身的结构化流程（有向图/TDD/根因调查）
+- constitutional-rules.md 新增 Rule #10「禁止外部规划工具替代 Skill 流程」+ 常见规避借口补充
+- team-orchestrator/team-impl/team-debug: ROLE 约束、Step 1 TRAP、STOP_SIGNALS、SELF_CHECK 四层防护
+- 清理 docs/tasks 历史产出并加入 .gitignore
+
 ## [1.5.2] - 2026-06-28
 
 ### 修复
