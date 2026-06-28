@@ -60,6 +60,8 @@ NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST
 
 > 收集所有症状的完整描述，不遗漏任何错误细节。"差不多记住了"不算收集。
 
+> TRAP：不要使用 EnterPlanMode 来"先分析一下 bug"——本 SKILL.md 的 Phase 1→Phase 5 就是完整的调试流程。EnterPlanMode 会跳过系统性根因调查，导致基于初步印象直接写修复（违反 IRON_LAW）。
+
 > TRAP：你会倾向于读完错误信息第一行就跳到修复方案（"我觉得我知道问题在哪"）。强制自己读完完整 stack trace 和错误上下文。第一行是症状，最后几行才是根因。
 
 1. **READ** 完整错误信息 — 不跳过 stack trace、行号、错误码
@@ -173,6 +175,7 @@ NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST
 
 ## STOP_SIGNALS
 
+- **使用** EnterPlanMode 或其他外部规划工具替代根因调查流程（plan mode 中的阅读 ≠ 系统性根因调查）
 - **跳过**根因调查直接写修复代码
 - **修改**多个变量同时进行，无法隔离有效改动
 - **继续**尝试 3 次修复失败后仍不触发 `ASK_HUMAN`
@@ -226,7 +229,7 @@ NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST
 - [ ] **ASSERT** `修复失败次数 < 3` || `ASK_HUMAN 已触发`
 - [ ] **ASSERT** `同时修改变量数 <= 1`
 - [ ] **ASSERT** `无占位符残留（{N}、{slug} 等已被实际值替换）`
-- [ ] **ASSERT** `IRON_LAW 遵守` — 根因已确定后才修复，未跳过调查
+- [ ] **ASSERT** `IRON_LAW 遵守` — 根因已确定后才修复，未跳过调查、未使用 EnterPlanMode 替代调查流程
 - [ ] 我的假设如果错了，还有什么能解释所有已知症状？
 - [ ] 我是在修根因还是在修症状？根因仍在时这个修复能撑多久？
 

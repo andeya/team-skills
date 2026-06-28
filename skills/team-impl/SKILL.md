@@ -115,6 +115,8 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 
 > 通过红-绿-重构循环逐个实现功能点。每个 GREEN 完成时代码应是"能工作的最简单方案"，不是"我能想到的最好方案"。
 
+> TRAP：不要使用 EnterPlanMode 来"先规划实现方案"——本 SKILL.md 的 Phase 1→Phase 4 就是完整的实现流程。EnterPlanMode 会跳过 RED→GREEN→REFACTOR 循环，导致先写实现再补测试（违反 IRON_LAW）。
+
 **FOR** `feature_point`（从 SDD 提取）：
 
 #### 循环 1：红（Red）— 写测试
@@ -343,6 +345,7 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 
 ## STOP_SIGNALS
 
+- **使用** EnterPlanMode 或其他外部规划工具替代 TDD 循环（plan mode 完成 ≠ RED 阶段完成）
 - **编码**前没 `READ` spec，或发现 spec 问题不 `ROLLBACK` 而自己决定
 - **跳过** RED 阶段直接写实现，或先写实现再补测试
 - **修改**测试让它通过（而非修改实现），或困惑不记录默默假设
@@ -376,7 +379,7 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 - [ ] **ASSERT** `实际消耗 <= 01-plan.md 自我约束预算`
 - [ ] **ASSERT** `所有困惑已显式记录于 06-tdd-log.md 审计段落`
 - [ ] **ASSERT** `无占位符残留（{N}、{slug} 等已被实际值替换）`
-- [ ] **ASSERT** `IRON_LAW 遵守` — 未自行假设 spec、未跳过 TDD 顺序
+- [ ] **ASSERT** `IRON_LAW 遵守` — 未自行假设 spec、未跳过 TDD 顺序、未使用 EnterPlanMode 替代 TDD 循环
 - [ ] **IF** 发现 spec 问题 → **ASSERT** `已 ROLLBACK team-spec`
 - [ ] 我是否在某个 GREEN 阶段写了超出当前测试要求的代码？
 - [ ] 我是否有任何"通过"声明是基于上一轮输出而非本轮刚执行的结果？

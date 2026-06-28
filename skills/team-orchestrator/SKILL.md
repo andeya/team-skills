@@ -45,6 +45,7 @@ flowchart TD
 - CONFIRM_GOAL/HUMAN_ACCEPT 任何模式下不可省略
 - 编排器不得自己写实现代码（必须 dispatch 子 Skill，不可亲自实现）
 - 子 Skill 不可用时不得自动降级为自我执行，必须 ASK_HUMAN 请示用户
+- 编排器不得使用 EnterPlanMode 等外部规划工具替代自身有向图流程——STEPS 定义的 Step 1→Step 8 就是规划与执行的全部流程
 ```
 
 ### 路由推理检查点
@@ -368,6 +369,8 @@ NO AGENT DISPATCH WITHOUT CONFIRM_GOAL HUMAN CONFIRMATION FIRST
 ### Step 1：初始化 + CONFIRM_GOAL 人类确认
 
 > 确保任务目标被准确理解，用户对方案方向有明确确认。跳过 CONFIRM_GOAL 是编排器最危险的错误——后续所有 Agent 的工作都建立在这个确认之上。
+
+> TRAP：不要使用 EnterPlanMode 来"先规划一下"——本 SKILL.md 的 Step 1→Step 8 就是完整的规划与执行流程。EnterPlanMode 会绕过有向图、跳过子 Skill 调度、跳过人类介入点，导致编排器退化为普通 Agent 直接写代码。
 
 1. **READ** 用户参数 → 提取任务描述
 2. **IF** `docs/tasks/` NOT_EXISTS → 创建目录，最大序号 = 0
@@ -984,6 +987,7 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 ## STOP_SIGNALS
 
 - **跳过** CONFIRM_GOAL 或 HUMAN_ACCEPT 人类介入点
+- **使用** EnterPlanMode 或其他外部规划工具替代 STEPS 定义的有向图流程（plan mode 完成 ≠ CONFIRM_GOAL 完成）
 - **延迟**回退（"先记着后面一起修"）
 - **信任** Agent 自我声明而不验证产出
 - **超出**预算不砍范围，或亲自执行实现代码而非 dispatch 子 Skill
@@ -1013,7 +1017,7 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 - [ ] **IF** team-review 要求 → **ASSERT** `CHANGELOG.md 已更新`
 - [ ] **ASSERT** `进度账本已更新`
 - [ ] **ASSERT** `无占位符残留（{N}、{slug} 等已被实际值替换）`
-- [ ] **ASSERT** `IRON_LAW 遵守` — 未自己写实现代码、未跳过人类介入点
+- [ ] **ASSERT** `IRON_LAW 遵守` — 未自己写实现代码、未跳过人类介入点、未使用 EnterPlanMode 替代有向图流程
 - [ ] 我是否因为"这步很简单"而跳过了某个人类介入点？
 - [ ] 我是否把所有 Agent 的 concerns 都传达给了用户，还是悄悄忽略了某些？
 - [ ] 我是否在回退时传递了完整的四要素上下文（问题、位置、期望、建议），还是只说了"有 bug"？
