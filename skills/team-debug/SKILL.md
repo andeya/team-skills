@@ -218,7 +218,7 @@ NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST
 
 - **Rule #9 TDD 顺序不可逆**：修复 bug 必须先写失败的回归测试再写修复代码 `_team-rules/first-principles.md: First Principle #2`
 - **Rule #3 产出必须验证**：修复完成后必须执行验证协议 `_team-rules/verification-protocol.md: 验证执行步骤` `_team-rules/first-principles.md: First Principle #4`
-- **Rule #7 回退次数上限**：3 次修复失败必须触发 `ASK_HUMAN`，不可无限重试 `_team-rules/first-principles.md: First Principle #1`
+- **Rule #7 回退次数上限**：编排模式下同一 source→target 对回退 ≤ 2 次触发 `ASK_HUMAN`；Skill 内部修复重试 ≤ 3 次后 `BLOCKED` `_team-rules/first-principles.md: First Principle #1`
 - **Rule #2 有向图回退**：调试发现根源在 spec 歧义/遗漏 → `ROLLBACK` `team-spec` `_team-rules/first-principles.md: First Principle #4`
 
 ## SELF_CHECK

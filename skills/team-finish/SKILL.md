@@ -119,14 +119,25 @@ NO BRANCH COMPLETION WITHOUT TEST VERIFICATION FIRST
 **WRITE**（对话中）选项列表：
 
 ```
-实现完成。请选择后续操作：
+实现完成，测试已通过。请选择集成方式：
 
-1. 本地合并到 {base_branch}
-2. 推送并创建 Pull Request
-3. 保留当前分支（稍后处理）
-4. 丢弃本次工作
+1. [默认] 合并到 {base_branch} 并推送
+   → push 功能分支（留档） → merge 到 {base_branch} → push {base_branch} → 清理本地功能分支
+   适用：有合并权限，可直接集成
 
-请选择：
+2. 创建 Pull Request
+   → push 功能分支 → 创建 PR 等待审查
+   适用：需要 Code Review 或 CI 门禁
+
+3. 保留当前分支
+   → 不做任何操作，功能分支原样保留
+   适用：尚需打磨，或等待外部依赖就绪
+
+4. 丢弃本次工作（需二次确认）
+   → 切回 {base_branch} → 强制删除功能分支
+   适用：实验性工作，确认不再需要
+
+请选择 [1]：
 ```
 
 ### Step 4：执行选择
@@ -137,19 +148,25 @@ NO BRANCH COMPLETION WITHOUT TEST VERIFICATION FIRST
 
 **MATCH** `user_choice`：
 
-- `Option 1`（本地合并）：
-  1. **EXEC** `git checkout {base_branch} && git pull`
+- `Option 1`（合并到 {base_branch} 并推送，默认）：
+  1. **EXEC** `git push -u origin {branch}`
+     - **ASSERT** `exit_code == 0`
+       - 失败（auth 错误、远程未配置）→ **WRITE**（对话中）错误信息给用户，**BLOCKED**
+  2. **EXEC** `git checkout {base_branch} && git pull`
      - **ASSERT** `exit_code == 0`
        - 失败 → **WRITE**（对话中）错误信息，**BLOCKED**
-  2. **EXEC** `git merge {branch} --no-ff`
+  3. **EXEC** `git merge {branch} --no-ff`
      - **IF** 合并冲突：
        - **GOTO** 子步骤 4.1
      - **ELSE**：
        - 继续下一步
-  3. **EXEC** 项目测试命令 — 声明"通过"前须执行验证协议 `_team-rules/verification-protocol.md: 验证执行步骤`
+  4. **EXEC** 项目测试命令 — 声明"通过"前须执行验证协议 `_team-rules/verification-protocol.md: 验证执行步骤`
      - **ASSERT** `exit_code == 0` && `failures == 0`
        - 失败 → 记录回归详情 → **BLOCKED**
-  4. **EXEC** `git branch -d {branch}`
+  5. **EXEC** `git push`
+     - **ASSERT** `exit_code == 0`
+       - 失败 → **WRITE**（对话中）错误信息，**BLOCKED**
+  6. **EXEC** `git branch -d {branch}`
      - **IF** `exit_code != 0` → **WRITE**（对话中）"分支未完全合并，需 -D 强制删除？"，等待用户确认
 
 - `Option 2`（创建 PR）：

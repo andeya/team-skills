@@ -7,6 +7,40 @@
 
 ## [Unreleased]
 
+## [1.6.1] - 2026-06-28
+
+### 变更
+
+- team-spec: Phase 2.5 用户审阅从 REPEAT MAX=3 改为无限循环——用户未通过则持续迭代，每次修改/追加后主动请求确认
+
+## [1.6.0] - 2026-06-28
+
+### 新增
+
+- team-spec: Phase 1.5 显式迭代澄清（REPEAT MAX=5），支持多轮需求修改和追加
+- team-spec: Phase 2.5 用户审阅反馈循环（无次数限制，用户未通过则持续迭代），每次回复后重新请求确认
+- team-spec: Phase 3 多角色轮审（实现者/测试者/攻击者/用户/运维者）+ 自动修复循环（REPEAT MAX=3），每角色有专属 SDD 章节审查焦点
+- team-spec: Phase 3 前置说明——方案执行者是 AI Agent，规格须比人类版本更精确、零歧义
+- team-spec: 反橡皮图章双 TRAP——每角色至少 1 条观察 + 每轮至少 1 个改进项
+- team-spec: ROLE 对抗自检从 3 视角扩展为 5 视角（+用户、+运维者）
+- team-finish: 新增默认 Option 1「合并到主分支并推送」（push 功能分支留档 → merge → push 主分支 → 清理本地功能分支）
+- team-finish: 选项展示增加适用场景说明，帮助用户选择
+
+### 变更
+
+- team-finish: 选项从 5 个精简为 4 个，移除「仅本地合并」（团队协作反模式），重新编号
+- team-orchestrator: Mermaid 流程图 Step 7 标签对齐实际标题「分支完成处理」
+- team-orchestrator: Step 7 team-finish 选项描述更新为新选项名称
+- team-orchestrator: NEXT 移除与 Step 7 重复的 team-finish 推荐
+- team-spec: STOP_SIGNALS 从 4 项扩展为 6 项（+跳过 Phase 2.5 用户审阅、+跳过 Phase 3 多角色轮审）
+- team-spec: SELF_CHECK 新增 Phase 2.5 用户审阅确认 + Phase 3 多角色轮审执行验证
+- team-spec: ROLE 系统提示词流程描述补充 Phase 2.5 和 Phase 3
+- team-debug: Rule #7 引用澄清——区分编排器跨 Agent 回退（≤ 2 次）vs Skill 内部修复重试（≤ 3 次）
+
+### 修复
+
+- 7 个 reference 模板对齐 SKILL.md 内联骨架：11-review-template（章节顺序+表结构重写）、12-asset-update-template（补充消费方契约列+8 类覆盖度表）、14-team-template（§编号+§四表结构）、15-brief-template（§编号+占位符）、13-retrospective-template（header 元数据）、review-checklist-template（性能+安全检查项）、delivery-checklist-template（章节引用）
+
 ## [1.5.3] - 2026-06-28
 
 ### 修复

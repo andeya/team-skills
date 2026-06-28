@@ -24,7 +24,7 @@
 - [ ] 06-tdd-log.md 每个功能点有完整 RED→GREEN→REFACTOR 记录（RED 含失败输出）
 - [ ] 09-test-matrix.md 四维覆盖（功能/边界/异常/代码）
 - [ ] 11-review.md 五维度审查完成
-- [ ] 13-retrospective.md §二.5 新规则沉淀已写入目标文件
+- [ ] 13-retrospective.md §三 新规则沉淀已写入目标文件
 
 ## 四、项目自定义交付项
 

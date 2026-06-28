@@ -22,7 +22,7 @@ flowchart TD
     team-review -->|"P0/P1 问题"| team-impl
     team-review -->|"spec 遗漏"| team-spec
     team-review -->|"无问题"| teamEvidence["Step 6: 团队证据"]
-    teamEvidence --> finish["Step 7: finish-review 集成"]
+    teamEvidence --> finish["Step 7: 分支完成处理"]
     finish --> HUMAN_ACCEPT["HUMAN_ACCEPT: 人类验收"]
     HUMAN_ACCEPT --> archive["Step 7.5: 归档"]
     archive --> qualityCheck["Step 8: 质量检查"]
@@ -821,7 +821,7 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 **ROUTE** `team-finish`：
 
 - 传递 checkpoint 中的 `branch` 和 `base_branch` 信息
-- `team-finish` 将验证测试 → 展示选项（merge/PR/keep/discard）→ 执行用户选择
+- `team-finish` 将验证测试 → 展示集成选项（合并并推送/创建 PR/保留/丢弃）→ 执行用户选择
 
 **IF** `team-finish` 报告测试不通过 → **ROLLBACK** team-impl（附失败详情），修复完成后 **GOTO** Step 7。
 
@@ -1052,5 +1052,5 @@ TDD 强制要求：每个功能点必须先 git commit 失败测试（test: {功
 
 ## NEXT
 
-- 编排完成 → 使用 `team-finish` 合并分支
 - 需要协作评分 → 使用 `team-score` 获取质量评分
+- 开始下一个功能 → 使用 `team-brainstorm` 或 `team-spec`

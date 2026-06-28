@@ -1,6 +1,6 @@
 # 个人复盘
 
-> team-review 产出
+> team-review 产出 | {slug} | {日期}
 
 ## 一、本次任务回顾
 
