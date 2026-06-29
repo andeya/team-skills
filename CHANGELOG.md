@@ -7,6 +7,16 @@
 
 ## [Unreleased]
 
+## [1.6.2] - 2026-06-29
+
+### 变更
+
+- team-orchestrator: Step 1.5.2 从自动创建功能分支改为分支策略选择（Fork/不Fork），用户显式选择是否创建新分支
+- team-orchestrator: 移除"当前分支≠基准分支时自动跳过"的隐式规则，仅保留 `--no-branch` 显式跳过
+- team-orchestrator: Mermaid + ASCII 流程图分支步骤标签同步更新
+- team-finish: Step 2 新增当前分支获取 + 基准分支守卫（`branch == base_branch` 时 BLOCKED）
+- team-finish: Step 3 选项模板增加分支信息展示，选项描述使用具名分支变量 `{branch}`
+
 ## [1.6.1] - 2026-06-28
 
 ### 变更

@@ -11,7 +11,7 @@ description: Use when task needs full spec→impl→test→review pipeline with 
 
 ```mermaid
 flowchart TD
-    CONFIRM_GOAL["CONFIRM_GOAL: 人类确认目标"] --> branch["创建功能分支"]
+    CONFIRM_GOAL["CONFIRM_GOAL: 人类确认目标"] --> branch["分支策略选择（Fork/不Fork）"]
     branch --> team-spec["team-spec: 规格制定"]
     team-spec --> CONFIRM_SPEC["CONFIRM_SPEC: 人类确认规格"]
     CONFIRM_SPEC --> team-impl["team-impl: TDD 实现"]
@@ -102,8 +102,8 @@ NO AGENT DISPATCH WITHOUT CONFIRM_GOAL HUMAN CONFIRMATION FIRST
                      │ 确认  │ 不确认 → 返回修改
                      ▼       └────────┐
               ┌──────────────────┐     │
-              │  创建功能分支     │     │
-              │  {slug} 分支     │     │
+              │  分支策略选择     │     │
+              │  Fork / 不Fork   │     │
               └──────┬───────────┘     │
                      │                 │
                      ▼                 │
@@ -417,14 +417,34 @@ NO AGENT DISPATCH WITHOUT CONFIRM_GOAL HUMAN CONFIRMATION FIRST
 3. **FOR** `name` **IN** [`main`, `master`, `develop`]：**EXEC** `git show-ref --verify refs/heads/{name}` → **IF** `exit_code == 0` → 首个存在即停
 4. *NONE* → **ASK_HUMAN**，请求用户指定基准分支
 
-#### 1.5.2 创建功能分支
+#### 1.5.2 分支策略选择
 
-1. **EXEC** `git branch --show-current` → **ASSERT** `exit_code == 0` → 获取当前分支名
+1. **EXEC** `git branch --show-current` → **ASSERT** `exit_code == 0` → 获取 `current_branch`
 2. **EXEC** `git status --porcelain` → **ASSERT** `exit_code == 0`
    - **IF** `output` NOT_EMPTY → **GOTO** 1.5.2.1
-3. **EXEC** `git checkout -b {slug}`
-   - **IF** `exit_code != 0`（分支已存在）→ **EXEC** `git checkout {slug}` → **ASSERT** `exit_code == 0`
-4. **WRITE** checkpoint：`current_step=Step 2, branch={slug}, base_branch={基准分支名}, completed_steps 追加 Step 1.5`
+
+3. **WRITE**（对话中）分支策略选项：
+
+```
+当前分支：{current_branch}，基准分支：{base_branch}
+请选择分支策略：
+
+1. [默认] Fork — 从当前位置创建新分支 {slug}
+   适用：功能开发需要隔离，便于回退和 PR
+
+2. 不 Fork — 直接在当前分支 {current_branch} 上工作
+   适用：当前分支已是工作分支，或不需要分支隔离
+
+请选择 [1]：
+```
+
+**MATCH** `user_choice`：
+
+- `Option 1`（Fork，默认）→ **EXEC** `git checkout -b {slug}`
+  - **IF** `exit_code != 0`（分支已存在）→ **EXEC** `git checkout {slug}` → **ASSERT** `exit_code == 0`
+  - **WRITE** checkpoint：`current_step=Step 2, branch={slug}, base_branch={基准分支名}, completed_steps 追加 Step 1.5`
+- `Option 2`（不 Fork）→ **WRITE** checkpoint：`current_step=Step 2, branch={current_branch}, base_branch={基准分支名}, completed_steps 追加 Step 1.5`
+- *DEFAULT* → 请求用户从以上选项中选择
 
 #### 1.5.2.1：处理未提交变更
 
@@ -434,16 +454,15 @@ NO AGENT DISPATCH WITHOUT CONFIRM_GOAL HUMAN CONFIRMATION FIRST
 
 **MATCH** `user_choice`：
 
-- `stash 后继续` → **EXEC** `git stash` → **ASSERT** `exit_code == 0` → **GOTO** 1.5.2 步骤 3
-- `先提交再继续` → 等待用户提交 → **GOTO** 1.5.2 步骤 3
+- `stash 后继续` → **EXEC** `git stash` → **ASSERT** `exit_code == 0` → **GOTO** 1.5.2 步骤 3（展示分支策略选项）
+- `先提交再继续` → 等待用户提交 → **GOTO** 1.5.2 步骤 3（展示分支策略选项）
 - `取消` → **BLOCKED**
 - *DEFAULT* → 请求用户从以上选项中选择
 
 不自动 stash 或丢弃。
 
-**跳过条件**（不创建分支）：
+**跳过条件**（跳过分支策略选择，不展示选项）：
 
-- **IF** 当前分支名 ≠ `base_branch` → 使用当前分支，checkpoint 中 `branch` 记录当前分支名
 - **IF** 用户指定 `--no-branch` → 直接在当前分支上工作
 
 **恢复场景**：**IF** 断点续传（checkpoint 已有 `branch` 字段）→ **ASSERT** `当前分支 == checkpoint.branch`。不一致 → 提示用户切换分支，不自动切换。
